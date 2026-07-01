@@ -47,17 +47,31 @@
 ## Forbidden Patterns
 
 <!-- Add patterns that should never appear in this project's codebase -->
-- [None configured yet — add as architectural decisions are made]
+- **Hardcoded gameplay/balance values** — every tuning knob lives in a ScriptableObject (ADR-0003); no magic numbers in gameplay code.
+- **Cross-system assembly references** — systems reference only `Core` (event bus + query interfaces), never each other; `App` is the sole composition root (ADR-0005).
+- **Singletons for gameplay services** — use dependency injection over singletons (coding-standards; ADR-0005).
+- **Rigidbody-simulated bullets** — bullets use kinematic movement + trigger overlap / DOTS sim, not rigidbody physics (bullet-system.md; ADR-0001).
+- **DOTS types leaking out of `BulletSim`** — ECS/Burst is quarantined; cross the boundary only via value structs through the Core event bus (ADR-0001/0002).
 
 ## Allowed Libraries / Addons
 
 <!-- Add approved third-party dependencies here -->
-- [None configured yet — add as dependencies are approved]
+- Universal Render Pipeline (URP) — 2D Renderer + Pixel Perfect Camera
+- Unity Input System — dual input (touch / keyboard-mouse / gamepad)
+- Addressables — asset/content loading + memory management
+- DOTS: Entities + Burst + Collections + Mathematics — **scoped to the `BulletSim` assembly only** (ADR-0001)
+- Unity Test Framework (NUnit) — EditMode + PlayMode
+- *(Exact package versions pending verification against the installed Unity 6.3 editor — see `Packages/manifest.json`)*
 
 ## Architecture Decisions Log
 
 <!-- Quick reference linking to full ADRs in docs/architecture/ -->
-- [No ADRs yet — use /architecture-decision to create one]
+- **ADR-0001** — [Bullet engine backend — hybrid DOTS/ECS+Burst (BulletSim) + MonoBehaviour pooling](../../docs/architecture/adr/0001-bullet-engine-backend.md) — *Proposed* (pending perf-prototype gate: 1000 bullets @60fps, 0 GC/frame on mobile)
+- **ADR-0002** — [Event architecture — typed struct event bus + DI query interfaces](../../docs/architecture/adr/0002-event-architecture.md) — *Accepted*
+- **ADR-0003** — [Data-driven config via ScriptableObjects](../../docs/architecture/adr/0003-data-driven-config-scriptableobjects.md) — *Accepted* (supersedes the GDDs' `assets/data/**/*.yaml` placeholder paths)
+- **ADR-0004** — [Save system — atomic JSON + CRC32 + migration chain](../../docs/architecture/adr/0004-save-system.md) — *Accepted*
+- **ADR-0005** — [Project structure & assembly definitions (DI, module isolation)](../../docs/architecture/adr/0005-project-structure-assemblies.md) — *Accepted*
+- Master blueprint: [docs/architecture/architecture.md](../../docs/architecture/architecture.md)
 
 ## Engine Specialists
 
