@@ -734,7 +734,6 @@ function updateStage(dt){
   // Wave 1 cleared → spawn wave 2
   if(G.stagePhase==='wave1'&&((alive===0&&G.stageT>1)||G.stageT>11)&&!G._wave2Spawned){
     G._wave2Spawned=true;
-    G.floats.push({x:160,y:240,text:'雜兵波 2 / 2',color:'#ff8040',life:1.5,vy:-10,sz:9,bold:true});
     setTimeout(()=>spawnWave(2),600);
   }
 
@@ -747,7 +746,6 @@ function updateStage(dt){
     else{do{idx=Math.floor(Math.random()*4);}while(idx===G.sidx);}
     // Fast drop so it reaches the player's reachable zone (~y330) in ~3s.
     G.weaponPod={x:80+Math.random()*160,y:-24,vy:120,isPrimary,idx,bobT:0};
-    G.floats.push({x:160,y:236,text:'武器莢艙降落！快去撿',color:'#40ccff',life:2.2,vy:-8,sz:9,bold:true});
   }
 
   // Give the player a real ~7s window to grab the pod, THEN enter boss.
@@ -771,17 +769,17 @@ function updateStage(dt){
     }
   }
 
-  // Boss enter slide
-  if(G.bossActive&&G._bossEnterAnim>0){
-    G._bossEnterAnim=Math.max(0,G._bossEnterAnim-dt*1.4);
-    const off=G._bossEnterAnim*-180;
-    G.boss.forEach(p=>{p.y=p.by+off;});
-  }
 }
 
 function updateBossPhase(dt){
   if(G.over)return;
-  if(G._bossEnterAnim>0)return;// still entering
+  // Boss slide-in must run HERE (updateStage is no longer called once bossActive).
+  if(G._bossEnterAnim>0){
+    G._bossEnterAnim=Math.max(0,G._bossEnterAnim-dt*1.4);
+    const off=G._bossEnterAnim*-180;
+    G.boss.forEach(p=>{p.y=p.by+off;});
+    return;// still sliding in
+  }
 
   // Sweep limbs for LACERA
   if(G.bossDef.id==='LACERA'){
