@@ -3,43 +3,43 @@
 *Last updated: 2026-07-01*
 
 ## Current Task
-**武器系統設計 → GDD → 原型實作**（導演核可全程）。
-- 概念原型 `break-part-feel` 已試玩 → 導演判定 OK（等於通過概念閘門）。
-- 回饋：打擊 juice 要更強 → **部位破壞/死亡時慢動作 + 大招螢幕震動**（已納入武器原型與未來引擎實作清單）。
-- 武器方向拍板（3 項）：① 雙軌「蓄熱軟化→衝擊擊破」骨架保留 ② M3 魚雷 6× 爆發先保留、靠實測平衡再調 ③ GDD 正式化並實作。
-- **武器 GDD 已寫** → `design/gdd/weapon-system.md`（8 段齊全；自我 design-review + balance-check 通過；已補 2 個阻斷缺口：`1 D₀=10 BU` 換算錨點、`B_max_boss_core` + `required_break_threshold_*` 護甲門檻旋鈕）。
-- **武器手感原型建置中**（背景 agent）→ `prototypes/weapon-feel-concept/prototype.html`（8 武器可切換、雙軌、juice）。
+**自主推進設計管線**（導演授權:自主設計＋可直接 commit）。已完成 Phase A–D 一大批。
 
 ## Project Snapshot
 - **Game**: 殲獸戰機 / KAIJU BREAKER — 科幻縱向彈幕射擊 ＋ 破壞部位狩獵養成
-- **Stage**: Concept (`production/stage.txt`) — 概念閘門已實質通過，準備進 map-systems
+- **Stage**: Concept (`production/stage.txt`) — MVP 系統 GDD 已齊,接近 Pre-Production 閘門
 - **Review mode**: lean (`production/review-mode.txt`)
-- **Engine**: Unity 6.3 LTS — configured（C#, URP 2D + Pixel Perfect, Box2D）；`Assets/` 尚空，Unity 專案未建
+- **Engine**: Unity 6.3 LTS — configured;`Assets/` 尚空,Unity 專案未建(架構期才建)
 - **Platform**: 多平台（PC + 手機）
 - **Visual direction**: 像素街機懷舊 (Retro Pixel Arcade)
 
-## Progress Checklist
-- [x] /start onboarding (stage=Concept, review=lean)
-- [x] /brainstorm → 概念文件 `design/gdd/game-concept.md`
-- [x] /setup-engine (Unity 6.3 LTS)
-- [x] /prototype `break-part-feel`（HTML）→ 導演試玩 OK
-- [x] 武器系統 GDD `design/gdd/weapon-system.md`（8 武器 sidegrade、雙軌、公式、調校旋鈕、驗收）
-- [~] 武器手感原型 `prototypes/weapon-feel-concept/prototype.html`（背景建置中）
-- [ ] `/art-bible`（種子 = 概念文件視覺錨點）
-- [ ] `/map-systems`
+## 已完成（本輪大批產出）
+- [x] 概念原型 `break-part-feel` 試玩 → 導演判定 OK(概念閘門實質通過)
+- [x] **武器系統 GDD** `gdd/weapon-system.md`(8 sidegrade、雙軌、D₀ 等功率、調校旋鈕、驗收)+ 2 阻斷缺口修補
+- [x] **可破壞部位系統 GDD** `gdd/kaiju-part-system.md`(雙槽狀態機、部位類型、相鄰圖、事件契約)
+- [x] **素材經濟 GDD** `gdd/material-economy.md`(5 素材、巨獸主題綁定核心、淺養成曲線)
+- [x] **武器手感原型** `prototypes/weapon-feel-concept/prototype.html`(8 武器切換、雙軌、hitstop/慢動作/螢幕震動)
+- [x] **3 隻巨獸** `gdd/kaiju/01-carapex · 02-lacera · 03-voltwyrm`(部位配置、彈幕模式、剋制 loadout、掉落)
+- [x] **關卡系統 GDD** `gdd/stage-system.md`(手作波段池隨機重組、6 雜兵、武器莢艙掉落、3 關、四難度密度)
+- [x] **系統索引/依賴圖** `design/systems-index.md`(全系統地圖 + 剩餘工作優先序)
+- [x] 跨文件對齊:核心素材改「巨獸主題綁定」;registry 註冊 5 素材;部位數上限放寬到 8
 
 ## Key Decisions
-- 5 pillars locked：科技對巨獸 / 頭目是靈魂 / 橫向選擇 / 破壞即獎勵 / 難度是門不是牆
-- 武器：2 池（主=雷射系×4 蓄熱軟化，副=飛彈系×4 衝擊破甲），場地掉落取得，等 D₀ 功率預算 sidegrade
-- 雙軌骨架：雷射蓄熱→部位軟化→飛彈破甲擊破（把兩池綁進破部位循環）
-- 每武器 Tier-3 唯一機制「深化性格、不加數值」
-- M3 魚雷 6× 爆發保留，靠 `required_break_threshold_*` 護甲門檻防止秒殺（H.3 阻斷驗收）
+- 5 pillars locked;武器雙軌骨架(雷射蓄熱軟化→飛彈破甲擊破)
+- **核心素材 = 巨獸主題綁定**(甲殼→core_carapace / 肢體→core_limb / 能量→core_energy),shard 通用、essence 為 full-clear → MH 式「農特定巨獸」黏著
+- 3 隻巨獸各偏好不同 loadout(CARAPEX→L2×M3 / LACERA→M1 追蹤 / VOLTWYRM→L4 穿透＋L3×M2),用內容驗證 sidegrade
+- 難度四階只縮放彈幕密度/雜兵數,絕不鎖內容
 
-## Open Follow-ups（GDD 審查標出，實作前需處理）
-- **缺 GDD `design/gdd/kaiju-part-system.md`**（可破壞部位系統）— 武器發出 on_laser_hit / on_missile_hit / on_part_break 事件，接收端契約未定，含部位「相鄰圖」（L2/M3 Tier-3 連鎖依賴）。**下一個該寫的 GDD。**
-- **缺 GDD `design/gdd/material-economy.md`**（素材→永久升級經濟）。
-- 掉落頻率指引（Drop System）尚未定。
-- 待原型驗證：#1 M3 6× 是否秒殺（TTB 矩陣）、#4 軟化狀態 0.5s 內是否可辨。
+## 下一步優先序（見 systems-index.md §3）
+- **P0** VFX/SFX + HUD 的「軟化提示可讀性」(阻斷 #4;也是導演要的 juice)
+- **P0** 難度系統 GDD(被全面引用但缺彙整)
+- **P1** 輸入系統 GDD(觸控彈幕手感 = 概念未解風險)、HUD/UI 完整 GDD
+- 之後:`/review-all-gdds` 全域複審 → `/gate-check` 或 `/vertical-slice`
+
+## Open Follow-ups / 原型待驗
+- M3 6× 是否秒殺(TTB 矩陣)、軟化狀態 0.5s 可辨性 → 用武器手感原型測
+- LACERA 農刷率是否過高(Vertical Slice 監測)
+- Stage 1 是否納入 L3(教學武器池開放問題)
 
 ## Biggest Risk
-武器平衡（等價而異性格）— 已建 D₀ 等功率模型 + 8×8 無主導 loadout 驗收（H.2）鎖住，但需原型/實測數據校準。
+武器平衡(等價而異性格)— D₀ 等功率 + 8×8 無主導 loadout 驗收鎖住,3 隻巨獸各偏好不同 loadout 提供內容驗證,仍需原型/實測數據校準。

@@ -14,7 +14,7 @@
 
 可破壞部位系統（Breakable Part System）是殲獸戰機核心狩獵循環的**接收端（Receiver）**。武器系統（`weapon-system.md`，Director-Approved，LOCKED）作為輸出端，透過雙軌核心機制（蓄熱軌 / 破甲軌）持續向本系統提交命中事件；本系統負責維護每個可破壞部位（Breakable Part）的獨立狀態機，並在條件達成時觸發部位破壞（Part Break）、永久移除部位判定，並通知素材經濟系統（`material-economy.md`，撰寫中）執行素材掉落。
 
-每隻巨獸（Kaiju）擁有 2–5 個可破壞部位，以**相鄰圖（Adjacency Graph）**描述空間拓撲關係，供武器 Tier-3 機制（L2 破點漣漪、M3 穿甲爆破鏈）消費。部位分三類：**普通部位（Normal Part）**、**強化部位（Armored Part）**、**Boss 核心部位（Boss Core Part）**。
+每隻巨獸（Kaiju）通常擁有 **2–5 個**可破壞部位，以**相鄰圖（Adjacency Graph）**描述空間拓撲關係，供武器 Tier-3 機制（L2 破點漣漪、M3 穿甲爆破鏈）消費。後期高難度 Boss（如三頭目陣容最終頭目）允許最多 **8 個**部位，以支撐更複雜的子彈地獄戰鬥設計；高部位數僅限後期頭目，早中期頭目仍建議控制在 5 個以內確保設計可讀性。部位分三類：**普通部位（Normal Part）**、**強化部位（Armored Part）**、**Boss 核心部位（Boss Core Part）**。
 
 **系統邊界**：本系統是雙軌機制的狀態管理者，不計算武器輸出量（由武器系統計算後傳入），不決定素材種類（由素材系統負責），不管理巨獸整體生命（只追蹤 Boss Core 是否 BROKEN）。
 

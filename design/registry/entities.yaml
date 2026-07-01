@@ -100,12 +100,13 @@ items:
       - design/gdd/material-economy.md
       - design/gdd/kaiju-part-system.md
       - design/gdd/weapon-system.md
+      - design/gdd/kaiju/01-carapex.md
     category: crafting_material
     tier: core
-    bound_to: armored_part
-    notes: "甲殼核心；由 ARMORED 部位掉落。SOFTENED_STAGGERED 破壞產雙倍。"
+    bound_to: kaiju_carapex
+    notes: "甲殼核心；由甲殼系巨獸（鎧殼獸 CARAPEX）的簽名部位掉落（ARMORED 部位及 BOSS_CORE；NORMAL 部位亦可給少量）。SOFTENED_STAGGERED 破壞產雙倍。"
     added: 2026-07-01
-    revised: ""
+    revised: "2026-07-01"
   - name: core_limb
     status: active
     source: design/gdd/material-economy.md
@@ -113,12 +114,13 @@ items:
       - design/gdd/material-economy.md
       - design/gdd/kaiju-part-system.md
       - design/gdd/weapon-system.md
+      - design/gdd/kaiju/02-lacera.md
     category: crafting_material
     tier: core
-    bound_to: limb_part
-    notes: "肢體核心；由移動型／肢體部位掉落。"
+    bound_to: kaiju_lacera
+    notes: "肢體核心；由肢體系巨獸（刃肢獸 LACERA）的所有簽名部位掉落（NORMAL 肢體、ARMORED 尾甲、BOSS_CORE）。SOFTENED_STAGGERED 破壞產雙倍。"
     added: 2026-07-01
-    revised: ""
+    revised: "2026-07-01"
   - name: core_energy
     status: active
     source: design/gdd/material-economy.md
@@ -126,12 +128,13 @@ items:
       - design/gdd/material-economy.md
       - design/gdd/kaiju-part-system.md
       - design/gdd/weapon-system.md
+      - design/gdd/kaiju/03-voltwyrm.md
     category: crafting_material
     tier: core
-    bound_to: energy_part
-    notes: "能量核心；由發光／能量型部位掉落。"
+    bound_to: kaiju_voltwyrm
+    notes: "能量核心；由能量系巨獸（熾蛇 VOLTWYRM）的所有部位掉落（NORMAL 頸段、ARMORED 護盾、BOSS_CORE）。SOFTENED_STAGGERED 破壞產雙倍。"
     added: 2026-07-01
-    revised: ""
+    revised: "2026-07-01"
   - name: essence_kaiju
     status: active
     source: design/gdd/material-economy.md
