@@ -1,0 +1,17 @@
+{
+    "name": "KaijuBreaker.UI",
+    "rootNamespace": "KaijuBreaker.UI",
+    "references": [
+        "KaijuBreaker.Core",
+        "KaijuBreaker.Content"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

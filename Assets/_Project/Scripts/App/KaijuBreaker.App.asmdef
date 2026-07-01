@@ -1,0 +1,27 @@
+{
+    "name": "KaijuBreaker.App",
+    "rootNamespace": "KaijuBreaker.App",
+    "references": [
+        "KaijuBreaker.Core",
+        "KaijuBreaker.Content",
+        "KaijuBreaker.BulletSim",
+        "KaijuBreaker.Weapons",
+        "KaijuBreaker.KaijuParts",
+        "KaijuBreaker.Economy",
+        "KaijuBreaker.Meta",
+        "KaijuBreaker.Stage",
+        "KaijuBreaker.Difficulty",
+        "KaijuBreaker.Input",
+        "KaijuBreaker.GameFeel",
+        "KaijuBreaker.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

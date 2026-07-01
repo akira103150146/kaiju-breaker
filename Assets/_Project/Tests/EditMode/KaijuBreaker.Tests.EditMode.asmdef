@@ -1,0 +1,32 @@
+{
+    "name": "KaijuBreaker.Tests.EditMode",
+    "rootNamespace": "KaijuBreaker.Tests.EditMode",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "KaijuBreaker.Core",
+        "KaijuBreaker.Content",
+        "KaijuBreaker.Weapons",
+        "KaijuBreaker.KaijuParts",
+        "KaijuBreaker.Economy",
+        "KaijuBreaker.Meta",
+        "KaijuBreaker.Stage",
+        "KaijuBreaker.Difficulty",
+        "KaijuBreaker.GameFeel"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

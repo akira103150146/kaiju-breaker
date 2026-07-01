@@ -1,0 +1,26 @@
+{
+    "name": "KaijuBreaker.Tests.PlayMode",
+    "rootNamespace": "KaijuBreaker.Tests.PlayMode",
+    "references": [
+        "UnityEngine.TestRunner",
+        "KaijuBreaker.Core",
+        "KaijuBreaker.Content",
+        "KaijuBreaker.BulletSim",
+        "KaijuBreaker.Stage",
+        "KaijuBreaker.Input",
+        "KaijuBreaker.App"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

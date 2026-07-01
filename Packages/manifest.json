@@ -1,0 +1,23 @@
+{
+  "_comment_versions": "VERSIONS REQUIRE VERIFICATION. These are plausible estimates for Unity 6.3 (6000.3.x). Open Window > Package Manager after first launch and update each to the version Unity 6.3 resolves. See docs/architecture/architecture.md §9 for known Unity 6.3 API risk areas.",
+  "dependencies": {
+    "com.unity.render-pipelines.universal": "17.3.0",
+    "com.unity.2d.pixel-perfect": "6.0.3",
+    "com.unity.inputsystem": "1.9.0",
+    "com.unity.addressables": "2.3.1",
+    "com.unity.entities": "1.3.2",
+    "com.unity.burst": "1.8.18",
+    "com.unity.collections": "2.5.1",
+    "com.unity.mathematics": "1.3.2",
+    "com.unity.test-framework": "1.4.5",
+    "com.unity.2d.sprite": "1.0.0",
+    "com.unity.2d.animation": "10.1.3",
+    "com.unity.timeline": "1.8.7",
+    "com.unity.ugui": "2.0.0",
+    "com.unity.modules.physics2d": "1.0.0",
+    "com.unity.modules.audio": "1.0.0",
+    "com.unity.modules.animation": "1.0.0",
+    "com.unity.modules.screencapture": "1.0.0",
+    "com.unity.profiling.core": "1.0.2"
+  }
+}

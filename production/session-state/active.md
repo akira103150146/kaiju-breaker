@@ -35,7 +35,7 @@
 - [x] **經濟一致性修正**:核心掉落統一為 Option A(巨獸所有部位皆掉主題核心);MVP 改 L1+M2(解 CARAPEX 單獸升級死結);break_quality 命名統一。技術系統/難度/覆蓋複審全部 PASS
 - [x] **Concept→Pre-Production 閘門 PASS** → 階段推進至 Pre-Production
 - [x] **技術架構 + 5 ADR** `docs/architecture/`(主藍圖 + ADR-0001 彈幕後端 hybrid DOTS/Mono〔Proposed,待效能原型〕/ 0002 事件匯流排 / 0003 SO 資料驅動 / 0004 存檔 / 0005 asmdef 模組)。technical-preferences ADR log/套件/禁用模式已登錄
-- [~] **Unity 專案骨架建置中**(背景;Assets/_Project 結構 + asmdef + manifest,依 ADR-0005)
+- [x] **Unity 專案骨架** `Assets/_Project/`(13 模組 + 2 測試 asmdef、3 anchor stub、manifest、ProjectVersion;依 ADR-0005 模組隔離)
 
 ## Pre-Production 下一步
 - Unity 骨架完成 → commit
