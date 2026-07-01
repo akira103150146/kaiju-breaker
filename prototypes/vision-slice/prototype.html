@@ -217,7 +217,7 @@ function makePart(def){
 
 function makeEnemy(x,y){
   return{x,y,vx:(Math.random()-0.5)*30,vy:26+Math.random()*20,
-    w:18,h:14,hp:45,max:45,fireT:1.8+Math.random()*2.0,alive:true,flash:0,color:'#c0602a'};
+    w:18,h:14,hp:45,max:45,fireT:1.8+Math.random()*2.0,alive:true,flash:0,color:'#c0602a',points:100,escaped:false};
 }
 
 // ---- RESET ----
@@ -237,6 +237,7 @@ function resetGame(){
     shake:0,shX:0,shY:0,flash:0,freeze:0,
     slowMo:1.0,slowT:0,
     matCount:0,counterPop:0,matCombo:0,matComboT:0,
+    score:0,kills:0,
     partsBroken:0,totalParts:bossDef.parts.filter(p=>p.type!=='CORE').length,
     over:false,won:false,
     // stage state
@@ -286,6 +287,8 @@ function spawnDebris(p){
   }
 }
 function spawnEnemyDebris(e){
+  // Called ONLY on a real player kill (never on an off-screen escape) → award score here.
+  G.score=(G.score||0)+(e.points||100);G.kills=(G.kills||0)+1;
   shakeAdd(3);flashAdd(0.2);sfxEnemyDie();
   for(let i=0;i<10;i++){
     const a=Math.random()*Math.PI*2,sp=40+Math.random()*80;
@@ -356,7 +359,7 @@ function winGame(){
     results={
       boss:G.bossDef.id,bossName:G.bossDef.name,
       partsBroken:G.partsBroken,totalParts:G.totalParts,
-      matCount:G.matCount,time:G.startT,fullClear,
+      matCount:G.matCount,score:G.score||0,kills:G.kills||0,time:G.startT,fullClear,
       coreName:G.bossDef.coreName,
     };
     gameState='RESULTS';
@@ -712,7 +715,7 @@ function updateStage(dt){
     e.x+=e.vx*dt;e.y+=e.vy*dt;
     e.flash=Math.max(0,e.flash-dt);
     if(e.x<12||e.x>IW-12)e.vx=-e.vx;
-    if(e.y>IH+30)e.alive=false;
+    if(e.y>IH+30){e.alive=false;e.escaped=true;}// left screen: dies silently, NOT counted as kill/score
     // fire
     if(!G.over){
       e.fireT-=dt;
@@ -752,7 +755,7 @@ function updateStage(dt){
       G._bossEnterTriggered=true;
       G._podCollectedOrTimeout=true;
       // Kill any remaining enemies
-      G.waveEnemies.forEach(e=>e.alive=false);
+      G.waveEnemies.forEach(e=>{e.alive=false;e.escaped=true;});// despawn survivors, no score
       G.ebullets.length=0;
       G.floats.push({x:160,y:200,text:G.bossDef.name+'  出現！',color:'#ff4030',life:2.2,vy:-8,sz:13,bold:true});
       shakeAdd(14);flashAdd(0.7);
@@ -1028,6 +1031,9 @@ function renderHUD(){
   } else {
     ctx.fillText(G.stagePhase==='wave1'?'第一波雜兵':'第二波雜兵',6*S,6*S);
   }
+  // Kill score — only real kills; enemies that fly off-screen are excluded
+  ctx.fillStyle='#c8b060';ctx.font=F(6);ctx.textAlign='left';ctx.textBaseline='top';
+  ctx.fillText('分數 '+(G.score||0),6*S,15*S);
 
   // Top-center: Boss HP bar
   if(G.bossActive){
@@ -1241,6 +1247,7 @@ function renderResults(){
   const lines=[
     {l:'破壞部位',v:`${results.partsBroken} / ${results.totalParts}`,c:'#ffe27a'},
     {l:'素材回收',v:`${results.matCount} 個`,c:COL.mat},
+    {l:'擊殺分數',v:`${results.score||0}（${results.kills||0} 擊殺）`,c:'#c8b060'},
     {l:results.coreName,v:`× ${results.partsBroken} 顆`,c:'#ffd23f'},
     {l:'用時',v:`${results.time.toFixed(1)} 秒`,c:'#8fb0c0'},
     {l:'難度',v:DIFFICULTIES[choice.didx].label,c:'#d0c060'},
@@ -1413,7 +1420,7 @@ G={player:{x:160,y:400,tx:160,ty:400,hp:120,max:120,inv:0,hurtFlash:0,fireT:0},
    floats:[],parts:[],mats:[],stars:[],ebullets:[],pbullets:[],missiles:[],torpedoes:[],clusters:[],
    boss:[],bossDef:{id:'',name:'',nameEn:'',coreName:'',shineWeapon:'',bgColor:'',parts:[],patternType:''},
    t:0,startT:0,shake:0,shX:0,shY:0,flash:0,freeze:0,slowMo:1,slowT:0,
-   matCount:0,counterPop:0,matCombo:0,matComboT:0,
+   matCount:0,counterPop:0,matCombo:0,matComboT:0,score:0,kills:0,
    partsBroken:0,totalParts:0,over:false,won:false,
    ws:makeWS(),pidx:0,sidx:0,l3Charging:false,l3Charge:0,l3Cooldown:0,l3Wave:null,
    stageT:0,stagePhase:'wave1',waveEnemies:[],weaponPod:null,bossActive:false,
