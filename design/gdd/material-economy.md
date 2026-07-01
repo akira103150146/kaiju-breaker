@@ -36,23 +36,23 @@
 |---------|------|------|----------|------|
 | `shard_common` | 通用碎片 | Common Shard | 任何部位破壞均掉落 | 所有武器 Tier 0→1、1→2、2→3 均需消耗 |
 
-#### 層級二：部位核心 (Part Cores)
+#### 層級二：巨獸核心 (Kaiju Cores)
 
-核心素材與被破壞的**部位類型**直接綁定，實現〔破壞即獎勵〕支柱中「掉落綁定被破壞的部位」的設計判準。
+核心素材與**被狩獵巨獸的主題**直接綁定（非通用部位類型）：每隻巨獸的簽名部位（ARMORED 部位 + BOSS_CORE；NORMAL 部位可給少量）掉落該巨獸主題的核心。這實現〔破壞即獎勵〕支柱，並形成怪獵式「農特定巨獸換特定核心」的狩獵黏著——你想升哪些武器，就決定去打哪隻巨獸。
 
-| 素材 ID | 名稱 | 英文 | 掉落來源（部位類型） | 綁定武器（需此核心才能升 Tier 1→2 及 2→3） |
+| 素材 ID | 名稱 | 英文 | 掉落來源（巨獸主題） | 綁定武器（需此核心才能升 Tier 1→2 及 2→3） |
 |---------|------|------|--------------------|--------------------------------------------|
-| `core_carapace` | 甲殼核心 | Carapace Core | 強化部位（Armored Part） | L1 散波雷射、M2 蜂群飛彈、M4 叢集炸彈 |
-| `core_limb` | 四肢核心 | Limb Core | 普通部位（Normal Part） | L2 集束雷射、L4 穿透雷射、M1 追蹤飛彈 |
-| `core_energy` | 能量核心 | Energy Core | 核心部位（Boss Core Part） | L3 波動砲、M3 穿甲魚雷 |
+| `core_carapace` | 甲殼核心 | Carapace Core | 甲殼系巨獸（鎧殼獸 CARAPEX） | L1 散波雷射、M2 蜂群飛彈、M4 叢集炸彈 |
+| `core_limb` | 四肢核心 | Limb Core | 肢體系巨獸（刃肢獸 LACERA） | L2 集束雷射、L4 穿透雷射、M1 追蹤飛彈 |
+| `core_energy` | 能量核心 | Energy Core | 能量系巨獸（熾蛇 VOLTWYRM） | L3 波動砲、M3 穿甲魚雷 |
 
 **核心-武器綁定邏輯（身份對齊）**：
 
 | 核心類型 | 綁定武器 | 邏輯依據 |
 |---------|---------|---------|
-| 甲殼核心（強化部位） | L1、M2、M4 | 散射廣覆蓋、蜂群飽和、叢集炸彈 — 三種武器均以廣域攻勢施壓裝甲，與甲殼核心的來源吻合 |
-| 四肢核心（普通部位） | L2、L4、M1 | 集束精準、穿透縱列、追蹤鎖定 — 精準或機動導向武器，與四肢/活動部位的機動特性互映 |
-| 能量核心（核心部位） | L3、M3 | 波動震盪、穿甲引爆 — 高爆發/狀態依賴武器，與巨獸核心部位的能量屬性吻合 |
+| 甲殼核心（甲殼系巨獸） | L1、M2、M4 | 散射廣覆蓋、蜂群飽和、叢集炸彈 — 廣域壓迫武器，與甲殼系巨獸的厚重壓迫戰鬥風格互映 |
+| 四肢核心（肢體系巨獸） | L2、L4、M1 | 集束精準、穿透縱列、追蹤鎖定 — 精準/機動導向武器，與肢體系巨獸的高速多動部位互映 |
+| 能量核心（能量系巨獸） | L3、M3 | 波動震盪、穿甲引爆 — 高爆發/狀態依賴武器，與能量系巨獸的護盾-彈幕屬性互映 |
 
 #### 層級三：精魄 (Essence)
 
@@ -64,7 +64,7 @@
 
 ### C.2 素材掉落規則 (Drop Rules)
 
-掉落由上游系統 `kaiju-part-system.md` 的 `on_part_break(part_id, part_type, break_state)` 事件觸發。
+掉落由上游系統 `kaiju-part-system.md` 的 `on_part_break(part_id, part_type, break_quality, drop_table_id, ...)` 事件觸發（`break_quality ∈ {NORMAL, SOFTENED, SOFTENED_STAGGERED}`，決定本次品質等級）。
 
 #### 部位破壞品質 (Break Quality)
 
@@ -81,7 +81,7 @@
 | 輸出 | Standard | Precision | Perfect | 備注 |
 |------|----------|-----------|---------|------|
 | `shard_common` | `shard_base × 1.0` | `shard_base × shard_precision_mult` | `shard_base × shard_perfect_mult` | 四捨五入取整（`floor`） |
-| 對應核心（見 C.1） | 1 個 | 1 個 | 2 個（若 `core_perfect_double_drop = TRUE`） | 部位類型不符則 0；僅在 Perfect 時觸發雙核心 |
+| 對應核心（見 C.1） | 1 個 | 1 個 | 2 個（若 `core_perfect_double_drop = TRUE`） | 僅該巨獸的簽名部位（ARMORED + BOSS_CORE）產核心，其餘部位為 0；僅在 Perfect 時觸發雙核心 |
 | `essence_kaiju` | — | — | — | 不在此處掉落；僅於結算階段由全破壞條件觸發 |
 
 #### 結算獎勵 (End-of-Hunt Bonus)
@@ -97,9 +97,9 @@
 |------|----------------|------|
 | `shard_common`（每破壞） | 2–4 個 / 次（依品質 1.0–2.0× 倍率） | 平均 Precision：3 個/次；4 部位/場 ≈ 12 碎片/場基線 |
 | `shard_completeness_bonus` | +5 個 / 全破壞場 | 全破壞率 55% 估算 ≈ 2.75 額外碎片/場 |
-| `core_carapace` | 1 個 / 強化部位破壞 | 裝甲型巨獸：2 個/場 |
-| `core_limb` | 1 個 / 普通部位破壞 | 敏捷型巨獸：3 個/場 |
-| `core_energy` | 1 個 / 核心部位破壞 | 能量型�iju：2 個/場 |
+| `core_carapace` | 1 個 / CARAPEX 簽名部位破壞 | 僅狩獵甲殼系 CARAPEX 時產出：~2–3 個/場 |
+| `core_limb` | 1 個 / LACERA 簽名部位破壞 | 僅狩獵肢體系 LACERA 時產出：~2–3 個/場 |
+| `core_energy` | 1 個 / VOLTWYRM 簽名部位破壞 | 僅狩獵能量系 VOLTWYRM 時產出：~2–3 個/場 |
 | `essence_kaiju` | 1 個 / 全破壞結算 | 55% 全破壞率估算 ≈ 0.55 精魄/場 |
 
 **預期獲取次數（每層材稀有度）**：
@@ -217,20 +217,23 @@ quality_shard_mult = {
 }
 ```
 
-**部位核心產量**：
+**巨獸核心產量**：
 ```
-core_type = part_type_to_core_map[part_type]
-// 映射：NORMAL_PART    → core_limb
-//       ARMORED_PART   → core_carapace
-//       BOSS_CORE_PART → core_energy
+core_type = kaiju_theme_to_core_map[kaiju.theme]
+// 映射：甲殼系（CARAPEX）  → core_carapace
+//       肢體系（LACERA）   → core_limb
+//       能量系（VOLTWYRM） → core_energy
+// 核心僅由該巨獸的簽名部位產出（is_core_bearing = ARMORED 或 BOSS_CORE）：
 
-if core_perfect_double_drop AND break_state == SOFTENED_STAGGERED:
+if not part.is_core_bearing:
+    core_yield = 0            // 非簽名部位不產核心（僅產 shard_common）
+elif core_perfect_double_drop AND break_quality == SOFTENED_STAGGERED:
     core_yield = 2
 else:
-    core_yield = 1   // Standard 與 Precision 品質均給 1 核心（非 0，避免挫折感）
+    core_yield = 1            // Standard 與 Precision 品質均給 1 核心（非 0，避免挫折感）
 ```
 
-> 注意：NORMAL_break 的 Standard 品質仍給 1 核心——最低有 1 核心掉落確保無零懲罰。核心數量的差異（1 vs 2）只在 Perfect 品質時才出現，激勵但不強制技術完美。
+> 注意：簽名部位（ARMORED + BOSS_CORE）在 Standard 品質仍給 1 核心——確保無零懲罰。核心數量差異（1 vs 2）只在 Perfect 品質時出現，激勵但不強制技術完美。**每隻巨獸只產出自己主題的單一核心種類**（怪獵式定向農刷——想集齊多種核心必須交替狩獵不同巨獸）。
 
 **結算精魄獎勵**：
 ```
@@ -277,10 +280,11 @@ avg_shards_per_hunt = parts_per_hunt × shard_base × quality_shard_mult_avg
                     = 4 × 2 × 1.5 + 0.55 × 5
                     = 12 + 2.75 ≈ 14.75 碎片/場
 
-avg_core_per_hunt:
-    core_limb      ≈ 2.0  （2 普通部位各給 1 核心，Precision 品質基準）
-    core_carapace  ≈ 1.0  （1 強化部位）
-    core_energy    ≈ 1.0  （1 核心部位）
+avg_core_per_hunt（依所狩獵巨獸的主題，一場只產該主題核心）：
+    狩獵 CARAPEX  → core_carapace ≈ 2.0  （簽名部位：1 強化背甲炮 + 1 核心，Precision 基準）
+    狩獵 LACERA   → core_limb     ≈ 2.0  （簽名部位：1 強化尾甲 + 1 核心）
+    狩獵 VOLTWYRM → core_energy    ≈ 2.5  （簽名部位較多：2 能量護盾 + 1 核心）
+    // 跨核心需交替狩獵不同巨獸——單場狩獵不會同時產出多種核心
 avg_essence_per_hunt ≈ 0.55  （全破壞率 × 1 精魄）
 ```
 
