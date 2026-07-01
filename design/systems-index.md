@@ -75,7 +75,8 @@
 | ~~P0~~ ✅ | ~~S7 HUD/UI · S6 輸入 · S9 彈幕引擎~~ **完成** → `gdd/hud-ui-system.md` · `input-system.md` · `bullet-system.md` | — | — |
 | ~~P1~~ ✅ | ~~S10 存檔/元進度系統~~ **完成** → `gdd/meta-progression-system.md` | — | — |
 | ~~P1~~ ✅ | ~~美術聖經~~ **完成** → `design/art-bible.md` | — | — |
-| **下一步** | **全域一致性複審 → 進 Pre-Production 閘門** | 所有 MVP 系統 GDD + 內容 + 美術 + 存檔皆完整,該做跨文件複審再決定進架構期 | 進 Pre-Production |
+| ~~複審~~ ✅ | ~~全域一致性複審~~ **完成** → 揪出並修好經濟阻斷叢集(核心掉落模型統一 Option A、MVP L1+M2);技術/難度/覆蓋全 PASS | — |
+| **下一步** | **進 Pre-Production:`/gate-check` → 建 Unity 專案 → `/create-architecture` / ADR** | 設計凍結完整且一致,可開始架構期(彈幕引擎 DOTS/MonoBehaviour 之 ADR、部位系統實作) | 架構期 |
 | **P1** | **S6 輸入系統 GDD** | 概念未解風險:觸控彈幕手感是否成立;影響手機主平台 | 手機可玩性驗證、原型觸控路徑 |
 | **P1** | **S7 HUD/UI 完整 GDD** | 武器 HUD、雙槽顯示、loadout 選擇、素材計數 | 玩家決策可讀性、養成回饋 |
 | **P2** | **S9 彈幕引擎 GDD** | 攻擊模式已在巨獸文件定義,底層物件池/效能屬架構期 | 手機彈幕效能(概念最高技術風險) |
