@@ -18,10 +18,10 @@
 | S4 | **關卡系統 (Stage System)** | `gdd/stage-system.md` | ✅ 草稿完整 | 手作波段池隨機重組、6 種雜兵、武器莢艙掉落、3 關、四難度密度 |
 | C1 | **巨獸內容 (Kaiju Roster)** | `gdd/kaiju/01–03` | ✅ 首批 3 隻 | CARAPEX(甲殼/教學) · LACERA(肢體/移動) · VOLTWYRM(能量/彈幕) |
 | S5 | **難度系統 (Difficulty System)** | `gdd/difficulty-system.md` | ✅ 草稿完整 | 四階(D1 普通/D2 困難/D3 極限/D4 惡夢)只縮放彈幕密度/雜兵數;TTB 與武器輸出跨難度不變(阻斷驗收) |
-| S6 | **輸入系統 (Input System)** | — | ⬜ 缺 GDD | 雙輸入(觸控 + 鍵鼠/手柄);觸控彈幕手感 = 概念未解風險 |
-| S7 | **HUD / UI 系統** | — | ⬜ 缺 GDD | 武器 HUD、熱量/破甲槽、素材計數、loadout 選擇、軟化提示可讀性(阻斷 #4 一部分在此) |
+| S6 | **輸入系統 (Input System)** | `gdd/input-system.md` | ✅ 草稿完整 | 雙輸入(觸控 Sky Force 拖曳偏移 + 鍵鼠/手柄);觸控手感仍待專屬原型驗證 |
+| S7 | **HUD / UI 系統** | `gdd/hud-ui-system.md` | ✅ 草稿完整 | world-space 部位血條、武器 HUD、素材計數、loadout/升級/難度三畫面、手機安全區 |
 | S8 | **VFX / SFX / 打擊感 (Game Feel)** | `gdd/game-feel.md` | ✅ 草稿完整 | juice:hitstop 115ms、慢動作、螢幕震動(≤24px 護欄)、軟化簽章(#FF6600 ≤0.5s 可辨,解阻斷 #4)、破部位爆發;含 reduce-motion 開關 |
-| S9 | **子彈/彈幕引擎 (Bullet System)** | — | ⬜ 缺 GDD | 彈幕生成/物件池/可讀性;巨獸攻擊模式已定義,底層技術待架構期 |
+| S9 | **子彈/彈幕引擎 (Bullet System)** | `gdd/bullet-system.md` | ✅ 草稿完整 | 物件池、資料驅動彈幕 DSL、DOTS/Burst 效能策略、單點判定、可讀性護欄;手機 1000 彈@60fps 待引擎驗證 |
 | S10 | **存檔/loadout 元系統 (Meta & Save)** | 部分於 S3 | ◻ 部分 | 跨輪永久進度、loadout 選擇、存檔;部分規則已在 material-economy |
 
 圖例:✅ 草稿完整 / ◻ 部分涵蓋 / ⬜ 缺 GDD
@@ -71,7 +71,9 @@
 |------|-----------|----------|----------|
 | ~~P0~~ ✅ | ~~S8 遊戲手感 + 軟化提示可讀性~~ → `gdd/game-feel.md` **完成**(hitstop/慢動作/螢幕震動 juice + #FF6600 軟化簽章解阻斷 #4) | — | — |
 | ~~P0~~ ✅ | ~~S5 難度系統 GDD~~ → `gdd/difficulty-system.md` **完成**(四階密度縮放 + 跨難度不變驗收) | — | — |
-| **P0(新)** | **S7 HUD/UI 完整 GDD** | game-feel 已定義部位上的軟化簽章,但武器 HUD、雙槽顯示、loadout 選擇、素材計數仍缺 | 玩家決策可讀性 |
+| ~~P0~~ ✅ | ~~S7 HUD/UI · S6 輸入 · S9 彈幕引擎~~ **完成** → `gdd/hud-ui-system.md` · `input-system.md` · `bullet-system.md` | — | — |
+| **P1(新)** | **S10 存檔/loadout 元系統 GDD** | 跨輪永久進度、存檔格式、防竄改 | 進度保存、安全 |
+| **P1(新)** | **美術聖經 `/art-bible`** | 多份 GDD 引用像素規格、#FF6600、落點圓環等美術規格佔位 | 資產生產 |
 | **P1** | **S6 輸入系統 GDD** | 概念未解風險:觸控彈幕手感是否成立;影響手機主平台 | 手機可玩性驗證、原型觸控路徑 |
 | **P1** | **S7 HUD/UI 完整 GDD** | 武器 HUD、雙槽顯示、loadout 選擇、素材計數 | 玩家決策可讀性、養成回饋 |
 | **P2** | **S9 彈幕引擎 GDD** | 攻擊模式已在巨獸文件定義,底層物件池/效能屬架構期 | 手機彈幕效能(概念最高技術風險) |

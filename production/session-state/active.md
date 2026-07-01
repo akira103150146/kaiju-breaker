@@ -25,6 +25,10 @@
 - [x] 跨文件對齊:核心素材改「巨獸主題綁定」;registry 註冊 5 素材;部位數上限放寬到 8
 - [x] **難度系統 GDD** `gdd/difficulty-system.md`(四階密度縮放、跨難度 TTB/輸出不變驗收)
 - [x] **遊戲手感 GDD** `gdd/game-feel.md`(hitstop/慢動作/螢幕震動 juice — 導演指定;#FF6600 軟化簽章解阻斷 #4;reduce-motion 開關;引擎 API 對齊 Unity)
+- [x] **HUD/UI GDD** `gdd/hud-ui-system.md`(world-space 部位血條、三元介面畫面、手機安全區)
+- [x] **輸入系統 GDD** `gdd/input-system.md`(Sky Force 拖曳偏移觸控、鍵鼠、手柄;觸控手感待專屬原型)
+- [x] **彈幕系統 GDD** `gdd/bullet-system.md`(物件池、彈幕 DSL、DOTS/Burst、單點判定、可讀性護欄)
+- [~] **展示原型建置中**(導演要求看成果)→ `prototypes/vision-slice/`
 
 ## Key Decisions
 - 5 pillars locked;武器雙軌骨架(雷射蓄熱軟化→飛彈破甲擊破)
