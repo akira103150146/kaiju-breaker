@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-07-01"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -77,7 +77,74 @@ entities: []
 # Attribute fields: value_gold, weight, stackable, category, and any stat
 #   modifiers that another system (e.g., economy, crafting) might reference.
 
-items: []
+items:
+  # ─ Materials (素材) — faucet: on_part_break; sink: permanent weapon upgrades ─
+  # Source of truth: material-economy.md. Bound to broken kaiju parts (pillar 破壞即獎勵).
+  - name: shard_common
+    status: active
+    source: design/gdd/material-economy.md
+    referenced_by:
+      - design/gdd/material-economy.md
+      - design/gdd/kaiju-part-system.md   # dropped via on_part_break drop_table_id
+      - design/gdd/weapon-system.md        # sink: weapon tier upgrades
+    category: crafting_material
+    tier: common
+    bound_to: any_part
+    notes: "通用碎片；任何部位破壞皆產出。產出倍率隨 break_quality（NORMAL/SOFTENED/SOFTENED_STAGGERED = 1×/1.5×/2×）。"
+    added: 2026-07-01
+    revised: ""
+  - name: core_carapace
+    status: active
+    source: design/gdd/material-economy.md
+    referenced_by:
+      - design/gdd/material-economy.md
+      - design/gdd/kaiju-part-system.md
+      - design/gdd/weapon-system.md
+    category: crafting_material
+    tier: core
+    bound_to: armored_part
+    notes: "甲殼核心；由 ARMORED 部位掉落。SOFTENED_STAGGERED 破壞產雙倍。"
+    added: 2026-07-01
+    revised: ""
+  - name: core_limb
+    status: active
+    source: design/gdd/material-economy.md
+    referenced_by:
+      - design/gdd/material-economy.md
+      - design/gdd/kaiju-part-system.md
+      - design/gdd/weapon-system.md
+    category: crafting_material
+    tier: core
+    bound_to: limb_part
+    notes: "肢體核心；由移動型／肢體部位掉落。"
+    added: 2026-07-01
+    revised: ""
+  - name: core_energy
+    status: active
+    source: design/gdd/material-economy.md
+    referenced_by:
+      - design/gdd/material-economy.md
+      - design/gdd/kaiju-part-system.md
+      - design/gdd/weapon-system.md
+    category: crafting_material
+    tier: core
+    bound_to: energy_part
+    notes: "能量核心；由發光／能量型部位掉落。"
+    added: 2026-07-01
+    revised: ""
+  - name: essence_kaiju
+    status: active
+    source: design/gdd/material-economy.md
+    referenced_by:
+      - design/gdd/material-economy.md
+      - design/gdd/kaiju-part-system.md
+      - design/gdd/weapon-system.md
+    category: crafting_material
+    tier: essence
+    bound_to: full_clear
+    notes: "巨獸精華；僅在一輪內破壞該巨獸全部位（full-clear）時產出。Tier 2→3 升級必需。"
+    added: 2026-07-01
+    revised: ""
 
 # Example:
 #
