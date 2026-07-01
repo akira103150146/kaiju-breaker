@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<!--
+  PROTOTYPE - NOT FOR PRODUCTION
+  Question: 破壞巨獸部位的那一下「爽」嗎？爽到玩家會主動去破第二、第三個部位，而不是直接殺核心衝過關？
+  Date: 2026-07-01
+  Game: 殲獸戰機 / KAIJU BREAKER — concept prototype (break-part feel)
+
+  HOW TO READ THIS PROTOTYPE
+  - 巨獸「打核心(中央發光弱點)就能贏」。三個部位(左翼炮/左莢艙/右翼炮)是【可選】的。
+  - 我們要測的就是：明明能直接殺，你還會不會想去拆部位？
+  - 結束畫面會顯示「破壞部位 X/3」——那就是這次原型要捕捉的可證偽信號。
+  - 操作：滑鼠/手指移動戰機，自動射擊向上。按 R 或點擊重來。
+  - 刻意不驗證：閃避手感、武器多樣性、升級系統（那些之後在引擎裡測）。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>KAIJU BREAKER — 破部位爽感原型</title>
+<style>
+  html,body{margin:0;height:100%;background:#05060d;overflow:hidden;
+    font-family:monospace;-webkit-user-select:none;user-select:none;touch-action:none;}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+  canvas{image-rendering:pixelated;image-rendering:crisp-edges;cursor:crosshair;
+    box-shadow:0 0 40px #0ad6ff22, 0 0 4px #000;}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="cv"></canvas></div>
+<script>
+"use strict";
+// ============================================================
+// PROTOTYPE - NOT FOR PRODUCTION  (break-part feel)
+// All values hardcoded. No architecture. Throwaway by design.
+// ============================================================
+
+const IW = 240, IH = 360;            // internal (low-res) resolution -> pixel-arcade look
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const buf = document.createElement('canvas'); buf.width = IW; buf.height = IH;
+const bx = buf.getContext('2d');
+let scale = 2;
+
+// ---- color palette (visual rule: cool = you/safe/tech, warm = threat) ----
+const COL = {
+  bg:      '#070912',
+  player:  '#39e7ff',
+  playerHi:'#d8fbff',
+  pbullet: '#7df9ff',
+  judge:   '#ffffff',
+  ebullet: '#ff5a3c',   // warm = danger
+  ebulletHi:'#ffd089',
+  bodyDark:'#3a2740',
+  body:    '#5e3450',
+  partA:   '#c45a8a',   // sickly warm flesh
+  partB:   '#b0683f',
+  partC:   '#c0455f',
+  core:    '#ffd23f',   // glowing weak point (warm gold)
+  coreHi:  '#fff6c8',
+  mat:     '#62f0d8',   // material = cool tech green-cyan
+  warn:    '#ff2d2d',
+};
+
+// ------------------------------------------------------------------
+// Audio (Web Audio synth — created on first user gesture)
+// ------------------------------------------------------------------
+let AC = null, master = null;
+function ensureAudio(){
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  try {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain(); master.gain.value = 0.5; master.connect(AC.destination);
+  } catch(e){ AC = null; }
+}
+function noiseBuffer(dur){
+  const n = Math.floor(AC.sampleRate * dur);
+  const b = AC.createBuffer(1, n, AC.sampleRate);
+  const d = b.getChannelData(0);
+  for (let i=0;i<n;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/n, 1.8);
+  return b;
+}
+function sfxBreak(pitch){            // BIG payoff — the core of the test
+  if(!AC) return; const t = AC.currentTime; pitch = pitch || 1;
+  // sub boom
+  const o1 = AC.createOscillator(), g1 = AC.createGain();
+  o1.type='sine'; o1.frequency.setValueAtTime(220*pitch, t);
+  o1.frequency.exponentialRampToValueAtTime(42, t+0.30);
+  g1.gain.setValueAtTime(0.7, t); g1.gain.exponentialRampToValueAtTime(0.001, t+0.40);
+  o1.connect(g1).connect(master); o1.start(t); o1.stop(t+0.42);
+  // crunch noise
+  const n = AC.createBufferSource(); n.buffer = noiseBuffer(0.32);
+  const ng = AC.createGain(); ng.gain.setValueAtTime(0.8, t); ng.gain.exponentialRampToValueAtTime(0.001, t+0.32);
+  const flt = AC.createBiquadFilter(); flt.type='bandpass'; flt.frequency.value = 900*pitch; flt.Q.value=0.8;
+  n.connect(flt).connect(ng).connect(master); n.start(t); n.stop(t+0.32);
+  // metallic ring-down
+  const o2 = AC.createOscillator(), g2 = AC.createGain();
+  o2.type='square'; o2.frequency.setValueAtTime(660*pitch, t);
+  o2.frequency.exponentialRampToValueAtTime(180*pitch, t+0.25);
+  g2.gain.setValueAtTime(0.12, t); g2.gain.exponentialRampToValueAtTime(0.001, t+0.28);
+  o2.connect(g2).connect(master); o2.start(t); o2.stop(t+0.3);
+}
+function sfxWarn(){                  // part about to break — builds anticipation
+  if(!AC) return; const t=AC.currentTime;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type='triangle'; o.frequency.setValueAtTime(520, t); o.frequency.linearRampToValueAtTime(880, t+0.12);
+  g.gain.setValueAtTime(0.0, t); g.gain.linearRampToValueAtTime(0.18, t+0.02); g.gain.exponentialRampToValueAtTime(0.001, t+0.16);
+  o.connect(g).connect(master); o.start(t); o.stop(t+0.18);
+}
+function sfxMat(combo){              // material shard lands
+  if(!AC) return; const t=AC.currentTime;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type='square'; o.frequency.setValueAtTime(700 + combo*40, t);
+  o.frequency.linearRampToValueAtTime(1200 + combo*60, t+0.06);
+  g.gain.setValueAtTime(0.10, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.10);
+  o.connect(g).connect(master); o.start(t); o.stop(t+0.11);
+}
+function sfxHurt(){
+  if(!AC) return; const t=AC.currentTime;
+  const n=AC.createBufferSource(); n.buffer=noiseBuffer(0.18);
+  const g=AC.createGain(); g.gain.setValueAtTime(0.35,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+  const f=AC.createBiquadFilter(); f.type='lowpass'; f.frequency.value=700;
+  n.connect(f).connect(g).connect(master); n.start(t); n.stop(t+0.18);
+}
+let lastTick = 0;
+function sfxTick(){                  // soft per-hit tick, throttled so auto-fire isn't a machine gun
+  if(!AC) return; const t=AC.currentTime;
+  if (t - lastTick < 0.045) return; lastTick = t;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type='square'; o.frequency.value = 1500 + Math.random()*300;
+  g.gain.setValueAtTime(0.018, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.03);
+  o.connect(g).connect(master); o.start(t); o.stop(t+0.035);
+}
+function sfxWin(){
+  if(!AC) return; const t0=AC.currentTime; const notes=[523,659,784,1047];
+  notes.forEach((f,i)=>{ const t=t0+i*0.10;
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type='triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.0,t); g.gain.linearRampToValueAtTime(0.22,t+0.02); g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+    o.connect(g).connect(master); o.start(t); o.stop(t+0.36);
+  });
+}
+
+// ------------------------------------------------------------------
+// Game state
+// ------------------------------------------------------------------
+let G;
+const COUNTER_W = {x: 224, y: 12};   // material counter position (world coords)
+
+function makeBoss(){
+  // Targets live in distinct horizontal bands so player X = target selection.
+  // Core is directly killable (= win) -> breaking parts stays OPTIONAL (the choice we measure).
+  return [
+    {key:'core', name:'核心 CORE', x:120, y:56, w:42, h:46, hp:600, max:600, alive:true,
+       hue:COL.core, isCore:true, fireT:1.2, flash:0, warned:false},
+    {key:'lc', name:'左翼炮', x:42, y:104, w:40, h:30, hp:200, max:200, alive:true,
+       hue:COL.partA, isCore:false, fireT:1.4, flash:0, warned:false},
+    {key:'lp', name:'左莢艙', x:80, y:82, w:26, h:24, hp:160, max:160, alive:true,
+       hue:COL.partB, isCore:false, fireT:1.7, flash:0, warned:false},
+    {key:'rc', name:'右翼炮', x:198, y:104, w:40, h:30, hp:220, max:220, alive:true,
+       hue:COL.partC, isCore:false, fireT:1.5, flash:0, warned:false},
+  ];
+}
+
+function reset(){
+  G = {
+    over:false, won:false,
+    t:0, startT:0, ended:false,
+    player:{x:120, y:300, tx:120, ty:300, hp:120, max:120, inv:0, fireT:0, hurtFlash:0},
+    boss: makeBoss(),
+    pbullets:[], ebullets:[], parts:[], mats:[],
+    floats:[], stars:[],
+    shake:0, shX:0, shY:0, flash:0, freeze:0,
+    matCount:0, counterPop:0, matCombo:0, matComboT:0,
+    partsBroken:0,
+    hint:5.0,
+  };
+  for(let i=0;i<40;i++) G.stars.push({x:Math.random()*IW, y:Math.random()*IH, s:0.4+Math.random()*1.0, sz:Math.random()<0.3?2:1});
+}
+
+// ------------------------------------------------------------------
+// Spawners / FX
+// ------------------------------------------------------------------
+function shakeAdd(a){ G.shake = Math.max(G.shake, a); }
+function flashAdd(a){ G.flash = Math.max(G.flash, a); }
+
+function spawnHitSpark(x,y,color){
+  for(let i=0;i<3;i++){
+    const a=Math.random()*Math.PI*2, sp=20+Math.random()*40;
+    G.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp - 10,life:0.18+Math.random()*0.12,max:0.3,
+      sz:1, color:color, grav:80});
+  }
+}
+
+function breakPart(p){
+  p.alive = false;
+  G.partsBroken++;
+  // ---- HITSTOP + SHAKE + FLASH : the payoff ----
+  G.freeze = 95;
+  shakeAdd(9 + G.partsBroken*0.6);
+  flashAdd(0.85);
+  sfxBreak(1.0 - (p.w/120) + 0.4);
+  // ---- debris burst (chunks of the part fly off) ----
+  const n = 26 + Math.floor(p.w);
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=40+Math.random()*150;
+    G.parts.push({x:p.x+(Math.random()-0.5)*p.w, y:p.y+(Math.random()-0.5)*p.h,
+      vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 30,
+      life:0.5+Math.random()*0.7, max:1.2, sz:Math.random()<0.4?3:2,
+      color: Math.random()<0.5? p.hue : (Math.random()<0.5?'#fff1c0':'#ff8a4a'), grav:160});
+  }
+  // a few big charred chunks that linger
+  for(let i=0;i<4;i++){
+    const a=Math.random()*Math.PI*2, sp=30+Math.random()*70;
+    G.parts.push({x:p.x, y:p.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40,
+      life:0.9+Math.random()*0.5, max:1.4, sz:4, color:'#2a1a22', grav:200});
+  }
+  // ---- material shards pop out and home to the counter (closes the reward loop) ----
+  const mc = 5 + Math.floor(Math.random()*3);
+  for(let i=0;i<mc;i++){
+    const a=Math.random()*Math.PI*2, sp=50+Math.random()*60;
+    G.mats.push({x:p.x, y:p.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40, phase:'burst', t:0.30+Math.random()*0.15});
+  }
+  // ---- floating callout ----
+  G.floats.push({x:p.x, y:p.y-8, text:'部位破壞！', color:'#ffe27a', life:1.0, vy:-22, sz:9, bold:true});
+  G.floats.push({x:p.x, y:p.y+6, text:'＋素材', color:COL.mat, life:1.1, vy:-14, sz:7});
+}
+
+function winGame(){
+  G.won = true; G.over = true; G.ended = true;
+  G.freeze = 200; shakeAdd(18); flashAdd(1.0); sfxWin();
+  // chain-shatter any remaining live parts for a finale
+  G.boss.forEach(p=>{ if(p.alive && !p.isCore){
+    p.alive=false;
+    for(let i=0;i<24;i++){ const a=Math.random()*Math.PI*2, sp=60+Math.random()*180;
+      G.parts.push({x:p.x,y:p.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-40,life:0.6+Math.random()*0.8,max:1.4,
+        sz:Math.random()<0.4?3:2,color:p.hue,grav:160});}
+  }});
+  // big core burst
+  const core = G.boss[0];
+  for(let i=0;i<80;i++){ const a=Math.random()*Math.PI*2, sp=50+Math.random()*220;
+    G.parts.push({x:core.x,y:core.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:0.7+Math.random()*1.0,max:1.7,
+      sz:Math.random()<0.5?3:2,color:Math.random()<0.5?COL.core:'#fff',grav:60});}
+}
+
+// ------------------------------------------------------------------
+// Update
+// ------------------------------------------------------------------
+function update(dt, fxDt){
+  // ---- effects always decay on real time (animate even during hitstop) ----
+  G.shake = Math.max(0, G.shake - fxDt*38);
+  G.flash = Math.max(0, G.flash - fxDt*2.4);
+  if (G.shake>0.4){ G.shX=(Math.random()*2-1)*G.shake; G.shY=(Math.random()*2-1)*G.shake; }
+  else { G.shX=0; G.shY=0; }
+  G.counterPop = Math.max(0, G.counterPop - fxDt*4);
+  if (G.matComboT>0){ G.matComboT-=fxDt; if(G.matComboT<=0) G.matCombo=0; }
+  // floats animate on fxDt so payoff text pops instantly
+  for(let i=G.floats.length-1;i>=0;i--){ const f=G.floats[i]; f.y+=f.vy*fxDt; f.life-=fxDt; if(f.life<=0) G.floats.splice(i,1); }
+  // stars scroll always
+  for(const s of G.stars){ s.y += s.s*18*fxDt*(dt>0?1:0.3); if(s.y>IH){ s.y=0; s.x=Math.random()*IW; } }
+
+  if (dt<=0) return;   // frozen (hitstop): entities don't sim
+  G.t += dt;
+  if (!G.ended) G.startT += dt;
+
+  // ---- player follow ----
+  const pl = G.player;
+  pl.x += (pl.tx - pl.x) * Math.min(1, dt*18);
+  pl.y += (pl.ty - pl.y) * Math.min(1, dt*18);
+  pl.x = Math.max(8, Math.min(IW-8, pl.x));
+  pl.y = Math.max(160, Math.min(IH-12, pl.y));
+  if (pl.inv>0) pl.inv-=dt;
+  if (pl.hurtFlash>0) pl.hurtFlash-=dt;
+
+  // ---- player auto-fire ----
+  if (!G.over){
+    pl.fireT -= dt;
+    if (pl.fireT<=0){ pl.fireT = 0.09;
+      G.pbullets.push({x:pl.x-2, y:pl.y-8, vy:-440});
+      G.pbullets.push({x:pl.x+2, y:pl.y-8, vy:-440});
+    }
+  }
+  // ---- player bullets ----
+  for(let i=G.pbullets.length-1;i>=0;i--){ const b=G.pbullets[i]; b.y += b.vy*dt;
+    if (b.y<-8){ G.pbullets.splice(i,1); continue; }
+    // hit first live target whose AABB it overlaps
+    for(const p of G.boss){ if(!p.alive) continue;
+      if (b.x > p.x-p.w/2 && b.x < p.x+p.w/2 && b.y > p.y-p.h/2 && b.y < p.y+p.h/2){
+        p.hp -= 5; p.flash = 0.12; spawnHitSpark(b.x, p.y+p.h/2, '#fff'); sfxTick();
+        // anticipation: warn once when entering danger zone
+        if (!p.warned && p.hp <= p.max*0.30 && p.hp>0){ p.warned=true; if(!p.isCore) sfxWarn(); }
+        if (p.hp<=0){ if(p.isCore) winGame(); else breakPart(p); }
+        G.pbullets.splice(i,1); break;
+      }
+    }
+  }
+
+  // ---- boss fire (sparse; context only, not a dodge gauntlet) ----
+  if (!G.over){
+    for(const p of G.boss){ if(!p.alive) continue;
+      p.fireT -= dt;
+      if (p.fireT<=0){
+        p.fireT = p.isCore ? 1.7 : 1.5 + Math.random()*0.6;
+        const ang = Math.atan2(pl.y - p.y, pl.x - p.x);
+        if (p.isCore){ // small 3-fan
+          for(let k=-1;k<=1;k++){ const a=ang + k*0.28;
+            G.ebullets.push({x:p.x,y:p.y+p.h/2,vx:Math.cos(a)*80,vy:Math.sin(a)*80,r:3}); }
+        } else {
+          G.ebullets.push({x:p.x,y:p.y+p.h/2,vx:Math.cos(ang)*70,vy:Math.sin(ang)*70,r:2.5});
+        }
+      }
+      if (p.flash>0) p.flash-=dt;
+    }
+  }
+  // ---- enemy bullets + player collision (hitbox = the judgment dot) ----
+  for(let i=G.ebullets.length-1;i>=0;i--){ const b=G.ebullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
+    if (b.y>IH+8||b.y<-8||b.x<-8||b.x>IW+8){ G.ebullets.splice(i,1); continue; }
+    if (!G.over && pl.inv<=0){
+      const dx=b.x-pl.x, dy=b.y-pl.y;
+      if (dx*dx+dy*dy < (b.r+2.2)*(b.r+2.2)){
+        pl.hp -= 12; pl.inv=0.8; pl.hurtFlash=0.4; shakeAdd(4); sfxHurt();
+        G.ebullets.splice(i,1);
+        if (pl.hp<=0){ pl.hp=pl.max; flashAdd(0.5); // forgiving: refill, no game over (dodge isn't the test)
+          G.floats.push({x:pl.x,y:pl.y-14,text:'護盾重啟',color:COL.player,life:1.0,vy:-18,sz:7}); }
+        continue;
+      }
+    }
+  }
+
+  // ---- debris/spark particles ----
+  for(let i=G.parts.length-1;i>=0;i--){ const p=G.parts[i];
+    p.vy += p.grav*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt;
+    if (p.life<=0) G.parts.splice(i,1);
+  }
+  // ---- material shards: burst then home to counter ----
+  for(let i=G.mats.length-1;i>=0;i--){ const m=G.mats[i];
+    if (m.phase==='burst'){ m.vy += 120*dt; m.x+=m.vx*dt; m.y+=m.vy*dt; m.t-=dt; if(m.t<=0) m.phase='home'; }
+    else { const dx=COUNTER_W.x-m.x, dy=COUNTER_W.y-m.y, d=Math.hypot(dx,dy);
+      const sp=320; m.x+=dx/d*sp*dt; m.y+=dy/d*sp*dt;
+      if (d<6){ G.matCount++; G.counterPop=1; G.matCombo++; G.matComboT=0.6; sfxMat(G.matCombo); G.mats.splice(i,1); }
+    }
+  }
+}
+
+// ------------------------------------------------------------------
+// Render
+// ------------------------------------------------------------------
+function drawBody(){
+  // decorative connecting mass (NOT a target) behind the parts
+  bx.fillStyle = COL.bodyDark;
+  bx.fillRect(30, 30, 180, 66);
+  bx.fillStyle = COL.body;
+  bx.fillRect(40, 38, 160, 48);
+  // dark vents
+  bx.fillStyle = '#241726';
+  for(let i=0;i<5;i++) bx.fillRect(60+i*24, 44, 10, 30);
+}
+function drawPart(p){
+  if (!p.alive){ // charred stump where a part used to be
+    bx.fillStyle = '#211019';
+    bx.fillRect(p.x-p.w/2+3, p.y-p.h/2+3, p.w-6, p.h-6);
+    return;
+  }
+  const lowFrac = p.hp/p.max;
+  // about-to-break vibration + glow
+  let ox=0, oy=0;
+  if (lowFrac<0.30){ const j=(0.30-lowFrac)*10; ox=(Math.random()*2-1)*j; oy=(Math.random()*2-1)*j; }
+  bx.save(); bx.translate(ox,oy);
+  // body of part
+  bx.fillStyle = p.hue;
+  bx.fillRect(p.x-p.w/2, p.y-p.h/2, p.w, p.h);
+  if (p.isCore){
+    // pulsing weak-point glow
+    const pulse = 0.5+0.5*Math.sin(G.t*6);
+    bx.fillStyle = COL.coreHi;
+    const ir = 8+pulse*4;
+    bx.beginPath(); bx.arc(p.x, p.y, ir, 0, Math.PI*2); bx.fill();
+    bx.fillStyle = COL.core;
+    bx.beginPath(); bx.arc(p.x, p.y, ir*0.55, 0, Math.PI*2); bx.fill();
+  } else {
+    // muzzle detail
+    bx.fillStyle = '#1c0f16';
+    bx.fillRect(p.x-3, p.y+p.h/2-3, 6, 5);
+  }
+  // danger overlay when low
+  if (lowFrac<0.30){
+    bx.fillStyle = 'rgba(255,40,40,'+(0.25+0.25*Math.sin(G.t*22))+')';
+    bx.fillRect(p.x-p.w/2, p.y-p.h/2, p.w, p.h);
+  }
+  // hit flash
+  if (p.flash>0){ bx.fillStyle='rgba(255,255,255,'+Math.min(0.85,p.flash*7)+')';
+    bx.fillRect(p.x-p.w/2, p.y-p.h/2, p.w, p.h); }
+  bx.restore();
+  // HP bar under part
+  const bw=p.w, bh=2;
+  bx.fillStyle='#000'; bx.fillRect(p.x-bw/2, p.y+p.h/2+2, bw, bh);
+  bx.fillStyle = lowFrac<0.30? COL.warn : (p.isCore?COL.core:'#ff9b6a');
+  bx.fillRect(p.x-bw/2, p.y+p.h/2+2, bw*Math.max(0,lowFrac), bh);
+}
+
+function render(){
+  // ---- world to low-res buffer ----
+  bx.fillStyle = COL.bg; bx.fillRect(0,0,IW,IH);
+  // stars
+  for(const s of G.stars){ bx.fillStyle = s.sz>1?'#2a3a66':'#18203a'; bx.fillRect(s.x|0, s.y|0, s.sz, s.sz); }
+
+  drawBody();
+  for(const p of G.boss) drawPart(p);
+
+  // material shards (cool squares)
+  for(const m of G.mats){ bx.fillStyle = COL.mat; bx.fillRect((m.x-1)|0,(m.y-1)|0,3,3);
+    bx.fillStyle='#bffff0'; bx.fillRect(m.x|0,m.y|0,1,1); }
+
+  // debris/spark particles
+  for(const p of G.parts){ const a=Math.max(0,p.life/p.max);
+    bx.globalAlpha = a; bx.fillStyle=p.color; bx.fillRect((p.x-p.sz/2)|0,(p.y-p.sz/2)|0,p.sz,p.sz); }
+  bx.globalAlpha = 1;
+
+  // enemy bullets (warm, readable: bright core + outline)
+  for(const b of G.ebullets){
+    bx.fillStyle = COL.ebullet; bx.beginPath(); bx.arc(b.x,b.y,b.r+1,0,Math.PI*2); bx.fill();
+    bx.fillStyle = COL.ebulletHi; bx.beginPath(); bx.arc(b.x,b.y,b.r-0.5,0,Math.PI*2); bx.fill();
+  }
+  // player bullets (cool)
+  bx.fillStyle = COL.pbullet;
+  for(const b of G.pbullets) bx.fillRect((b.x-1)|0, (b.y)|0, 2, 6);
+
+  // player ship
+  const pl = G.player;
+  if (!G.over){
+    const blink = pl.inv>0 && (Math.floor(G.t*30)%2===0);
+    if (!blink){
+      bx.fillStyle = pl.hurtFlash>0 ? COL.warn : COL.player;
+      // arrow/fighter shape
+      bx.beginPath();
+      bx.moveTo(pl.x, pl.y-8);
+      bx.lineTo(pl.x-6, pl.y+6);
+      bx.lineTo(pl.x, pl.y+3);
+      bx.lineTo(pl.x+6, pl.y+6);
+      bx.closePath(); bx.fill();
+      bx.fillStyle = COL.playerHi; bx.fillRect(pl.x-1, pl.y-6, 2, 6);
+      // engine flame
+      bx.fillStyle = '#9beaff'; bx.fillRect(pl.x-2, pl.y+6, 4, 3+(Math.random()*2|0));
+      // judgment dot — always lit one pixel (visual anchor)
+      bx.fillStyle = COL.judge; bx.fillRect((pl.x)|0, (pl.y)|0, 1, 1);
+    }
+  }
+
+  // ---- blit buffer to main canvas with shake offset ----
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.drawImage(buf, Math.round(G.shX*scale), Math.round(G.shY*scale), IW*scale, IH*scale);
+
+  // ---- white flash ----
+  if (G.flash>0){ ctx.fillStyle='rgba(255,255,255,'+Math.min(0.9,G.flash)+')'; ctx.fillRect(0,0,cv.width,cv.height); }
+  // ---- damage vignette ----
+  if (pl.hurtFlash>0){ ctx.fillStyle='rgba(255,40,40,'+(pl.hurtFlash*0.5)+')';
+    ctx.fillRect(0,0,cv.width,6*scale); ctx.fillRect(0,cv.height-6*scale,cv.width,6*scale);
+    ctx.fillRect(0,0,6*scale,cv.height); ctx.fillRect(cv.width-6*scale,0,6*scale,cv.height); }
+
+  // ============ HUD (crisp, on main canvas) ============
+  const F = (n)=> Math.round(n*scale)+'px monospace';
+  // player HP bar (bottom-left)
+  ctx.fillStyle='#000'; ctx.fillRect(6*scale, (IH-10)*scale, 70*scale, 5*scale);
+  ctx.fillStyle = pl.hp/pl.max<0.3 ? COL.warn : COL.player;
+  ctx.fillRect(6*scale, (IH-10)*scale, 70*scale*Math.max(0,pl.hp/pl.max), 5*scale);
+  ctx.fillStyle='#7fb8c8'; ctx.font=F(6); ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText('SHIP', 6*scale, (IH-18)*scale);
+
+  // material counter (top-right) with pop
+  const cpop = 1 + G.counterPop*0.6;
+  ctx.save();
+  ctx.translate(COUNTER_W.x*scale, COUNTER_W.y*scale);
+  ctx.scale(cpop, cpop);
+  ctx.fillStyle = COL.mat; ctx.fillRect(-22*scale, -6*scale, 5*scale, 5*scale);  // icon
+  ctx.fillStyle = '#d8fff6'; ctx.font=F(10); ctx.textAlign='right'; ctx.textBaseline='middle';
+  ctx.fillText(String(G.matCount), 0, 0);
+  ctx.restore();
+  ctx.fillStyle='#5fae9e'; ctx.font=F(5); ctx.textAlign='right'; ctx.textBaseline='top';
+  ctx.fillText('素材', COUNTER_W.x*scale, (COUNTER_W.y+7)*scale);
+
+  // parts-broken tracker (top-left) — the signal we care about
+  ctx.fillStyle='#caa6c0'; ctx.font=F(7); ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText('破壞部位 '+G.partsBroken+'/3', 6*scale, 6*scale);
+
+  // floating callouts
+  for(const f of G.floats){
+    const a=Math.min(1,f.life*1.4);
+    ctx.globalAlpha=a; ctx.fillStyle=f.color; ctx.font=F(f.sz||7);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    if(f.bold){ ctx.fillStyle='#000'; ctx.fillText(f.text, (f.x)*scale+1, (f.y)*scale+1); ctx.fillStyle=f.color; }
+    ctx.fillText(f.text, f.x*scale, f.y*scale);
+  }
+  ctx.globalAlpha=1;
+
+  // intro hint (fades)
+  if (G.hint>0 && !G.over){
+    ctx.globalAlpha=Math.min(1,G.hint);
+    ctx.fillStyle='#8fb0c0'; ctx.font=F(6); ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText('滑鼠/手指移動 · 自動射擊 · 打核心就贏 — 但你想拆部位嗎？', cv.width/2, cv.height-22*scale);
+  }
+  ctx.globalAlpha=1;
+
+  // ============ WIN overlay (= data capture for the playtest) ============
+  if (G.won){
+    ctx.fillStyle='rgba(5,6,14,0.78)'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.textAlign='center';
+    ctx.fillStyle=COL.core; ctx.font=F(16); ctx.textBaseline='middle';
+    ctx.fillText('巨獸殲滅', cv.width/2, cv.height*0.30);
+    ctx.fillStyle='#d8fbff'; ctx.font=F(9);
+    ctx.fillText('破壞部位　'+G.partsBroken+' / 3', cv.width/2, cv.height*0.45);
+    ctx.fillText('回收素材　'+G.matCount, cv.width/2, cv.height*0.52);
+    ctx.fillText('用時　'+G.startT.toFixed(1)+'s', cv.width/2, cv.height*0.59);
+    // a tiny reflective nudge tied to the hypothesis
+    ctx.fillStyle='#8fb0c0'; ctx.font=F(6);
+    const msg = G.partsBroken>=2 ? '你選擇了狩獵，而不只是擊殺。' :
+                G.partsBroken===1 ? '你拆了一個——還想再拆嗎？' :
+                                    '你直接衝核心過關了。下次想試拆部位嗎？';
+    ctx.fillText(msg, cv.width/2, cv.height*0.68);
+    ctx.fillStyle=COL.player; ctx.font=F(8);
+    ctx.fillText('按 R 或點擊　再戰一次', cv.width/2, cv.height*0.80);
+  }
+}
+
+// ------------------------------------------------------------------
+// Main loop
+// ------------------------------------------------------------------
+let last = 0;
+function frame(ts){
+  const rawDt = last ? (ts-last)/1000 : 0; last = ts;
+  const fxDt = Math.min(rawDt, 0.05);
+  let dt = fxDt;
+  if (G.freeze>0){ G.freeze -= fxDt*1000; dt = 0; }   // hitstop: freeze sim, keep fx alive
+  update(dt, fxDt);
+  render();
+  requestAnimationFrame(frame);
+}
+
+// ------------------------------------------------------------------
+// Input
+// ------------------------------------------------------------------
+function setTargetFromEvent(e){
+  const rect = cv.getBoundingClientRect();
+  const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
+  G.player.tx = (cx/rect.width) * IW;
+  G.player.ty = (cy/rect.height) * IH;
+}
+function onPointer(e){ ensureAudio(); if(G.over) return; setTargetFromEvent(e); e.preventDefault(); }
+window.addEventListener('mousemove', onPointer, {passive:false});
+window.addEventListener('touchmove', onPointer, {passive:false});
+window.addEventListener('touchstart', onPointer, {passive:false});
+window.addEventListener('mousedown', (e)=>{ ensureAudio(); if(G.over){ reset(); } });
+window.addEventListener('keydown', (e)=>{ if(e.key==='r'||e.key==='R'){ ensureAudio(); reset(); } });
+
+function resize(){
+  const sW = Math.floor(window.innerWidth / IW);
+  const sH = Math.floor(window.innerHeight / IH);
+  scale = Math.max(1, Math.min(sW, sH));
+  if (scale < 1) scale = Math.min(window.innerWidth/IW, window.innerHeight/IH);
+  cv.width = IW*scale; cv.height = IH*scale;
+  cv.style.width = cv.width+'px'; cv.style.height = cv.height+'px';
+}
+window.addEventListener('resize', resize);
+
+resize();
+reset();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
