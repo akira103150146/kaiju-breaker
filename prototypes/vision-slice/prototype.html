@@ -691,7 +691,7 @@ function update(dt,fxDt){
   if(G.weaponPod){
     const pd=G.weaponPod;
     pd.bobT=(pd.bobT||0)+dt;
-    if(pd.vy>0){pd.y+=pd.vy*dt;if(pd.y>210)pd.vy=0;}
+    if(pd.vy>0){pd.y+=pd.vy*dt;if(pd.y>330)pd.vy=0;}
     if(Math.hypot(pl.x-pd.x,pl.y-pd.y)<22){
       sfxPickup();
       if(pd.isPrimary){G.pidx=pd.idx;
@@ -729,14 +729,14 @@ function updateStage(dt){
   }
 
   // Wave 1 cleared → spawn wave 2
-  if(G.stagePhase==='wave1'&&alive===0&&!G._wave2Spawned&&G.stageT>1){
+  if(G.stagePhase==='wave1'&&((alive===0&&G.stageT>1)||G.stageT>6)&&!G._wave2Spawned){
     G._wave2Spawned=true;
     G.floats.push({x:160,y:240,text:'雜兵波 2 / 2',color:'#ff8040',life:1.5,vy:-10,sz:9,bold:true});
     setTimeout(()=>spawnWave(2),600);
   }
 
   // Wave 2 cleared → spawn weapon pod
-  if(G.stagePhase==='wave2'&&alive===0&&!G._podSpawned&&G.stageT>3){
+  if(G.stagePhase==='wave2'&&((alive===0&&G.stageT>3)||G.stageT>10)&&!G._podSpawned){
     G._podSpawned=true;
     const isPrimary=Math.random()<0.5;
     let idx;
@@ -747,7 +747,7 @@ function updateStage(dt){
   }
 
   // Pod collected or 6s timeout after pod spawned → enter boss
-  if(G._podSpawned&&(G._podCollectedOrTimeout||G.weaponPod===null||G.stageT>9)){
+  if((G._podSpawned&&(G._podCollectedOrTimeout||G.weaponPod===null||G.stageT>9))||G.stageT>13){
     if(!G._bossEnterTriggered){
       G._bossEnterTriggered=true;
       G._podCollectedOrTimeout=true;
