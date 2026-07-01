@@ -102,11 +102,11 @@ on_weapon_pod_pickup(weapon_id):
 | 武器 | 起始狀態 | 理由 |
 |------|---------|------|
 | **L1 散波雷射（Spread Laser）** | Owned（預設 Loadout 主武器）| 新手友善廣覆蓋；MVP 核心武器 |
-| **M1 追蹤飛彈（Homing Missile）** | Owned（預設 Loadout 副武器）| 新手友善自動追蹤；MVP 核心武器 |
+| **M2 蜂群飛彈（Swarm Launcher）** | Owned（預設 Loadout 副武器）| 新手友善廣域齊發；與 L1 同綁 `core_carapace`，MVP 於 CARAPEX 單獸即可升級 |
 | L2、L3、L4 | Locked | 場地發現首次解鎖 |
-| M2、M3、M4 | Locked | 場地發現首次解鎖 |
+| M1、M3、M4 | Locked | 場地發現首次解鎖 |
 
-> **對應 `material-economy.md` G.4 MVP 配置**：`active_weapon_pool: {L1, M1}` 直接對應此起始狀態。MVP 場地只掉落 L1 / M1 莢艙；其餘 6 格在 Loadout 畫面顯示「更多武器開發中」（`hud-ui-system.md` J.6）。
+> **對應 `material-economy.md` G.4 MVP 配置**：`active_weapon_pool: {L1, M2}` 直接對應此起始狀態。L1 與 M2 均綁定 `core_carapace`，故 MVP 只打 CARAPEX（掉 core_carapace）即可把兩把武器升至 Tier 2。MVP 場地只掉落 L1 / M2 莢艙；其餘 6 格在 Loadout 畫面顯示「更多武器開發中」（`hud-ui-system.md` J.6）。
 
 #### C.2.4 所有權對 Loadout 的影響
 
@@ -347,8 +347,8 @@ while running:
 
 ```
 // on_part_break 事件被觸發的同一幀內執行：
-materials["shard_common"]       += compute_shard_yield(break_state)    // D.1 公式
-materials[core_type(kaiju_id)]  += compute_core_yield(part_type, break_state)
+materials["shard_common"]       += compute_shard_yield(break_quality)    // D.1 公式
+materials[core_type(kaiju_id)]  += compute_core_yield(part_type, break_quality)
 kaiju_records[kaiju_id].parts_ever_broken.add(part_id)
 enqueue_save(deep_copy(current_save_state))    // 非同步排入寫入佇列
 ```
@@ -470,10 +470,10 @@ permanent_inventory[m]  ←  permanent_inventory[m]  +  yield(m, event, ctx)
 yield(m, event, ctx) =
 
   // 情況 1：部位破壞即時入帳（material-economy.md D.1 計算結果）
-  floor(shard_base × quality_mult[ctx.break_state])
+  floor(shard_base × quality_mult[ctx.break_quality])
       if event = on_part_break  ∧  m = shard_common
 
-  core_yield(ctx.part_type, ctx.break_state)
+  core_yield(ctx.part_type, ctx.break_quality)
       if event = on_part_break  ∧  m = core_type(ctx.kaiju_id)
       // core_type 映射：CARAPEX→core_carapace，LACERA→core_limb，VOLTWYRM→core_energy
       // 僅簽名部位（ARMORED / BOSS_CORE）產核心；NORMAL 部位核心產量 = 0
@@ -497,7 +497,7 @@ yield(m, event, ctx) =
 | `permanent_inventory[m]` | int | [0, ∞) | 玩家對素材 m 的永久持有量（存檔 `materials[id]`）|
 | `m` | enum | {shard_common, core_carapace, core_limb, core_energy, essence_kaiju} | 素材類型（定義於 `material-economy.md` C.1）|
 | `event` | enum | {on_part_break, on_hunt_end} | 觸發入帳的遊戲事件 |
-| `ctx.break_state` | enum | {NORMAL, SOFTENED, SOFTENED_STAGGERED} | 部位被破壞時的狀態；影響 shard 倍率 |
+| `ctx.break_quality` | enum | {NORMAL, SOFTENED, SOFTENED_STAGGERED} | 部位被破壞時的狀態；影響 shard 倍率 |
 | `ctx.part_type` | enum | {NORMAL_PART, ARMORED_PART, BOSS_CORE_PART} | 決定是否產核心 |
 | `ctx.kaiju_id` | enum | {CARAPEX, LACERA, VOLTWYRM, ...} | 決定核心種類 |
 | `ctx.all_broken` | bool | {true, false} | 本場狩獵結束時是否全部位均已破壞 |
@@ -505,7 +505,7 @@ yield(m, event, ctx) =
 | `quality_mult` | float | {1.0, 1.5, 2.0} | 品質倍率：NORMAL=1.0 / SOFTENED=1.5 / SOFTENED_STAGGERED=2.0 |
 | `shard_completeness_bonus` | int | [3, 10] | 全破壞結算碎片獎勵（預設 5）|
 | `essence_per_full_clear` | int | {1, 2} | 全破壞結算精魄數（預設 1）|
-| `core_yield(part_type, break_state)` | int | {0, 1, 2} | 核心產量：非簽名部位=0；Standard/Precision=1；Perfect=2（`core_perfect_double_drop=true` 時）|
+| `core_yield(part_type, break_quality)` | int | {0, 1, 2} | 核心產量：非簽名部位=0；Standard/Precision=1；Perfect=2（`core_perfect_double_drop=true` 時）|
 
 **輸出範圍**：`permanent_inventory[m]` 無上界（unbounded above）；下界 0。素材只因武器升級消耗而減少，永不為負（升級前置條件驗證）。
 
@@ -640,7 +640,7 @@ if NOT weapons[last_loadout.secondary].owned:
 | **difficulty-system.md** | 雙向 | 對應 `remember_last_difficulty` 設計（讀取 last_selected_difficulty 預填 UI）| `meta.last_selected_difficulty`（玩家每輪確認後寫入）|
 | **hud-ui-system.md** | 服務（提供資料）| 升級確認事件；Loadout 確認事件；難度確認事件；設定變更事件 | `weapons[*]`（Tier 徽章、鎖定狀態）；`materials[*]`（庫存顯示）；`kaiju_records[*]`（完成度顯示）；`settings[*]`（設定還原）|
 | **stage-system.md** | 單向（訂閱事件）| `on_weapon_pod_pickup(weapon_id, is_first_time)` 事件 | `weapons[*].owned`（場地系統查詢以決定 is_first_time 旗標）|
-| **kaiju-part-system.md** | 單向（訂閱事件）| `on_part_break(part_id, part_type, break_state, kaiju_id, ...)` 事件（帶入 yield 參數）| `kaiju_records[*].parts_ever_broken`（供巨獸 UI 讀取完成度）|
+| **kaiju-part-system.md** | 單向（訂閱事件）| `on_part_break(part_id, part_type, break_quality, kaiju_id, ...)` 事件（帶入 yield 參數）| `kaiju_records[*].parts_ever_broken`（供巨獸 UI 讀取完成度）|
 
 **本系統訂閱的關鍵事件簽名（待跨系統確認）**：
 
@@ -649,7 +649,7 @@ if NOT weapons[last_loadout.secondary].owned:
 on_part_break(
     part_id:       string,
     part_type:     PartType,         // NORMAL_PART | ARMORED_PART | BOSS_CORE_PART
-    break_state:   BreakState,       // NORMAL | SOFTENED | SOFTENED_STAGGERED
+    break_quality:   BreakQuality,       // NORMAL | SOFTENED | SOFTENED_STAGGERED
     kaiju_id:      string,
     shard_yield:   int,              // material-economy.md D.1 計算結果
     core_yield:    int               // 同上
@@ -727,7 +727,7 @@ on_weapon_upgrade_confirmed(
 ### H.2 材料入帳公式正確性（功能性 — 阻斷）
 
 - [ ] 自動化測試：`tests/unit/save/material_credit_formula_test.[ext]`，覆蓋：
-  - 3 break_state × 3 part_type × 3 kaiju = 27 種部位破壞基本情境
+  - 3 break_quality × 3 part_type × 3 kaiju = 27 種部位破壞基本情境
   - `on_hunt_end(all_broken=true)` → 精魄 + 碎片獎勵數值正確
   - `on_hunt_end(all_broken=false)` → 精魄 = 0，完成度碎片 = 0
   - 連續 4 次部位破壞 → `materials[*]` 累加值正確，無截斷 / 溢位
@@ -758,7 +758,7 @@ on_weapon_upgrade_confirmed(
 
 ### H.7 難度與 Loadout 預填（功能性）
 
-- [ ] 首次啟動：難度預選 D1；Loadout 預選 L1 + M1（對應 `difficulty-system.md` G.2 `default_difficulty_on_first_launch = D1`）。
+- [ ] 首次啟動：難度預選 D1；Loadout 預選 L1 + M2（對應 `difficulty-system.md` G.2 `default_difficulty_on_first_launch = D1`）。
 - [ ] 完成一輪後返回主選單：難度預填為上輪選擇；Loadout 預填上次選擇的武器。
 - [ ] 自動化測試：`tests/unit/save/last_selection_persistence_test.[ext]`，覆蓋首次啟動 / 一輪後 / 兩輪切換難度後三種情境。
 

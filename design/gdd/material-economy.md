@@ -4,7 +4,7 @@
 *文件路徑: design/gdd/material-economy.md*
 *最後更新: 2026-07-01*
 *狀態: Draft*
-*相依概念文件: design/gdd/game-concept.md | design/gdd/weapon-system.md | design/gdd/kaiju-part-system.md（待撰寫）*
+*相依概念文件: design/gdd/game-concept.md | design/gdd/weapon-system.md | design/gdd/kaiju-part-system.md*
 
 ---
 
@@ -38,7 +38,7 @@
 
 #### 層級二：巨獸核心 (Kaiju Cores)
 
-核心素材與**被狩獵巨獸的主題**直接綁定（非通用部位類型）：每隻巨獸的簽名部位（ARMORED 部位 + BOSS_CORE；NORMAL 部位可給少量）掉落該巨獸主題的核心。這實現〔破壞即獎勵〕支柱，並形成怪獵式「農特定巨獸換特定核心」的狩獵黏著——你想升哪些武器，就決定去打哪隻巨獸。
+核心素材與**被狩獵巨獸的主題**直接綁定（非通用部位類型）：每隻巨獸的**所有可破壞部位**（NORMAL/ARMORED/BOSS_CORE 皆可）破壞時，除通用碎片外均額外掉落該巨獸主題的核心 ×1（Perfect 破壞 ×2）。這實現〔破壞即獎勵〕支柱，並形成怪獵式「農特定巨獸換特定核心」的狩獵黏著——你想升哪些武器，就決定去打哪隻巨獸。
 
 | 素材 ID | 名稱 | 英文 | 掉落來源（巨獸主題） | 綁定武器（需此核心才能升 Tier 1→2 及 2→3） |
 |---------|------|------|--------------------|--------------------------------------------|
@@ -81,7 +81,7 @@
 | 輸出 | Standard | Precision | Perfect | 備注 |
 |------|----------|-----------|---------|------|
 | `shard_common` | `shard_base × 1.0` | `shard_base × shard_precision_mult` | `shard_base × shard_perfect_mult` | 四捨五入取整（`floor`） |
-| 對應核心（見 C.1） | 1 個 | 1 個 | 2 個（若 `core_perfect_double_drop = TRUE`） | 僅該巨獸的簽名部位（ARMORED + BOSS_CORE）產核心，其餘部位為 0；僅在 Perfect 時觸發雙核心 |
+| 對應核心（見 C.1） | 1 個 | 1 個 | 2 個（若 `core_perfect_double_drop = TRUE`） | 該巨獸任一部位破壞均產 1 主題核心；僅在 Perfect 時觸發雙核心 |
 | `essence_kaiju` | — | — | — | 不在此處掉落；僅於結算階段由全破壞條件觸發 |
 
 #### 結算獎勵 (End-of-Hunt Bonus)
@@ -97,9 +97,9 @@
 |------|----------------|------|
 | `shard_common`（每破壞） | 2–4 個 / 次（依品質 1.0–2.0× 倍率） | 平均 Precision：3 個/次；4 部位/場 ≈ 12 碎片/場基線 |
 | `shard_completeness_bonus` | +5 個 / 全破壞場 | 全破壞率 55% 估算 ≈ 2.75 額外碎片/場 |
-| `core_carapace` | 1 個 / CARAPEX 簽名部位破壞 | 僅狩獵甲殼系 CARAPEX 時產出：~2–3 個/場 |
-| `core_limb` | 1 個 / LACERA 簽名部位破壞 | 僅狩獵肢體系 LACERA 時產出：~2–3 個/場 |
-| `core_energy` | 1 個 / VOLTWYRM 簽名部位破壞 | 僅狩獵能量系 VOLTWYRM 時產出：~2–3 個/場 |
+| `core_carapace` | 1 個 / CARAPEX 任一部位破壞 | 僅狩獵甲殼系 CARAPEX 時產出：~4 個/全破場 |
+| `core_limb` | 1 個 / LACERA 任一部位破壞 | 僅狩獵肢體系 LACERA 時產出：~5–6 個/全破場 |
+| `core_energy` | 1 個 / VOLTWYRM 任一部位破壞 | 僅狩獵能量系 VOLTWYRM 時產出：~7 個/全破場 |
 | `essence_kaiju` | 1 個 / 全破壞結算 | 55% 全破壞率估算 ≈ 0.55 精魄/場 |
 
 **預期獲取次數（每層材稀有度）**：
@@ -159,9 +159,9 @@
 | 素材 | 總量 | 來源 |
 |------|------|------|
 | 通用碎片 | 360 | 所有部位破壞（通用） |
-| 甲殼核心（L1、M2、M4 各 13） | 39 | 強化部位（Armored Parts） |
-| 四肢核心（L2、L4、M1 各 13） | 39 | 普通部位（Normal Parts） |
-| 能量核心（L3、M3 各 13） | 26 | 核心部位（Boss Core Parts） |
+| 甲殼核心（L1、M2、M4 各 13） | 39 | 甲殼系巨獸 CARAPEX 的任一部位（全部位皆產） |
+| 四肢核心（L2、L4、M1 各 13） | 39 | 肢體系巨獸 LACERA 的任一部位（全部位皆產） |
+| 能量核心（L3、M3 各 13） | 26 | 能量系巨獸 VOLTWYRM 的任一部位（全部位皆產） |
 | 巨獸精魄（每把武器各 1） | 8 | 全破壞結算（任何巨獸） |
 
 ### C.5 素材循環圖：水龍頭（Faucets）與水槽（Sinks）
@@ -169,9 +169,9 @@
 ```
 【水龍頭 Faucets — 唯一素材來源】
   部位破壞事件（on_part_break）
-  ├─ 普通部位（Normal Part）    → 通用碎片（品質加乘）+ 四肢核心
-  ├─ 強化部位（Armored Part）   → 通用碎片（品質加乘）+ 甲殼核心
-  ├─ 核心部位（Boss Core Part） → 通用碎片（品質加乘）+ 能量核心
+  ├─ 普通部位（Normal Part）   → 通用碎片（品質加乘）+ 巨獸主題核心
+  ├─ 強化部位（Armored Part）  → 通用碎片（品質加乘）+ 巨獸主題核心
+  ├─ 核心部位（Boss Core）     → 通用碎片（品質加乘）+ 巨獸主題核心
   └─ 全破壞結算（All Broken）   → 碎片完成獎勵 + 巨獸精魄
 
 【玩家庫存 Inventory — 永久持有，無上限，跨局不丟失】
@@ -190,13 +190,13 @@
 
 不同巨獸的部位組成不同，使特定核心集中於特定巨獸，自然推動玩家根據升級目標選擇狩獵對象。
 
-| 巨獸類型（示例） | 部位組成 | 主要核心產出 | 適合升級的武器 |
-|----------------|---------|------------|--------------|
-| **裝甲型巨獸** (Armored Kaiju) | 2 強化 + 1 普通 + 1 核心 | 甲殼核心 × 2/場 | L1、M2、M4 |
-| **敏捷型巨獸** (Agile Kaiju) | 3 普通 + 1 核心 | 四肢核心 × 3/場 | L2、L4、M1 |
-| **能量型巨獸** (Energy Kaiju) | 1 強化 + 1 普通 + 2 核心 | 能量核心 × 2/場 | L3、M3 |
+| 巨獸 | 部位組成 | 核心來源 | 核心產出（Precision 全破基準）| 適合升級的武器 |
+|------|---------|---------|------------------------|--------------|
+| **甲殼系 CARAPEX** | 2 普通（左/右大顎）+ 1 強化（背甲炮）+ 1 核心（胸口核心）| 全部位（4）| 甲殼核心 × ~4/全破場 | L1、M2、M4 |
+| **肢體系 LACERA** | 4 普通（4 肢）+ 1 強化（尾甲）+ 1 核心（頭核）| 全部位（6）| 四肢核心 × ~5–6/全破場 | L2、L4、M1 |
+| **能量系 VOLTWYRM** | 4 普通（頸段×4）+ 2 強化（護盾×2）+ 1 核心（核心節）| 全部位（7）| 能量核心 × ~7/全破場 | L3、M3 |
 
-> 此表為示例框架；每隻具名巨獸的精確部位組成由 `kaiju-part-system.md` 定義。**核心設計意圖**：你想升什麼武器，就決定你去打哪隻怪獸，以及你需要破哪種部位。素材循環與 loadout 選擇深度連結，獎勵多元狩獵策略而非單一路線農刷。
+> 每隻具名巨獸的精確部位組成由 `kaiju-part-system.md` 定義。**核心設計意圖**：你想升什麼武器，就決定你去打哪隻怪獸。核心由該巨獸的**所有部位**產出（NORMAL 部位同樣貢獻核心，直接服務〔破壞即獎勵〕——每次破壞都有核心回報）。素材循環與 loadout 選擇深度連結，獎勵多元狩獵策略而非單一路線農刷。
 
 ---
 
@@ -204,16 +204,16 @@
 
 ### D.1 素材產量公式 (Material Yield Formula)
 
-每次 `on_part_break(part_id, part_type, break_state)` 事件觸發時執行：
+每次 `on_part_break(part_id, kaiju_id, part_type, world_position, drop_table_id, break_quality, adjacency_list, is_chain_break)` 事件觸發時執行：
 
 **通用碎片產量**：
 ```
-shard_yield = floor(shard_base × quality_shard_mult[break_state])
+shard_yield = floor(shard_base × quality_shard_mult[break_quality])
 
 quality_shard_mult = {
-    NORMAL_break:             1.0,
-    SOFTENED_break:           shard_precision_mult,      // 預設 1.5
-    SOFTENED_STAGGERED_break: shard_perfect_mult,        // 預設 2.0
+    NORMAL:             1.0,
+    SOFTENED:           shard_precision_mult,      // 預設 1.5
+    SOFTENED_STAGGERED: shard_perfect_mult,        // 預設 2.0
 }
 ```
 
@@ -223,17 +223,15 @@ core_type = kaiju_theme_to_core_map[kaiju.theme]
 // 映射：甲殼系（CARAPEX）  → core_carapace
 //       肢體系（LACERA）   → core_limb
 //       能量系（VOLTWYRM） → core_energy
-// 核心僅由該巨獸的簽名部位產出（is_core_bearing = ARMORED 或 BOSS_CORE）：
+// 該巨獸的任一可破壞部位（NORMAL/ARMORED/BOSS_CORE）皆產出其主題核心 ×1（Perfect ×2）：
 
-if not part.is_core_bearing:
-    core_yield = 0            // 非簽名部位不產核心（僅產 shard_common）
-elif core_perfect_double_drop AND break_quality == SOFTENED_STAGGERED:
+if core_perfect_double_drop AND break_quality == SOFTENED_STAGGERED:
     core_yield = 2
 else:
     core_yield = 1            // Standard 與 Precision 品質均給 1 核心（非 0，避免挫折感）
 ```
 
-> 注意：簽名部位（ARMORED + BOSS_CORE）在 Standard 品質仍給 1 核心——確保無零懲罰。核心數量差異（1 vs 2）只在 Perfect 品質時出現，激勵但不強制技術完美。**每隻巨獸只產出自己主題的單一核心種類**（怪獵式定向農刷——想集齊多種核心必須交替狩獵不同巨獸）。
+> 注意：任一部位在 Standard 品質仍給 1 核心——確保無零懲罰。核心數量差異（1 vs 2）只在 Perfect 品質時出現，激勵但不強制技術完美。**每隻巨獸只產出自己主題的單一核心種類**（怪獵式定向農刷——想集齊多種核心必須交替狩獵不同巨獸）。
 
 **結算精魄獎勵**：
 ```
@@ -280,11 +278,12 @@ avg_shards_per_hunt = parts_per_hunt × shard_base × quality_shard_mult_avg
                     = 4 × 2 × 1.5 + 0.55 × 5
                     = 12 + 2.75 ≈ 14.75 碎片/場
 
-avg_core_per_hunt（依所狩獵巨獸的主題，一場只產該主題核心）：
-    狩獵 CARAPEX  → core_carapace ≈ 2.0  （簽名部位：1 強化背甲炮 + 1 核心，Precision 基準）
-    狩獵 LACERA   → core_limb     ≈ 2.0  （簽名部位：1 強化尾甲 + 1 核心）
-    狩獵 VOLTWYRM → core_energy    ≈ 2.5  （簽名部位較多：2 能量護盾 + 1 核心）
+avg_core_per_hunt（依所狩獵巨獸的主題，一場只產該主題核心；該巨獸所有部位皆產）：
+    狩獵 CARAPEX  → core_carapace ≈ 4    （4 部位全破：2 顎 + 背甲炮 + 核心，Precision 基準）
+    狩獵 LACERA   → core_limb     ≈ 5–6  （6 部位：4 肢 + 尾甲 + 頭核）
+    狩獵 VOLTWYRM → core_energy    ≈ 7    （7 部位：4 頸段 + 2 護盾 + 核心）
     // 跨核心需交替狩獵不同巨獸——單場狩獵不會同時產出多種核心
+    // 註：以上為全破壞（full-clear）基準，實際依破壞部位數縮放；數值屬 playtest 調校目標
 avg_essence_per_hunt ≈ 0.55  （全破壞率 × 1 精魄）
 ```
 
@@ -303,9 +302,9 @@ hunts_cores    = ceil(13 / 2.0)   = 7 場
 **升滿所有 8 把武器所需獵數估算**：
 ```
 total_shard_hunts    = ceil(360 / 14.75) ≈ 25 場
-total_carapace_hunts = ceil(39 / 2.0)   ≈ 20 場（裝甲型巨獸）
-total_limb_hunts     = ceil(39 / 3.0)   ≈ 13 場（敏捷型巨獸）
-total_energy_hunts   = ceil(26 / 2.0)   ≈ 13 場（能量型巨獸）
+total_carapace_hunts = ceil(39 / 4)    ≈ 10 場（甲殼系巨獸 CARAPEX，全破 4 部位/場）
+total_limb_hunts     = ceil(39 / 5.5)  ≈ 7 場（肢體系巨獸 LACERA，全破 6 部位/場）
+total_energy_hunts   = ceil(26 / 7)    ≈ 4 場（能量系巨獸 VOLTWYRM，全破 7 部位/場）
 total_essence_hunts  = ceil(8 / 0.55)   ≈ 15 場（跨所有巨獸）
 
 合計（考慮各巨獸需分別狩獵，去除碎片重疊）≈ 35–50 場
@@ -403,11 +402,20 @@ assert TTB_tier3(loadout, part_type) >= TTB_floor(loadout, part_type)
 
 素材經濟系統**完全依賴**此系統提供的事件，且不控制部位血量、狀態機或判定。
 
-所需事件簽名（需與 kaiju-part-system.md 作者協調確認）：
+所需事件簽名（與 kaiju-part-system.md C.5 對齊，已確認）：
 ```
-on_part_break(part_id: int, part_type: PartType, break_state: BreakState)
-    // PartType:   NORMAL_PART | ARMORED_PART | BOSS_CORE_PART
-    // BreakState: NORMAL | SOFTENED | SOFTENED_STAGGERED
+on_part_break(
+    part_id:        String,
+    kaiju_id:       KaiJuID,
+    part_type:      PartType,         // NORMAL | ARMORED | BOSS_CORE
+    world_position: Vector2,
+    drop_table_id:  String,
+    break_quality:  BreakQuality,     // NORMAL | SOFTENED | SOFTENED_STAGGERED
+    adjacency_list: Array[String],
+    is_chain_break: bool
+    // 注：shard_yield / core_yield 不在事件 payload 中；
+    //     本系統依 break_quality 與 kaiju_id 獨立計算素材產量（見 D.1）。
+)
 
 on_hunt_end(is_all_parts_broken: bool)
     // 觸發全破壞精魄結算
@@ -488,8 +496,8 @@ PlayerProgress {
 | 旋鈕名稱 | MVP 預設值 | 全版本值 | 說明 |
 |----------|----------|---------|------|
 | `enabled_weapon_tiers` | {0, 1, 2} | {0, 1, 2, 3} | MVP 不開放 Tier 3（或選 1 把武器示範） |
-| `enabled_material_types` | {shard_common, core_limb, core_carapace} | 全 5 類 | MVP 僅啟用 2 武器對應核心，暫不開啟能量核心與精魄 |
-| `active_weapon_pool` | {L1, M1} | 全 8 把 | MVP 僅啟用 2 把武器（1 主 1 副）驗證核心循環 |
+| `enabled_material_types` | {shard_common, core_carapace} | 全 5 類 | MVP 僅啟用 L1+M2 對應核心（甲殼核心），暫不開啟其他核心與精魄 |
+| `active_weapon_pool` | {L1, M2} | 全 8 把 | MVP 啟用 L1 散波雷射（主）+ M2 蜂群飛彈（副），均綁定 core_carapace，CARAPEX 單獸完整驗證循環 |
 
 ---
 
@@ -503,11 +511,11 @@ PlayerProgress {
 
 ### H.2 素材產量公式正確性（功能性 — 阻斷）
 
-- [ ] Standard 品質破壞：`shard_yield = floor(shard_base × 1.0)`；核心 = 1。
-- [ ] Precision 品質破壞：`shard_yield = floor(shard_base × shard_precision_mult)`；核心 = 1。
-- [ ] Perfect 品質破壞：`shard_yield = floor(shard_base × shard_perfect_mult)`；核心 = 2（若 `core_perfect_double_drop = TRUE`）。
-- [ ] 部位類型與核心映射：普通部位 → 四肢核心；強化部位 → 甲殼核心；核心部位 → 能量核心；無混型錯誤。
-- [ ] 自動化測試：`tests/unit/economy/material_yield_quality_test.[ext]`，覆蓋 3 品質等級 × 3 部位類型 × 核心映射 = 9 種主要情境。
+- [ ] Standard 品質破壞：`shard_yield = floor(shard_base × 1.0)`；任一部位主題核心 = 1。
+- [ ] Precision 品質破壞：`shard_yield = floor(shard_base × shard_precision_mult)`；任一部位主題核心 = 1。
+- [ ] Perfect 品質破壞：`shard_yield = floor(shard_base × shard_perfect_mult)`；任一部位主題核心 = 2（若 `core_perfect_double_drop = TRUE`）。
+- [ ] 巨獸主題核心映射：CARAPEX 任一部位 → core_carapace；LACERA 任一部位 → core_limb；VOLTWYRM 任一部位 → core_energy（依巨獸主題，與部位類型無關）。
+- [ ] 自動化測試：`tests/unit/economy/material_yield_quality_test.[ext]`，覆蓋 3 break_quality × 3 部位類型（NORMAL/ARMORED/BOSS_CORE）× 3 巨獸主題 = 27 種主要情境。
 
 ### H.3 無主導 loadout 的升級效果（功能性 — 阻斷，跨文件）
 
@@ -518,9 +526,10 @@ PlayerProgress {
 
 ### H.4 素材類型分流正確性（功能性）
 
-- [ ] 破壞普通部位 → 只掉通用碎片 + 四肢核心，無其他核心混入。
-- [ ] 破壞強化部位 → 只掉通用碎片 + 甲殼核心。
-- [ ] 破壞核心部位 → 只掉通用碎片 + 能量核心。
+- [ ] 破壞任意巨獸的任一部位 → 掉通用碎片（依 break_quality 倍率）＋ 該巨獸主題核心 ×1（Perfect ×2）。
+- [ ] 破壞 CARAPEX 的任一部位 → 掉 core_carapace；其他巨獸的部位不得產出 core_carapace。
+- [ ] 破壞 LACERA 的任一部位 → 掉 core_limb。
+- [ ] 破壞 VOLTWYRM 的任一部位 → 掉 core_energy。
 - [ ] 全破壞結算 → 精魄數 = `essence_per_full_clear`；碎片追加 `shard_completeness_bonus`。
 - [ ] 非全破壞結算 → 無精魄，無完成度碎片加成。
 
@@ -547,10 +556,10 @@ PlayerProgress {
 
 | 優先級 | 問題 | 阻斷里程碑 | 解答方式 |
 |--------|------|------------|---------|
-| **高** | `on_part_break` 事件是否能可靠提供 `break_state`（SOFTENED/STAGGERED）欄位？需 kaiju-part-system.md 作者確認事件簽名。 | Prototype | 與 kaiju-part-system GDD 協調確認事件欄位定義；本 GDD 的 D.1 公式以此為前提 |
+| ~~**高**~~ **已解決** | ~~`on_part_break` 事件是否能可靠提供 `break_state` 欄位？~~ kaiju-part-system.md C.5 已確認事件簽名為 `break_quality`；F.1 已對齊，D.1 公式已更新。 | — | 已解決 |
 | **高** | Tier 1 & 2 的 ≤10% TTB 改善是否足以讓玩家**感知**升級進步？若效果太小，養成動力可能受損。 | Vertical Slice | Playtest 前後問卷：玩家能否描述 Tier 1→2 帶來的差異；若「感覺不到」率 > 40%，考慮加強 UX 數值顯示或提升 Tier 2 上限至 12% |
 | **中** | `core_perfect_double_drop = TRUE` 是否讓玩家過分追求 L3 震波（STAGGERED）觸發，導致 loadout 向 C 組合（震盪-飽和）集中？ | Vertical Slice | 監測 playtest 的 loadout 選擇分布；若 L3 使用率持續 > 55%，調降 Perfect 核心雙倍為機率性（70% 機率給 2，30% 給 1） |
-| **中** | 能量核心依賴破壞核心部位（Boss Core Part）——若此部位 TTB 設計偏長（50–80s 目標上限），玩家實際命中率低，能量核心稀缺性可能超出設計預期，使 L3/M3 長期落後其他武器的升級進度。 | Vertical Slice | 確保核心部位 TTB 在 weapon-system.md D.4 目標範圍（50–80s）內；若 L3/M3 核心積累速率低於其他核心 50% 以上，評估為能量型巨獸增加額外核心部位或降低 Boss Core B_max |
+| ~~**中**~~ **已更新** | ~~能量核心依賴破壞核心部位（Boss Core Part）稀缺性問題~~ — 已轉為「巨獸主題」模型：VOLTWYRM 的 core_energy 由其所有 7 個部位掉落，每場全破壞可得 ~7 核心（D.3），稀缺性風險已消除。若原型測試顯示 L3/M3 積累速率仍低於其他核心 50% 以上，評估調整 VOLTWYRM 部位 B_max。 | Vertical Slice | 依原型數據評估 |
 | **低** | 過剩核心問題（E.4）是否在全升完後造成「素材無處可用」的失落感？ | Full Vision | 分析 playtest 數據的素材積累分布；若某核心積累量超過需求量 3× 以上，評估開啟 `allow_core_conversion` 或引入輕量的「素材轉換」小遊戲 |
 
 ---
@@ -559,7 +568,7 @@ PlayerProgress {
 
 | 功能 | MVP | Vertical Slice | Full Vision |
 |------|-----|----------------|-------------|
-| 武器數量 | 2（L1 + M1） | 4（2 主 + 2 副） | 8（全部） |
+| 武器數量 | 2（L1 + M2） | 4（2 主 + 2 副） | 8（全部） |
 | 升級 Tier 上限 | Tier 2（可選 1 把示範 Tier 3） | Tier 3 | Tier 3 |
 | 素材類型 | 碎片 + 2 種核心 | 碎片 + 全 3 種核心 | 全 5 類 |
 | 精魄系統 | 關閉 | 開啟（1 巨獸驗證） | 開啟（全 3–5 巨獸） |
@@ -570,4 +579,4 @@ PlayerProgress {
 
 *文件版本：1.0.0*
 *作者：Economy Designer Agent*
-*關聯 GDD：game-concept.md | weapon-system.md | kaiju-part-system.md（待撰寫，上游依賴）*
+*關聯 GDD：game-concept.md | weapon-system.md | kaiju-part-system.md*

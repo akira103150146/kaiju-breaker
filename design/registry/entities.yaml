@@ -104,7 +104,7 @@ items:
     category: crafting_material
     tier: core
     bound_to: kaiju_carapex
-    notes: "甲殼核心；由甲殼系巨獸（鎧殼獸 CARAPEX）的簽名部位掉落（ARMORED 部位及 BOSS_CORE；NORMAL 部位亦可給少量）。SOFTENED_STAGGERED 破壞產雙倍。"
+    notes: "甲殼核心；由甲殼系巨獸（鎧殼獸 CARAPEX）的所有可破壞部位掉落（NORMAL/ARMORED/BOSS_CORE 皆產 ×1）。SOFTENED_STAGGERED 破壞產雙倍。"
     added: 2026-07-01
     revised: "2026-07-01"
   - name: core_limb
@@ -118,7 +118,7 @@ items:
     category: crafting_material
     tier: core
     bound_to: kaiju_lacera
-    notes: "肢體核心；由肢體系巨獸（刃肢獸 LACERA）的所有簽名部位掉落（NORMAL 肢體、ARMORED 尾甲、BOSS_CORE）。SOFTENED_STAGGERED 破壞產雙倍。"
+    notes: "肢體核心；由肢體系巨獸（刃肢獸 LACERA）的所有可破壞部位掉落（NORMAL 肢體、ARMORED 尾甲、BOSS_CORE 皆產 ×1）。SOFTENED_STAGGERED 破壞產雙倍。"
     added: 2026-07-01
     revised: "2026-07-01"
   - name: core_energy
@@ -132,7 +132,7 @@ items:
     category: crafting_material
     tier: core
     bound_to: kaiju_voltwyrm
-    notes: "能量核心；由能量系巨獸（熾蛇 VOLTWYRM）的所有部位掉落（NORMAL 頸段、ARMORED 護盾、BOSS_CORE）。SOFTENED_STAGGERED 破壞產雙倍。"
+    notes: "能量核心；由能量系巨獸（熾蛇 VOLTWYRM）的所有可破壞部位掉落（NORMAL 頸段、ARMORED 護盾、BOSS_CORE 皆產 ×1）。SOFTENED_STAGGERED 破壞產雙倍。"
     added: 2026-07-01
     revised: "2026-07-01"
   - name: essence_kaiju
