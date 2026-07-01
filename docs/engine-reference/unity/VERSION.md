@@ -3,9 +3,9 @@
 | Field | Value |
 |-------|-------|
 | **Engine Version** | Unity 6.3 LTS |
-| **Release Date** | December 2025 |
+| **Release Date** | December 4, 2025 (supported through December 2027) |
 | **Project Pinned** | 2026-02-13 |
-| **Last Docs Verified** | 2026-02-13 |
+| **Last Docs Verified** | 2026-07-01 |
 | **LLM Knowledge Cutoff** | May 2025 |
 
 ## Knowledge Gap Warning

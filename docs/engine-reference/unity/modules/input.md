@@ -1,6 +1,6 @@
 # Unity 6.3 — Input Module Reference
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-07-01
 **Knowledge Gap:** Unity 6 uses new Input System (legacy Input deprecated)
 
 ---
@@ -27,6 +27,19 @@ if (Keyboard.current.spaceKey.wasPressedThisFrame) { }
 ```
 
 **Migration Required:** Install `com.unity.inputsystem` package.
+
+### Project-Wide Input Actions Now Mandatory (6.3)
+
+Project-wide actions can no longer be compiled out — the
+`UNITY_INPUT_SYSTEM_PROJECT_WIDE_ACTIONS` scripting define was removed in Input System
+1.17. A single project-wide `InputActionAsset` is assigned in
+`Edit > Project Settings > Input System Package` and is the **default action set for the
+`PlayerInput` component** and `InputSystem.actions`. In 6.0+ the EventSystem also gets an
+`InputSystemUIInputModule` by default (instead of the legacy `StandaloneInputModule`).
+
+> For this project, define the project-wide asset once (Move / Fire / both PC + Touch +
+> Gamepad control schemes) rather than instantiating per-object `PlayerControls`.
+> Latest package at pin time: **1.18.0 (2026-01-14)**.
 
 ---
 
@@ -352,5 +365,6 @@ public class Player : MonoBehaviour {
 ---
 
 ## Sources
-- https://docs.unity3d.com/Packages/com.unity.inputsystem@1.11/manual/index.html
+- https://docs.unity3d.com/Packages/com.unity.inputsystem@1.14/manual/index.html
+- https://docs.unity3d.com/Packages/com.unity.inputsystem@1.14/changelog/CHANGELOG.html
 - https://docs.unity3d.com/Packages/com.unity.inputsystem@1.11/manual/QuickStartGuide.html

@@ -1,6 +1,6 @@
 # Unity 6.3 — Physics Module Reference
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-07-01
 **Knowledge Gap:** Unity 6 physics improvements, solver changes
 
 ---
@@ -11,6 +11,60 @@ Unity 6.3 uses **PhysX 5.1** (improved from PhysX 4.x in 2022 LTS):
 - Better solver stability
 - Improved performance
 - Enhanced collision detection
+
+> ⚠️ **This project uses 2D physics, not 3D PhysX.** The PhysX / `Rigidbody` /
+> `CharacterController` material in this file is reference only. See **"2D Physics" below**
+> for the path this project actually uses (`Rigidbody2D` / `Collider2D` + trigger overlap).
+
+---
+
+## 2D Physics (used by this project)
+
+This is a 2D bullet-hell. Movement and collision use Unity's **2D physics (Box2D)** —
+`Rigidbody2D`, `Collider2D`, and `Physics2D` queries — **not** the 3D `Physics`/`Rigidbody`
+API documented further down.
+
+### Bullets — kinematic move + trigger overlap (no rigidbody simulation)
+Per `technical-preferences.md`, bullets and most projectiles use **custom kinematic movement
++ trigger overlap**, not simulated rigidbodies:
+
+```csharp
+// Bullet: move by hand each frame, detect hits via a 2D trigger
+void Update() {
+    transform.position += (Vector3)(_direction * _speed * Time.deltaTime);
+}
+
+void OnTriggerEnter2D(Collider2D other) {        // bullet collider has Is Trigger = true
+    if (other.TryGetComponent<BossPart>(out var part)) part.TakeHit(_damage);
+}
+```
+
+### 2D queries (non-allocating — important for dense patterns)
+```csharp
+var filter = new ContactFilter2D { useLayerMask = true, layerMask = _enemyMask, useTriggers = true };
+var hits = new Collider2D[16];
+int n = Physics2D.OverlapCircle(center, radius, filter, hits);   // results-buffer overload, no GC
+
+var rayHits = new RaycastHit2D[8];
+int m = Physics2D.Raycast(origin, direction, filter, rayHits, maxDistance);
+```
+
+### `velocity` renamed to `linearVelocity` (Unity 6.0)
+`Rigidbody2D.velocity` (and 3D `Rigidbody.velocity`) are **deprecated** in Unity 6 — use
+`linearVelocity`. `angularVelocity` is unchanged.
+
+```csharp
+// ❌ Deprecated in Unity 6
+rb2d.velocity = new Vector2(x, 0);
+// ✅ Unity 6+
+rb2d.linearVelocity = new Vector2(x, 0);
+```
+
+### Box2D v3 — `LowLevelPhysics2D` (6.3, opt-in)
+Unity 6.3 adds a **new low-level 2D physics API backed by Box2D v3** (`LowLevelPhysics2D`).
+It is **separate and opt-in** — the classic `Rigidbody2D`/`Collider2D` component workflow is
+unchanged and remains the default. Do **not** assume bullet code must migrate to it; reach for
+it only if profiling shows the component API is the bottleneck.
 
 ---
 
@@ -44,7 +98,8 @@ Rigidbody rb = GetComponent<Rigidbody>();
 rb.AddForce(Vector3.forward * 10f, ForceMode.Impulse);
 
 // ❌ Avoid: Direct velocity assignment (can cause instability)
-rb.velocity = new Vector3(0, 10, 0); // Only use when necessary
+// NOTE: `Rigidbody.velocity` is deprecated in Unity 6 → use `rb.linearVelocity`
+rb.linearVelocity = new Vector3(0, 10, 0); // Only use when necessary
 ```
 
 ### Colliders
@@ -264,5 +319,8 @@ void OnDrawGizmos() {
 ---
 
 ## Sources
+- https://docs.unity3d.com/6000.3/Documentation/Manual/Physics2DReference.html
+- https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Physics2D.html
+- https://docs.unity3d.com/6000.3/Documentation/Manual/WhatsNewUnity63.html (Box2D v3 / LowLevelPhysics2D)
 - https://docs.unity3d.com/6000.0/Documentation/Manual/PhysicsOverview.html
 - https://docs.unity3d.com/ScriptReference/Physics.html

@@ -1,6 +1,6 @@
 # Unity 6.3 — Rendering Module Reference
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-07-01
 **Knowledge Gap:** LLM trained on Unity 2022 LTS; Unity 6 has major rendering changes
 
 ---
@@ -28,9 +28,15 @@ public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer
     });
 }
 
-// ❌ Old (CommandBuffer - still works but deprecated)
-public override void Execute(ScriptableRenderContext context, ref RenderingData data) { }
+// ❌ REMOVED in 6.3 — the Compatibility Mode (non-RenderGraph) path no longer exists
+// public override void Execute(ScriptableRenderContext context, ref RenderingData data) { }
 ```
+
+> ⚠️ **6.3:** URP **Compatibility Mode was removed.** `RenderGraphSettings.enableRenderCompatibilityMode`
+> is now read-only (`false`), and the `UPM_COMPATIBILITY_MODE` stopgap define disappears in 6.4+.
+> Every `ScriptableRendererFeature` / `ScriptableRenderPass` MUST be authored for RenderGraph —
+> the old `Execute(ScriptableRenderContext, ref RenderingData)` override is dead code.
+> See `../breaking-changes.md` → "URP Compatibility Mode REMOVED".
 
 ### GPU Resident Drawer (Unity 6+)
 Automatic batching for massive draw call reduction:
@@ -40,6 +46,30 @@ Automatic batching for massive draw call reduction:
 // Rendering > GPU Resident Drawer = Enabled
 // Automatically batches thousands of objects with minimal CPU overhead
 ```
+
+---
+
+## 2D Rendering & Pixel Perfect (URP) — used by this project
+
+This project renders a 2D pixel-art bullet-hell with the **URP 2D Renderer**. The 3D-oriented
+lighting/shader sections below are reference only — they are not the path this project uses.
+
+### Pixel Perfect Camera
+- Use the **Pixel Perfect Camera** component that ships with the URP **2D Renderer**
+  (added via the *Universal 2D* template / `com.unity.render-pipelines.universal`).
+- ⚠️ **Do NOT install the standalone `com.unity.2d.pixel-perfect` package.** That package only
+  supports the Built-in Render Pipeline; pairing it with URP is a common cause of broken pixel
+  snapping after an upgrade. The URP component supersedes it.
+- Key knobs: `Assets Pixels Per Unit`, `Reference Resolution`, `Upscale Render Texture`,
+  `Pixel Snapping`, `Crop Frame`.
+
+### 2D Renderer notes (6.3)
+- The URP 2D Renderer can render **Mesh / Skinned Mesh Renderers alongside sprites** in 6.3
+  (previously sprite-only) — useful for mixing mesh-based FX into a 2D scene.
+- 2D lights, shadows, and normal maps use the 2D Renderer's **Light2D** system — not the
+  3D lighting documented further down this file.
+- For dense bullet patterns, batch sprites with a **Sprite Atlas** and keep all bullets on
+  one atlas/material to hold the Draw Calls ≤ 200 budget (see `technical-preferences.md`).
 
 ---
 

@@ -1,6 +1,6 @@
 # Unity 6.3 LTS — Deprecated APIs
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-07-01
 
 Quick lookup table for deprecated APIs and their replacements.
 Format: **Don't use X** → **Use Y instead**
@@ -16,8 +16,13 @@ Format: **Don't use X** → **Use Y instead**
 | `Input.GetMouseButton()` | `Mouse.current.leftButton.isPressed` | New Input System |
 | `Input.GetAxis()` | `InputAction` callbacks | New Input System |
 | `Input.mousePosition` | `Mouse.current.position.ReadValue()` | New Input System |
+| `Key.IMESelected` | `ButtonControl.imeSelected` | Input System 1.14 |
+| `overrideModifiersNeedToBePressedFirst` | `modifiersOrder` | Input System 1.12 |
 
-**Migration:** Install `com.unity.inputsystem` package.
+**Migration:** Install `com.unity.inputsystem` package. **Project-wide Input Actions are
+now mandatory** — the `UNITY_INPUT_SYSTEM_PROJECT_WIDE_ACTIONS` define was removed in Input
+System 1.17, so they can no longer be compiled out, and they are the default actions for
+`PlayerInput`. (Latest package: 1.18.0, 2026-01-14.)
 
 ---
 
@@ -28,8 +33,12 @@ Format: **Don't use X** → **Use Y instead**
 | `Canvas` (UGUI) | `UIDocument` (UI Toolkit) | UI Toolkit is now production-ready |
 | `Text` component | `TextMeshPro` or UI Toolkit `Label` | Better rendering, fewer draw calls |
 | `Image` component | UI Toolkit `VisualElement` with background | More flexible styling |
+| `UxmlFactory` / `UxmlTraits` (custom controls) | `[UxmlElement]` / `[UxmlAttribute]` attributes | Custom controls, Unity 6.0+ |
+| `ExecuteDefaultAction` / `ExecuteDefaultActionAtTarget` | `HandleEventBubbleUp` | Event rename, 6.0+ |
+| `PreventDefault()` | `StopPropagation()` | Event API rename, 6.0+ |
 
-**Migration:** UGUI still works, but UI Toolkit is recommended for new projects.
+**Migration:** UGUI still works, but UI Toolkit is recommended for new projects. USS validation
+is stricter in 6.3 — previously-tolerated invalid USS is now an error.
 
 ---
 
@@ -96,6 +105,7 @@ Format: **Don't use X** → **Use Y instead**
 
 | Deprecated | Replacement | Notes |
 |------------|-------------|-------|
+| `[SerializeField]` on a property / non-field | `[field: SerializeField]` on the auto-property | 6.3: attribute is field-only — otherwise a **compile error** |
 | `WWW` class | `UnityWebRequest` | Modern async networking |
 | `Application.LoadLevel()` | `SceneManager.LoadScene()` | Scene management |
 
@@ -107,6 +117,17 @@ Format: **Don't use X** → **Use Y instead**
 | Deprecated | Replacement | Notes |
 |------------|-------------|-------|
 | WebGL 1.0 | WebGL 2.0 or WebGPU | Unity 6+ defaults to WebGPU |
+
+### Android
+| Deprecated | Replacement | Notes |
+|------------|-------------|-------|
+| `PlayerSettings.Android.androidIsGame` | **App Category** Player setting | Obsolete in 6.3 |
+
+### Accessibility
+| Deprecated | Replacement | Notes |
+|------------|-------------|-------|
+| `AccessibilityNode.selected` | `AccessibilityNode.invoked` | Rename in 6.3 |
+| `AccessibilityRole` as a flags enum | a single plain-enum value (no bitwise ops) | 6.3 changed it from a flags enum |
 
 ---
 
