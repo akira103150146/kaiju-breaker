@@ -216,7 +216,7 @@ function makePart(def){
 }
 
 function makeEnemy(x,y){
-  return{x,y,vx:(Math.random()-0.5)*30,vy:26+Math.random()*20,
+  return{x,y,vx:(Math.random()-0.5)*30,vy:70+Math.random()*30,
     w:18,h:14,hp:45,max:45,fireT:1.8+Math.random()*2.0,alive:true,flash:0,color:'#c0602a',points:100,escaped:false};
 }
 
@@ -695,7 +695,7 @@ function update(dt,fxDt){
     const pd=G.weaponPod;
     pd.bobT=(pd.bobT||0)+dt;
     if(pd.vy>0){pd.y+=pd.vy*dt;if(pd.y>330)pd.vy=0;}
-    if(Math.hypot(pl.x-pd.x,pl.y-pd.y)<22){
+    if(Math.hypot(pl.x-pd.x,pl.y-pd.y)<30){
       sfxPickup();
       if(pd.isPrimary){G.pidx=pd.idx;
         G.floats.push({x:pd.x,y:pd.y-10,text:'換裝：'+PRIMARIES[pd.idx].name,color:'#40ccff',life:1.5,vy:-18,sz:7,bold:true});}
@@ -732,34 +732,37 @@ function updateStage(dt){
   }
 
   // Wave 1 cleared → spawn wave 2
-  if(G.stagePhase==='wave1'&&((alive===0&&G.stageT>1)||G.stageT>6)&&!G._wave2Spawned){
+  if(G.stagePhase==='wave1'&&((alive===0&&G.stageT>1)||G.stageT>11)&&!G._wave2Spawned){
     G._wave2Spawned=true;
     G.floats.push({x:160,y:240,text:'雜兵波 2 / 2',color:'#ff8040',life:1.5,vy:-10,sz:9,bold:true});
     setTimeout(()=>spawnWave(2),600);
   }
 
   // Wave 2 cleared → spawn weapon pod
-  if(G.stagePhase==='wave2'&&((alive===0&&G.stageT>3)||G.stageT>10)&&!G._podSpawned){
-    G._podSpawned=true;
+  if(G.stagePhase==='wave2'&&((alive===0&&G.stageT>3)||G.stageT>22)&&!G._podSpawned){
+    G._podSpawned=true;G._podT=0;
     const isPrimary=Math.random()<0.5;
     let idx;
     if(isPrimary){do{idx=Math.floor(Math.random()*4);}while(idx===G.pidx);}
     else{do{idx=Math.floor(Math.random()*4);}while(idx===G.sidx);}
-    G.weaponPod={x:80+Math.random()*160,y:-24,vy:55,isPrimary,idx,bobT:0};
-    G.floats.push({x:160,y:240,text:'武器莢艙降落！',color:'#40ccff',life:1.8,vy:-8,sz:9,bold:true});
+    // Fast drop so it reaches the player's reachable zone (~y330) in ~3s.
+    G.weaponPod={x:80+Math.random()*160,y:-24,vy:120,isPrimary,idx,bobT:0};
+    G.floats.push({x:160,y:236,text:'武器莢艙降落！快去撿',color:'#40ccff',life:2.2,vy:-8,sz:9,bold:true});
   }
 
-  // Pod collected or 6s timeout after pod spawned → enter boss
-  if((G._podSpawned&&(G._podCollectedOrTimeout||G.weaponPod===null||G.stageT>9))||G.stageT>13){
+  // Give the player a real ~7s window to grab the pod, THEN enter boss.
+  // (No premature stageT gate — the pod must actually be grabbable first.)
+  if(G._podSpawned&&!G._bossEnterTriggered)G._podT=(G._podT||0)+dt;
+  const podDone=G._podCollectedOrTimeout||(G._podSpawned&&(G.weaponPod===null||G._podT>7));
+  if((G._podSpawned&&podDone)||G.stageT>30){
     if(!G._bossEnterTriggered){
       G._bossEnterTriggered=true;
       G._podCollectedOrTimeout=true;
-      // Kill any remaining enemies
-      G.waveEnemies.forEach(e=>{e.alive=false;e.escaped=true;});// despawn survivors, no score
+      G.weaponPod=null;
+      G.waveEnemies.forEach(e=>{if(e.alive){e.alive=false;e.escaped=true;}});// despawn stragglers, no score
       G.ebullets.length=0;
       G.floats.push({x:160,y:200,text:G.bossDef.name+'  出現！',color:'#ff4030',life:2.2,vy:-8,sz:13,bold:true});
       shakeAdd(14);flashAdd(0.7);
-      // Boss enters from top after brief delay
       setTimeout(()=>{
         G.bossActive=true;
         G._bossEnterAnim=1.0;// used to slide boss in
