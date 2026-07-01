@@ -28,7 +28,7 @@
 - [x] **HUD/UI GDD** `gdd/hud-ui-system.md`(world-space 部位血條、三元介面畫面、手機安全區)
 - [x] **輸入系統 GDD** `gdd/input-system.md`(Sky Force 拖曳偏移觸控、鍵鼠、手柄;觸控手感待專屬原型)
 - [x] **彈幕系統 GDD** `gdd/bullet-system.md`(物件池、彈幕 DSL、DOTS/Burst、單點判定、可讀性護欄)
-- [~] **展示原型建置中**(導演要求看成果)→ `prototypes/vision-slice/`
+- [x] **展示原型** `prototypes/vision-slice/prototype.html`(完整循環:loadout→雜兵→Boss 破部位→結算;3 Boss 可選;全 juice)
 
 ## Key Decisions
 - 5 pillars locked;武器雙軌骨架(雷射蓄熱軟化→飛彈破甲擊破)
