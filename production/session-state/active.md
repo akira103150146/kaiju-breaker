@@ -23,6 +23,8 @@
 - [x] **關卡系統 GDD** `gdd/stage-system.md`(手作波段池隨機重組、6 雜兵、武器莢艙掉落、3 關、四難度密度)
 - [x] **系統索引/依賴圖** `design/systems-index.md`(全系統地圖 + 剩餘工作優先序)
 - [x] 跨文件對齊:核心素材改「巨獸主題綁定」;registry 註冊 5 素材;部位數上限放寬到 8
+- [x] **難度系統 GDD** `gdd/difficulty-system.md`(四階密度縮放、跨難度 TTB/輸出不變驗收)
+- [x] **遊戲手感 GDD** `gdd/game-feel.md`(hitstop/慢動作/螢幕震動 juice — 導演指定;#FF6600 軟化簽章解阻斷 #4;reduce-motion 開關;引擎 API 對齊 Unity)
 
 ## Key Decisions
 - 5 pillars locked;武器雙軌骨架(雷射蓄熱軟化→飛彈破甲擊破)
