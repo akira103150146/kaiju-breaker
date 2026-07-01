@@ -9,7 +9,7 @@
 - **Game**: 殲獸戰機 / KAIJU BREAKER — 科幻縱向彈幕射擊 ＋ 破壞部位狩獵養成
 - **Stage**: **Pre-Production** (`production/stage.txt`) — Concept 閘門 PASS,已進架構期
 - **Review mode**: lean (`production/review-mode.txt`)
-- **Engine**: Unity 6.3 LTS — configured;`Assets/` 尚空,Unity 專案未建(架構期才建)
+- **Engine**: Unity 6.3 LTS;**Unity 專案骨架已建**(`Assets/_Project`,13 模組 asmdef + 測試;依 ADR-0005)
 - **Platform**: 多平台（PC + 手機）
 - **Visual direction**: 像素街機懷舊 (Retro Pixel Arcade)
 
@@ -49,12 +49,6 @@
 - **核心素材 = 巨獸主題綁定**(甲殼→core_carapace / 肢體→core_limb / 能量→core_energy),shard 通用、essence 為 full-clear → MH 式「農特定巨獸」黏著
 - 3 隻巨獸各偏好不同 loadout(CARAPEX→L2×M3 / LACERA→M1 追蹤 / VOLTWYRM→L4 穿透＋L3×M2),用內容驗證 sidegrade
 - 難度四階只縮放彈幕密度/雜兵數,絕不鎖內容
-
-## 下一步優先序（見 systems-index.md §3）
-- **P0** VFX/SFX + HUD 的「軟化提示可讀性」(阻斷 #4;也是導演要的 juice)
-- **P0** 難度系統 GDD(被全面引用但缺彙整)
-- **P1** 輸入系統 GDD(觸控彈幕手感 = 概念未解風險)、HUD/UI 完整 GDD
-- 之後:`/review-all-gdds` 全域複審 → `/gate-check` 或 `/vertical-slice`
 
 ## Open Follow-ups / 原型待驗
 - M3 6× 是否秒殺(TTB 矩陣)、軟化狀態 0.5s 可辨性 → 用武器手感原型測
