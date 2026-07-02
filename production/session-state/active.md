@@ -11,8 +11,10 @@
   - Phase 0 shared contracts (commit `a0eec88`): `WeaponBalanceConfig.BuPerD0(10)/HuPerD0(25, inferred)/DefaultPrimary/DefaultSecondary`; `IPartStateQuery.GetHottestAlivePartId()`; `ISaveService.GetInitialLoadout()`; `WeaponEquipped` event.
   - Phase 1 base + Story 003 (`a0eec88`): `WeaponBehaviourBase`/`LaserWeaponBase`/`MissileWeaponBase` (ctor-DI, PartBroke→ClearCollider, magazine SM), stubs `StubPartStateQuery`/`StubWeaponTierQuery`, 9 base tests. **64/64 EditMode GREEN**.
   - Story 010 loadout (`LoadoutController` + tests) implemented, awaiting combined compile.
-  - Stories 004/005/008 (laser family) + 006/007/009 (missile family) delegated to 2 parallel gameplay-programmer subagents (disjoint files); pending compile+test+fix pass.
-  - Story 002 (D₀ balance suite) = the epic's real done-gate; write after families land to keep formulas consistent.
+  - **DONE (2026-07-03): laser + missile families + loadout (004–010) → 121/121 EditMode GREEN** (`139d28a`). Fixed a real **100× missile break-unit bug** (D0Reference misuse; M3 was 3000/6000 instead of 30/60 BU — would instant-break 100-BU parts) — `0605c44`. H.3 M3-gate test at default config green — `49921b6`.
+  - **Story 002 equal-power (H.1/H.2) + H.7 FOLDED INTO feedback-point-3 balance pass** (director decision "合併進第3點一次弄"). Balance analysis `design/balance/weapon-d0-equal-power-analysis.md` (`7f62721`) found **6 of 8 weapons outside ±10%** (M2 -80%, L2 +50%, M3 +29%, M1/M4/L3 low) — needs a real retune + new SO fields (EffectiveHitRate, per-weapon ShotInterval, M2DmgPerMissileMult). NOT a test-writing task.
+  - **Weapons epic remaining**: Story 001 SO **asset** authoring (needs Editor — director/`.asset` creation); H.1/H.2/H.7 + the equal-power retune (in the point-3 balance pass).
+- **NEXT: integrate the 7 gameplay-feedback points** (`design/feedback/2026-07-02-*`). Point 3 (weapon tiering / 散彈 2→3→4→5) absorbs the equal-power retune. Point 5 (story) direction greenlit for expansion. Point 1 (bullet-pattern diversity) gated on ADR-0001 (phone perf — parked). Points 2/4/6/7 → design specs.
 - **Key weapons reconciliations** (like the kaiju-parts ones — for review): skip Weapons-side M3-T3 chain (KaijuParts already owns it, avoids double-count); `WaveHit` has no StaggerDuration field; ripple % read from `PartSystemConfig` not `WeaponDef`; M4 AoE uses corrected piecewise formula; tests live in `Tests/EditMode/Weapons/` not `Tests/Weapons/`. **HuPerD0=25 is inferred from G.2 laser defaults — wants an eventual design nod.**
 
 ## Where we are
