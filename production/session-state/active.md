@@ -45,9 +45,12 @@
 - [ ] **效能原型驗證 ADR-0001**(手機 1000 彈@60fps、0 GC)→ bullet-sim story-001 spike;**需 Unity 編輯器,在導演機器上做**;過關才 LOCK ADR-0001、解 blocked 的 8 個 bullet stories
 - [x] **Core 層 32 stories**(weapons 10 / kaiju-parts 6 / economy 5 / difficulty 4 / stage 7)→ Foundation+Core 共 63 stories,達進 Production 閘門要件
 - [i] 導演已在 Unity 開骨架:`ProjectSettings/*.asset` + `packages-lock.json` 由 Unity 產生(未由我提交,留給導演 review/commit)
-- [ ] ADR-0006 UI 框架(UGUI vs UI Toolkit)→ 解 HUD/UI epic 的 untraced 需求
-- [ ] `/test-setup`(CI);`/story-readiness` → `/dev-story` 開始實作 Foundation
+- [x] **ADR-0006 UI 框架**(三層:SpriteRenderer 血條 + UGUI HUD/meta;Accepted)→ 解 HUD/UI untraced 需求
+- [x] **Feature + Presentation 層 34 stories**(kaiju-roster 10〔3 Blocked on ADR-0001〕/ input 6〔001=觸控 spike〕/ hud-ui 11 / game-feel 7)
+- [x] **完整 story backlog 完成:97 stories 跨 13 epics**(`production/epics/index.md` 為入口)
+- [ ] `/test-setup`(CI);`/story-readiness` → `/dev-story` 開始實作
 - [ ] `/vertical-slice` 用真引擎驗證完整循環
+- **待決小項**:reduce-motion 乘數放 save/settings 可變層(非唯讀 SO;已合 architecture SO-vs-save 分離);tr-registry.yaml 正式化(`/architecture-review`)
 
 ## Key Decisions
 - 5 pillars locked;武器雙軌骨架(雷射蓄熱軟化→飛彈破甲擊破)
