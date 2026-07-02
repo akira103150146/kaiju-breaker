@@ -43,7 +43,8 @@
 - [x] **13 epics** `production/epics/`(4 Foundation / 5 Core / 2 Feature / 2 Presentation)
 - [x] **Foundation 層 31 stories**(core-foundation 6 / content-config 9 / meta-save 7 / bullet-sim 9)
 - [ ] **效能原型驗證 ADR-0001**(手機 1000 彈@60fps、0 GC)→ bullet-sim story-001 spike;**需 Unity 編輯器,在導演機器上做**;過關才 LOCK ADR-0001、解 blocked 的 8 個 bullet stories
-- [ ] Core 層 stories(接近時再拆:weapons/kaiju-parts/economy/difficulty/stage)
+- [x] **Core 層 32 stories**(weapons 10 / kaiju-parts 6 / economy 5 / difficulty 4 / stage 7)→ Foundation+Core 共 63 stories,達進 Production 閘門要件
+- [i] 導演已在 Unity 開骨架:`ProjectSettings/*.asset` + `packages-lock.json` 由 Unity 產生(未由我提交,留給導演 review/commit)
 - [ ] ADR-0006 UI 框架(UGUI vs UI Toolkit)→ 解 HUD/UI epic 的 untraced 需求
 - [ ] `/test-setup`(CI);`/story-readiness` → `/dev-story` 開始實作 Foundation
 - [ ] `/vertical-slice` 用真引擎驗證完整循環
