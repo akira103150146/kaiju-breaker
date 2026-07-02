@@ -1,0 +1,43 @@
+# NEXT STEPS — KAIJU BREAKER (ordered TODO)
+
+*Last updated: 2026-07-02. Pair with `active.md`. Backlog detail: `production/epics/index.md` + each `production/epics/<slug>/story-*.md`.*
+
+Legend: ⬜ todo · 🔒 blocked · 👤 director-only (needs Unity editor / GitHub / device)
+
+---
+
+## A. Implement Core systems (unblocked — pure C#, EditMode-testable, no DOTS)
+Do in this order (dependency-safe). Pattern per system: implement in `Assets/_Project/Scripts/<Module>` (namespace `KaijuBreaker.<Module>`, asmdef references Core+Content), constructor-inject `IEventBus` + needed query interfaces, read all tuning from the injected SO (no hardcoded values), + EditMode tests in `Assets/_Project/Tests/EditMode/<Module>` using `ContentTestFactory` fixtures and a fake `IEventBus`/query for isolation. After each: director runs EditMode tests → if green, commit (+ push).
+
+1. ⬜ **kaiju-parts** (epic `kaiju-parts`, 6 stories) — START HERE.
+   Part entity + heat/break two-bar model, heat state machine (INTACT↔SOFTENED, hysteresis θ_S/θ_S_exit, decay), armor+stagger (ARMOR_INTACT↔STRIPPED via `WaveHit`, stagger timer), break condition → **emit `PartBroke(break_quality, …)`** + `BossCoreBroke` (fixed order), adjacency graph + Tier-3 chain (L2 ripple / M3 chain, non-recursive via `IsChainBreak`), readability hooks (`PartSoftened`/`PartStaggered` for GameFeel). Implements `IPartStateQuery`. This is the receiver of `LaserHit`/`MissileHit`/`WaveHit` and the source of `PartBroke` — the combat-chain hub.
+2. ⬜ **weapons** (epic `weapons`, 10 stories) — Weapon SO → D₀ output, dual-track firing (lasers emit `LaserHit` heat / missiles emit `MissileHit` break + mag/reload), L3 charge→`WaveHit`, M3 heat-shock gate, Tier 0→3 knob application, loadout (1 primary+1 secondary). Injects `IPartStateQuery` (M1 targeting) + `IWeaponTierQuery`.
+3. ⬜ **economy** (epic `economy`, 5 stories) — on `PartBroke`: compute yield from `break_quality` (MUST read, never recompute), kaiju-theme→core map (all parts → theme core), full-clear essence, inventory (hand off to Meta), Tier 0→3 upgrade transaction, anti-dominant-loadout guard (H.2/H.3 tests).
+4. ⬜ **difficulty** (epic `difficulty`, 4 stories) — DifficultyConfig-driven multipliers, `IDifficultyProvider`, + the two BLOCKING invariance test suites (TTB/output + materials/content identical across tiers).
+5. ⬜ **stage** (epic `stage`, 7 stories) — run state machine (LOADOUT→STAGE→BOSS→RESULTS), SO-driven prefab spawning, segment recombination (Fisher-Yates + no-repeat), elite+guaranteed pod, **cycling weapon-pod (descend→dwell→cycle→pickup)**, boss entrance, onboarding. Note: stories 002/004 note enemy-firing integration awaits ADR-0001 (bullet-sim) — the spawn/movement/pod logic is doable now.
+
+## B. Then Feature + Presentation (mostly unblocked)
+6. ⬜ **meta-save** (epic `meta-save`, 7 stories) — could also be done early (Foundation-ish): JSON schema/serializer, atomic write+backup, CRC32, migration, autosave-on-bank (subscribe `PartBroke`), ownership persistence. Implements `ISaveService`+`IWeaponTierQuery`.
+7. ⬜ **game-feel** (epic `game-feel`, 7 stories) — hitstop/slow-mo/shake/softened-signature/break-payoff/reduce-motion. Subscribes part events. (reduce-motion multipliers live in the mutable save/settings layer, NOT the read-only GameFeelConfig SO.)
+8. ⬜ **input** (epic `input`, 6 stories) — action map + schemes. Story-001 is the touch-feel spike (👤, see D).
+9. ⬜ **hud-ui** (epic `hud-ui`, 11 stories) — world-space SpriteRenderer bars + UGUI HUD/meta screens (ADR-0006).
+10. ⬜ **kaiju-roster** (epic `kaiju-roster`, 10 stories) — 7 Ready (KaijuDef/PartDef data + EmitterPattern defs for CARAPEX/LACERA/VOLTWYRM); 3 encounter-integration stories 🔒 (ADR-0001).
+
+## C. 🔒 Blocked until ADR-0001 LOCKs (needs the perf spike, item D2)
+- bullet-sim stories 002–009 (pooling, EmitterPattern runtime, Burst sim job, spatial-hash collision, DOTS↔Mono bridge impl, player-missile pool, readability guardrails).
+- kaiju-roster stories 004/007/010 (per-boss encounter firing integration).
+
+## D. 👤 Director tasks (Unity editor / device / GitHub — I can't do these)
+1. **CI secret**: GitHub repo → Settings → Secrets → add `UNITY_LICENSE` (+ maybe UNITY_EMAIL/PASSWORD). Verify the Unity **6.3 editor image tag** in `.github/workflows/ci-tests.yml` matches the installed build.
+2. **ADR-0001 perf spike** (`bullet-sim/story-001`): prototype DOTS bullets, measure ~1000 @60fps + 0 GC/frame on a mid-range mobile baseline → then run `/architecture-decision` to move ADR-0001 Proposed→Accepted (or reject → Mono-pool fallback). Unblocks section C.
+3. **Touch-feel spike** (`input/story-001`): validate Sky-Force relative-drag + `touch_follow_lerp` on device → LOCK the touch scheme's feel values.
+4. **Burst AV false-positive** (error 4551): keep `Jobs > Burst > Enable Compilation` OFF during dev; before the perf spike, add a Windows Defender exclusion for `C:\Game\kaiju-breaker` + the Unity editor, delete `Library/BurstCache`, re-enable Burst.
+5. **.asset creation**: when wiring systems, create ScriptableObject instances via the `KaijuBreaker/Config/...` Create menus (WeaponBalanceConfig, 8 WeaponDef, PartSystemConfig, 3 KaijuDef, DifficultyConfig, GameFeelConfig, EconomyConfig, InputSettings, SaveConfig, ContentRegistry) and populate the ContentRegistry references.
+
+## E. Open items / decisions (non-blocking)
+- Sprint 1 (`production/sprints/sprint-01.md`): confirm people model (single dev vs dev+director-on-spikes), sprint length (2 vs 3 wk), `DF-001`↔`CC-003` DifficultyConfig SO dedup (recommend CC-003 authoritative), run `/qa-plan sprint`.
+- `EmitterPatternType` enum may need spiral/wall/cross params fleshed out at bullet-sim implementation time.
+- `tr-registry.yaml` formalized (95 reqs) — keep it updated as stories change; `BossKaijuId` in StageDef kept as string (could become a typed KaijuDef ref later).
+
+## Quick status: 97 stories / 13 epics
+Done ✅: core-foundation (6), content-config (9). Next: kaiju-parts. Blocked 🔒: bullet-sim impl (8) + kaiju encounters (3) on ADR-0001.
