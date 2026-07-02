@@ -26,10 +26,10 @@
 
 - **Classes**: PascalCase (e.g., `PlayerShip`, `BulletPattern`)
 - **Variables**: Public fields/properties PascalCase (e.g., `MoveSpeed`); private fields `_camelCase` (e.g., `_moveSpeed`)
-- **Signals/Events**: C# events PascalCase with `On` prefix (e.g., `OnPartDestroyed`); UnityEvents PascalCase
+- **Signals/Events**: C# event/delegate members use PascalCase with `On` prefix (e.g., `OnPartDestroyed`); UnityEvents PascalCase. **Event-bus message structs (ADR-0002) use noun-phrase names WITHOUT the `On` prefix** (e.g., `PartBroke`, `LaserHit`, `MissileHit`) — the bus dispatches by struct type, so the type name IS the event.
 - **Files**: PascalCase matching the class (e.g., `PlayerShip.cs`)
 - **Scenes/Prefabs**: PascalCase (e.g., `BossArena.unity`, `PlayerShip.prefab`)
-- **Constants**: PascalCase or UPPER_SNAKE_CASE (e.g., `MaxHealth` or `MAX_HEALTH`)
+- **Constants**: PascalCase (e.g., `MaxHealth`) — converged to PascalCase per the architecture (do not use UPPER_SNAKE_CASE)
 
 ## Performance Budgets
 
@@ -41,6 +41,7 @@
 ## Testing
 
 - **Framework**: Unity Test Framework (NUnit) — EditMode tests for pure logic, PlayMode tests for integration
+- **Test location**: `Assets/_Project/Tests/{EditMode,PlayMode}` (per ADR-0005), NOT a top-level `tests/` directory — the Unity Test Framework requires tests inside Assets under their own asmdefs. (Where the generic coding-standards say `tests/unit/...`, use the Unity path above.)
 - **Minimum Coverage**: [TO BE CONFIGURED]
 - **Required Tests**: Balance formulas, gameplay systems, networking (if applicable)
 
