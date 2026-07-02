@@ -1,58 +1,113 @@
-// SCAFFOLD STUB — structural placeholder only, not functional.
-// Full event contract (payloads, all event types) is defined in ADR-0002.
-// See docs/architecture/adr/0002-event-bus-architecture.md for the authoritative source.
 using System;
+using System.Collections.Generic;
 
 namespace KaijuBreaker.Core
 {
     /// <summary>
-    /// Typed, struct-safe event bus (ADR-0002).
-    /// All cross-system communication goes through this interface — no direct
-    /// system-to-system assembly references are permitted (ADR-0005).
-    /// Publish is safe to call from any thread; Subscribe/Unsubscribe must be called
-    /// on the main thread during system initialisation.
+    /// Default <see cref="IEventBus"/> implementation (ADR-0002 §1).
+    ///
+    /// Dispatch is synchronous and same-frame. Handlers are stored per event type in a
+    /// typed list and invoked by index, so steady-state Publish allocates nothing
+    /// (value-type events passed by <c>in</c>; no enumerator/boxing).
+    ///
+    /// Re-entrancy: a handler may Publish (same or other type) — nested dispatch runs to
+    /// completion then the outer resumes. Subscribe/Unsubscribe issued *during* a dispatch
+    /// are deferred and applied when that type's dispatch fully unwinds, so the live handler
+    /// list is never mutated mid-iteration.
     /// </summary>
-    public interface IEventBus
+    public sealed class TypedEventBus : IEventBus
     {
-        void Publish<TEvent>(in TEvent evt) where TEvent : struct;
-        void Subscribe<TEvent>(Action<TEvent> handler) where TEvent : struct;
-        void Unsubscribe<TEvent>(Action<TEvent> handler) where TEvent : struct;
-    }
+        // Non-generic base so the bus can hold heterogeneous typed lists.
+        private abstract class HandlerList { }
 
-    // ---------------------------------------------------------------------------
-    // Placeholder event structs — expand fields when GDD payloads are finalised.
-    // Authority: weapon-system.md F.1, kaiju-part-system.md C.5 (ADR-0002).
-    // ---------------------------------------------------------------------------
-
-    public readonly struct LaserHitEvent
-    {
-        public readonly int PartId;
-        public readonly int KaijuId;
-        public readonly float HeatDelta;
-
-        public LaserHitEvent(int partId, int kaijuId, float heatDelta)
+        private sealed class HandlerList<TEvent> : HandlerList where TEvent : struct, IGameEvent
         {
-            PartId = partId; KaijuId = kaijuId; HeatDelta = heatDelta;
+            private readonly List<Action<TEvent>> _handlers = new List<Action<TEvent>>(8);
+            private readonly List<Action<TEvent>> _pendingAdd = new List<Action<TEvent>>();
+            private readonly List<Action<TEvent>> _pendingRemove = new List<Action<TEvent>>();
+            private int _dispatchDepth;
+
+            public void Add(Action<TEvent> handler)
+            {
+                if (_dispatchDepth > 0) _pendingAdd.Add(handler);
+                else if (!_handlers.Contains(handler)) _handlers.Add(handler);
+            }
+
+            public void Remove(Action<TEvent> handler)
+            {
+                if (_dispatchDepth > 0) _pendingRemove.Add(handler);
+                else _handlers.Remove(handler);
+            }
+
+            public void Dispatch(in TEvent evt)
+            {
+                _dispatchDepth++;
+                try
+                {
+                    // Index loop over the concrete List<T> — no enumerator allocation.
+                    for (int i = 0; i < _handlers.Count; i++)
+                        _handlers[i].Invoke(evt);
+                }
+                finally
+                {
+                    _dispatchDepth--;
+                    if (_dispatchDepth == 0) ApplyPending();
+                }
+            }
+
+            private void ApplyPending()
+            {
+                if (_pendingRemove.Count > 0)
+                {
+                    for (int i = 0; i < _pendingRemove.Count; i++) _handlers.Remove(_pendingRemove[i]);
+                    _pendingRemove.Clear();
+                }
+                if (_pendingAdd.Count > 0)
+                {
+                    for (int i = 0; i < _pendingAdd.Count; i++)
+                    {
+                        var h = _pendingAdd[i];
+                        if (!_handlers.Contains(h)) _handlers.Add(h);
+                    }
+                    _pendingAdd.Clear();
+                }
+            }
         }
-    }
 
-    public readonly struct MissileHitEvent
-    {
-        public readonly int PartId;
-        public readonly int KaijuId;
-        public readonly float BreakDeltaBase;
-        // TODO: add weapon_id per weapon-system.md F.1
-    }
+        private readonly Dictionary<Type, HandlerList> _lists = new Dictionary<Type, HandlerList>(32);
 
-    public readonly struct PartBreakEvent
-    {
-        public readonly int PartId;
-        // TODO: add part_type, break_quality, world_pos, drop_table_id,
-        //       adjacency mask, is_chain_break per kaiju-part-system.md C.5
-    }
+        /// <inheritdoc/>
+        public void Publish<TEvent>(in TEvent evt) where TEvent : struct, IGameEvent
+        {
+            if (_lists.TryGetValue(typeof(TEvent), out var list))
+                ((HandlerList<TEvent>)list).Dispatch(in evt);
+        }
 
-    public readonly struct BossCoreBreakEvent
-    {
-        public readonly int KaijuId;
+        /// <inheritdoc/>
+        public void Subscribe<TEvent>(Action<TEvent> handler) where TEvent : struct, IGameEvent
+        {
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
+            GetOrCreate<TEvent>().Add(handler);
+        }
+
+        /// <inheritdoc/>
+        public void Unsubscribe<TEvent>(Action<TEvent> handler) where TEvent : struct, IGameEvent
+        {
+            if (handler == null) return;
+            if (_lists.TryGetValue(typeof(TEvent), out var list))
+                ((HandlerList<TEvent>)list).Remove(handler);
+        }
+
+        private HandlerList<TEvent> GetOrCreate<TEvent>() where TEvent : struct, IGameEvent
+        {
+            var key = typeof(TEvent);
+            if (!_lists.TryGetValue(key, out var list))
+            {
+                var typed = new HandlerList<TEvent>();
+                _lists.Add(key, typed);
+                return typed;
+            }
+            return (HandlerList<TEvent>)list;
+        }
     }
 }

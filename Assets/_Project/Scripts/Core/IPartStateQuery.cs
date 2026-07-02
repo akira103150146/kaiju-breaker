@@ -1,50 +1,67 @@
-// SCAFFOLD STUB — structural placeholder only, not functional.
-// See docs/architecture/architecture.md §5.2 and ADR-0002 for contract details.
 using UnityEngine;
 
 namespace KaijuBreaker.Core
 {
+    // Read-only query interfaces (ADR-0002 §2). Non-event cross-system reads go
+    // through these, injected by App (composition root) — never via events, direct
+    // assembly references (ADR-0005), or singletons. Systems take fakes in tests.
+
     /// <summary>
-    /// Read-only query interface for kaiju part state (ADR-0002, ADR-0005).
-    /// Defined in Core so that Weapons, UI, and GameFeel can read part state
-    /// without taking a direct assembly reference to KaijuBreaker.KaijuParts.
-    /// App (composition root) injects the concrete KaijuParts implementation.
+    /// Read-only view of kaiju part state. Implemented by KaijuParts; injected into
+    /// Weapons (M1 highest-heat targeting, tracking), UI (heat/break bars), GameFeel.
     /// </summary>
     public interface IPartStateQuery
     {
-        PartHeatState GetHeatState(int partId);
-        Vector3 GetWorldPosition(int partId);
+        /// <summary>Heat (soften) state of the part.</summary>
+        HeatState GetHeatState(int partId);
+
+        /// <summary>Armor-gate state (ARMORED parts only; others report <see cref="ArmorState.Intact"/>).</summary>
+        ArmorState GetArmorState(int partId);
+
+        /// <summary>Current heat value (HU) — for UI heat bars and M1 highest-heat targeting.</summary>
+        float GetCurrentHeat(int partId);
+
+        /// <summary>Heat capacity (H_max, HU) for this part.</summary>
+        float GetMaxHeat(int partId);
+
+        /// <summary>World position of the part (for missile tracking and drop spawns).</summary>
+        Vector2 GetWorldPosition(int partId);
+
+        /// <summary>False once the part is BROKEN (or does not exist).</summary>
         bool IsPartAlive(int partId);
     }
 
     /// <summary>
-    /// Mirrors the three-state break_quality carrier described in architecture.md §5.2.
-    /// KaijuParts sets this; Economy reads it to compute shard/core yield.
-    /// </summary>
-    public enum PartHeatState
-    {
-        Normal,
-        Softened,
-        SoftenedStaggered
-    }
-
-    /// <summary>
-    /// Read-only difficulty values needed by systems that only depend on Core.
-    /// Difficulty assembly provides the concrete implementation; App injects it.
+    /// Read-only difficulty multipliers. Implemented by Difficulty; injected into
+    /// Stage and the BulletSim bridge. Scales density ONLY (pillar 難度是門).
     /// </summary>
     public interface IDifficultyProvider
     {
+        DifficultyTier CurrentTier { get; }
         float BulletDensityMult { get; }
         float EnemyCountMult { get; }
     }
 
     /// <summary>
-    /// Save service abstraction so systems can trigger autosave events
-    /// without referencing KaijuBreaker.Meta directly.
+    /// Save/persistence abstraction so systems can bank progress without referencing
+    /// Meta directly. Implemented by Meta; injected into Economy, Stage, UI.
     /// </summary>
     public interface ISaveService
     {
+        /// <summary>Request an asynchronous autosave (e.g. after banking a part-break reward).</summary>
         void EnqueueAutosave();
-        void FlushSync(); // called on app suspend
+
+        /// <summary>Synchronously flush pending saves to disk (called on app suspend/quit).</summary>
+        void FlushSync();
+    }
+
+    /// <summary>
+    /// Read-only weapon upgrade tier lookup (0..3). Provided by Meta/Economy;
+    /// injected into Weapons so it applies the correct tier tuning at fire time.
+    /// </summary>
+    public interface IWeaponTierQuery
+    {
+        /// <summary>Current permanent upgrade tier (0 = base … 3 = unique mechanic) for a weapon.</summary>
+        int GetTier(WeaponId weapon);
     }
 }
