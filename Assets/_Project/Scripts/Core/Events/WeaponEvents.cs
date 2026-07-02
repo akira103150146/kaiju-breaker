@@ -52,4 +52,20 @@ namespace KaijuBreaker.Core
             KaijuId = kaijuId;
         }
     }
+
+    /// <summary>
+    /// Emitted by Weapons' LoadoutController when a weapon is equipped into a pool slot (loadout
+    /// change / weapon-pod pickup). The slot (primary/secondary) is derivable from the WeaponId
+    /// ordinal (&lt; 4 = laser/primary, ≥ 4 = missile/secondary), so it is not duplicated here.
+    /// Consumed by HUD/UI and the weapon-pod feedback layer.
+    /// </summary>
+    public readonly struct WeaponEquipped : IGameEvent
+    {
+        public readonly WeaponId Weapon;
+
+        public WeaponEquipped(WeaponId weapon)
+        {
+            Weapon = weapon;
+        }
+    }
 }

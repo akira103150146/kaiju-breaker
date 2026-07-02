@@ -29,6 +29,13 @@ namespace KaijuBreaker.Core
 
         /// <summary>False once the part is BROKEN (or does not exist).</summary>
         bool IsPartAlive(int partId);
+
+        /// <summary>
+        /// Runtime id of the ALIVE part with the highest current heat (HU), or −1 if none is alive.
+        /// Ties break to the lowest part id. Used by M1 Tier-3 (third missile auto-locks the hottest
+        /// part — weapon-system.md G.3). O(n) scan; called at most once per M1 T3 shot.
+        /// </summary>
+        int GetHottestAlivePartId();
     }
 
     /// <summary>
@@ -53,6 +60,13 @@ namespace KaijuBreaker.Core
 
         /// <summary>Synchronously flush pending saves to disk (called on app suspend/quit).</summary>
         void FlushSync();
+
+        /// <summary>
+        /// The player's persisted starting loadout (one primary + one secondary weapon), or null on a
+        /// fresh save with no stored loadout — the caller then falls back to a data-driven default.
+        /// Injected into Weapons' LoadoutController at run start (weapon-system.md — loadout system).
+        /// </summary>
+        (WeaponId Primary, WeaponId Secondary)? GetInitialLoadout();
     }
 
     /// <summary>

@@ -387,6 +387,27 @@ namespace KaijuBreaker.KaijuParts
         public bool IsPartAlive(int partId) =>
             _parts.TryGetValue(partId, out var part) && part.BreakState == BreakState.Alive;
 
+        /// <summary>
+        /// Highest-heat ALIVE part id (M1 Tier-3 auto-lock). Returns −1 when no part is alive.
+        /// Ties break to the lowest id: iterate ascending and use strict &gt; so the first (lowest-id)
+        /// part at the max heat wins.
+        /// </summary>
+        public int GetHottestAlivePartId()
+        {
+            int bestId = -1;
+            float bestHeat = float.NegativeInfinity;
+            foreach (var part in _parts.Values)
+            {
+                if (part.BreakState != BreakState.Alive) continue;
+                if (part.HCurrent > bestHeat || (part.HCurrent == bestHeat && part.Id < bestId))
+                {
+                    bestHeat = part.HCurrent;
+                    bestId = part.Id;
+                }
+            }
+            return bestId;
+        }
+
         private BreakablePart Require(int partId)
         {
             if (_parts.TryGetValue(partId, out var part)) return part;

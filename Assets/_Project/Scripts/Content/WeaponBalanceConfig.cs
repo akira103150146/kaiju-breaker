@@ -16,6 +16,16 @@ namespace KaijuBreaker.Content
         [Tooltip("Global power budget reference (PU/s). All weapons must sustain D0 ±10%. weapon-system.md G.1.")]
         [SerializeField] private float _d0Reference = 100f;
 
+        [Tooltip("Break-track conversion: BU/s produced by 1 D0 of sustained output. weapon-system.md G.1 " +
+                 "footnote (1 D0 ≙ 10 BU/s). Consumed by Weapons to derive break_delta_base and by the " +
+                 "D0 balance suite. Safe range [5, 20].")]
+        [SerializeField] private float _buPerD0 = 10f;
+
+        [Tooltip("Heat-track conversion: HU/s produced by 1 D0 of sustained laser output (25 HU/s ≙ 1 D0). " +
+                 "INFERRED from G.2 laser defaults (L1 full=25, L2=37.5=1.5×, L3 tap=15=0.6×) — pending design " +
+                 "sign-off; the D0 balance suite's H.1 laser assertions depend on it. Safe range [15, 40].")]
+        [SerializeField] private float _huPerD0 = 25f;
+
         [Header("Heat Track — Capacities (HU)")]
         [Tooltip("Heat capacity for Normal parts (HU). Safe range [80, 150].")]
         [SerializeField] private float _hMaxNormal = 100f;
@@ -75,6 +85,12 @@ namespace KaijuBreaker.Content
         /// <summary>Global D₀ power budget reference (PU/s). weapon-system.md G.1.</summary>
         public float D0Reference => _d0Reference;
 
+        /// <summary>BU/s produced by 1 D₀ of sustained output (1 D₀ ≙ 10 BU/s). weapon-system.md G.1.</summary>
+        public float BuPerD0 => _buPerD0;
+
+        /// <summary>HU/s produced by 1 D₀ of sustained laser output (25 HU/s ≙ 1 D₀, inferred). weapon-system.md G.2.</summary>
+        public float HuPerD0 => _huPerD0;
+
         /// <summary>Heat capacity for Normal parts (HU). weapon-system.md G.1.</summary>
         public float HMaxNormal => _hMaxNormal;
 
@@ -127,6 +143,8 @@ namespace KaijuBreaker.Content
         private void OnValidate()
         {
             Validate("D0Reference",                      _d0Reference,                      1f,    float.MaxValue);
+            Validate("BuPerD0",                          _buPerD0,                          5f,    20f);
+            Validate("HuPerD0",                          _huPerD0,                          15f,   40f);
             Validate("HMaxNormal",                       _hMaxNormal,                       80f,   150f);
             Validate("HMaxArmored",                      _hMaxArmored,                      120f,  200f);
             Validate("HMaxBossCore",                     _hMaxBossCore,                     160f,  280f);
