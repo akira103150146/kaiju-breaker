@@ -186,7 +186,7 @@
 - **MUST** 訂閱事件 + 經 `IPartStateQuery` 查詢畫世界座標部位血條（`H_current`/`H_max`）、武器 HUD、素材計數。
 - **MUST** Loadout / 升級 / 難度三畫面。
 - **MUST NOT** 直接改遊戲狀態或引用其他 Feature 系統。
-- 框架暫定 UGUI（UI ADR 待補，非 MVP 阻斷）。
+- 框架依 **ADR-0006**:世界座標血條 = SpriteRenderer(不進 Canvas);HUD + meta 畫面 = UGUI(判定點 overlay sort 99)。
 
 ---
 

@@ -11,7 +11,7 @@
 ## Context
 
 **GDD**: `design/gdd/hud-ui-system.md`
-**Requirement**: `TR-ui-???` — no standalone M.x criterion; foundational component required by M.5, M.6, M.7, M.8 (upgrade/difficulty/platform/a11y screens all depend on UIScreenManager). *(Warn: no TR-ID in tr-registry.yaml for screen-flow infrastructure; add TR-ui-009 when registry is formalized.)*
+**Requirement**: `TR-ui-009` (UIScreenManager 畫面堆疊基礎設施；tr-registry.yaml 已正式化) — foundational component required by M.5/M.6/M.7/M.8 (upgrade/difficulty/platform/a11y screens all depend on UIScreenManager).
 
 **ADR Governing Implementation**: ADR-0006: UI Framework Selection (Primary); ADR-0002: Event Architecture (Secondary)
 **ADR Decision Summary**: Meta screens (Loadout, Upgrade, Difficulty, Results) are managed by `UIScreenManager` — a screen stack (`Push`/`Pop`/`Replace`/`ClearTo`) operating on `IScreen`-implementing UGUI Canvas Prefabs (ADR-0006 §3). Back/B/Escape always calls `Pop()`. `EventSystem.SetSelectedGameObject` is called on every `Push` for gamepad navigation. No `IEventBus` events are needed for screen transitions — `UIScreenManager` is a direct call contract (called by game flow, not event-driven).

@@ -34,7 +34,7 @@
 | **遊戲/UI 物件** | MonoBehaviour + 物件池 (object pooling) | 玩家、部位、武器、UI、少量特例（見 ADR-0001 混合策略）|
 | **輸入 (Input)** | Input System package（新版，Unity 6 預設）| 三方案（觸控 / 鍵鼠 / 手柄）抽象動作映射（見 §4、`input-system.md`）|
 | **資產載入 (Asset Loading)** | Addressables | 場景、巨獸、關卡內容以群組管理與非同步載入（見 §3.4）|
-| **UI 框架** | **UGUI (Canvas)** — 決議見 §6.1 待辦 | 世界座標部位血條 + 螢幕空間 HUD；UI Toolkit 為未來評估項，非 MVP 阻斷 |
+| **UI 框架** | **ADR-0006**:世界座標血條 = `SpriteRenderer`；in-combat HUD + meta 畫面 = UGUI | UI Toolkit 為 post-MVP 再評估項 |
 | **靜態調校資料** | ScriptableObject（唯讀，設計師撰寫）| 取代 GDD 中提及的 `assets/data/**/*.yaml` 佔位路徑（見 ADR-0003）|
 | **存檔資料** | JSON + 原子寫入 + CRC32（`Application.persistentDataPath`）| 玩家可變狀態；與靜態調校資料分離（見 ADR-0004）|
 | **測試 (Testing)** | Unity Test Framework (UTF / NUnit)，EditMode + PlayMode | CI：`game-ci/unity-test-runner@v4`（見 `coding-standards.md`）|
@@ -312,7 +312,7 @@ Assets/
 
 **雙層彈幕模型**：`EmitterPatternSO`（設計師 Inspector 撰寫）→ 載入時烘焙為不可變 Burst 友善 Blob（執行期唯讀），使設計師無需碰程式即可撰寫三頭目全部模式，且後端可換（`bullet-system.md` §4；ADR-0001/0003）。
 
-**待辦決議（非 MVP 阻斷）**：HUD 用 UGUI vs UI Toolkit——由 `technical-artist`/`lead-programmer` 於 `/architecture-decision` 補一份 UI ADR。本文件暫定 UGUI（世界座標血條 + 團隊熟悉度）。
+**UI 框架決議（ADR-0006，Accepted）**：三層拆分——世界座標部位血條用 `SpriteRenderer + MaterialPropertyBlock`(不進 Canvas，避免彈幕區開銷)、in-combat HUD 用 UGUI 多 Canvas(判定點 overlay sort 99)、meta 畫面用 UGUI `UIScreenManager` 堆疊。UI Toolkit 因 Unity 6.3 手柄導航/手機成熟度不確定,列為 post-MVP 再評估。
 
 ### 6.2 玩家可變資料 = JSON 存檔（讀寫）
 
@@ -360,7 +360,7 @@ Assets/
 | S4 | 關卡/波段 + Run 流程 | `stage-system.md` | `KaijuBreaker.Stage` | ADR-0005（狀態機/邊界）、ADR-0003 |
 | S5 | 難度系統 | `difficulty-system.md` | `KaijuBreaker.Difficulty` | ADR-0003（唯一密度來源）|
 | S6 | 輸入系統 | `input-system.md` | `KaijuBreaker.Input` | ADR-0003（設定資料）、ADR-0005 |
-| S7 | HUD/UI | `hud-ui-system.md` | `KaijuBreaker.UI` | ADR-0002（訂閱事件）、UI ADR（待補）|
+| S7 | HUD/UI | `hud-ui-system.md` | `KaijuBreaker.UI` | ADR-0002（訂閱事件）、ADR-0006（UI 框架）|
 | S8 | 打擊感 | `game-feel.md` | `KaijuBreaker.GameFeel` | ADR-0002、ADR-0003 |
 | S9 | 彈幕引擎 | `bullet-system.md` | `KaijuBreaker.BulletSim` | **ADR-0001（旗艦）**、ADR-0003 |
 | S10 | 元進度/存檔 | `meta-progression-system.md` | `KaijuBreaker.Meta` | **ADR-0004**、ADR-0002 |
@@ -389,7 +389,7 @@ Assets/
 ## 10. 開放問題 (Open Questions)
 
 1. **玩家飛彈池：ECS 獨立池 vs Mono 池？** 追蹤飛彈需部位 `world_position`；量測後定（ADR-0001 開放項）。
-2. **HUD 框架：UGUI vs UI Toolkit？** 暫定 UGUI；需一份 UI ADR（`technical-artist`/`lead-programmer`）。
+2. **HUD 框架** — 已由 ADR-0006 定案(SpriteRenderer 血條 + UGUI HUD/meta)。~~UGUI vs UI Toolkit~~ 已解決。
 3. **ECS 時間注入方式（頓幀凍結敵彈）** 在 Entities 1.3 的正確 API [需查證 6.3 API]。
 4. **手機基準機型號**：於效能原型階段確定並記錄（`bullet-system.md` §5.1）。
 5. **on_part_break payload 中 shard/core yield 由誰算**：kaiju-part / economy / save 三方——本架構採 `Economy` 依 `break_quality`+`kaiju_id` 獨立計算（對齊 `material-economy.md` F.1），`Meta` 讀結果入帳；需三方最終確認（ADR-0002）。

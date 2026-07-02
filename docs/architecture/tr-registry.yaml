@@ -1,4 +1,4 @@
-# Technical Requirement ID Registry
+# Technical Requirement ID Registry — 殲獸戰機 / KAIJU BREAKER
 #
 # PURPOSE: Persistent, stable IDs for every GDD technical requirement.
 # Prevents TR-ID renumbering across /architecture-review runs, which would
@@ -23,34 +23,948 @@
 #   NNN = three-digit zero-padded sequence per system, starting at 001
 #
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
-
-version: 1
-last_updated: ""
-
-requirements: []
-
-# --- EXAMPLE ENTRIES (remove when first real entries are added) ---
 #
-# - id: TR-combat-001
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Player takes damage from enemies based on attack power minus defence"
-#   created: 2026-03-10
-#   revised: ""
-#   status: active
+# ADR_COVERAGE VALUES: ADR-NNNN (one or more) | design-only | "❌ none"
+#   design-only = requirement is a playtest / subjective / content acceptance
+#                 criterion that legitimately needs no architectural decision.
+#   "❌ none"    = requirement needs an ADR but has none (a real gap).
 #
-# - id: TR-combat-002
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Combo window timing is 0.4 seconds between hits"
-#   created: 2026-03-10
-#   revised: "2026-04-01"
-#   status: active
+# ENGINE: Unity 6.3 LTS (C#). All ADRs target this version (see
+#         docs/engine-reference/unity/VERSION.md).
 #
-# - id: TR-combat-003
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Old damage formula using raw stats"
-#   created: 2026-03-10
-#   revised: ""
-#   status: superseded-by: TR-combat-001
+# RECONCILIATION (2026-07-02): This registry was formalized against the
+# 13 EPIC.md GDD-Requirements tables and 97 story files. Every TR-ID
+# referenced by a story maps to an entry here. Two IDs (TR-ui-009, TR-ui-010)
+# were placeholder-flagged in story-006/story-007 of the hud-ui epic
+# ("add when registry is formalized") and are now registered as real entries.
+# No story references an unregistered or mismatched TR-ID.
+
+version: 2
+last_updated: "2026-07-02"
+
+requirements:
+
+  # ===== Core 基礎設施 (KaijuBreaker.Core + App) — epic: core-foundation =====
+  # No dedicated GDD; requirements derive from architecture.md §2/§5 + ADR-0002/0005.
+  - id: TR-core-001
+    system: core
+    gdd: docs/architecture/architecture.md
+    requirement: "型別化事件匯流排 Publish<T>(in T)/Subscribe<T>；事件為 readonly struct、in 傳遞、穩態零 GC"
+    adr_coverage: ADR-0002
+    epic: core-foundation
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-core-002
+    system: core
+    gdd: docs/architecture/architecture.md
+    requirement: "所有 GDD 事件契約以 Core struct 表達，同步同幀分發（維持破壞入帳/漣漪/Boss 核心事件順序語義）"
+    adr_coverage: ADR-0002
+    epic: core-foundation
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-core-003
+    system: core
+    gdd: docs/architecture/architecture.md
+    requirement: "唯讀查詢介面於 Core，App 建構具體實作並注入；系統測試可注入假實作"
+    adr_coverage: ADR-0002
+    epic: core-foundation
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-core-004
+    system: core
+    gdd: docs/architecture/architecture.md
+    requirement: "一系統一 .asmdef，references 編譯期強制系統零直接互引用"
+    adr_coverage: ADR-0005
+    epic: core-foundation
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-core-005
+    system: core
+    gdd: docs/architecture/architecture.md
+    requirement: "App 為唯一組合根；禁止持有遊戲狀態的 static 單例；每系統可脫離其他系統以假依賴 EditMode 測試"
+    adr_coverage: ADR-0005
+    epic: core-foundation
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-core-006
+    system: core
+    gdd: docs/architecture/architecture.md
+    requirement: "共用型別與 Run 狀態列舉集中於 Core（僅放真正共享的抽象，不放實作）"
+    adr_coverage: ADR-0005
+    epic: core-foundation
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== Content 調校資料框架 (KaijuBreaker.Content) — epic: content-config =====
+  # No dedicated GDD; requirements derive from architecture.md §6 + ADR-0003.
+  - id: TR-content-001
+    system: content
+    gdd: docs/architecture/architecture.md
+    requirement: "所有 GDD「調校旋鈕」章節數值以唯讀 SO 承載，放 Assets/_Project/Content，執行期唯讀載入"
+    adr_coverage: ADR-0003
+    epic: content-config
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-content-002
+    system: content
+    gdd: docs/architecture/architecture.md
+    requirement: "提供全套 SO 定義類別（WeaponDef/PartSystemConfig/KaijuDef/DifficultyConfig/EconomyConfig/StageDef/GameFeelConfig/InputSettings/EmitterPatternSO/SaveConfig）"
+    adr_coverage: ADR-0003
+    epic: content-config
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-content-003
+    system: content
+    gdd: docs/architecture/architecture.md
+    requirement: "靜態 SO 與玩家可變 JSON 存檔嚴格分離，執行期不寫回 SO"
+    adr_coverage: ADR-0003
+    epic: content-config
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-content-004
+    system: content
+    gdd: docs/architecture/architecture.md
+    requirement: "跨 GDD 共享旋鈕單一權威來源（難度乘數唯一存 DifficultyConfig；stagger_duration 單一擁有者）"
+    adr_coverage: ADR-0003
+    epic: content-config
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-content-005
+    system: content
+    gdd: docs/architecture/architecture.md
+    requirement: "SO 以 OnValidate 做安全範圍編輯期斷言；測試以工廠/.asset fixture 注入，無行內魔數"
+    adr_coverage: ADR-0003
+    epic: content-config
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== 子彈/彈幕引擎 (KaijuBreaker.BulletSim) — epic: bullet-sim =====
+  # Source: design/gdd/bullet-system.md §11. NOTE: ADR-0001 is Proposed (perf-prototype gate).
+  - id: TR-bullet-001
+    system: bullet
+    gdd: design/gdd/bullet-system.md
+    requirement: "11.1 手機基準機 sustain 1,000 敵彈（含碰撞+繪製）穩定 60fps ≥60s 無掉幀；PC 2,000"
+    adr_coverage: ADR-0001
+    epic: bullet-sim
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "ADR-0001 Proposed — 待效能原型驗證閘門 LOCK"
+  - id: TR-bullet-002
+    system: bullet
+    gdd: design/gdd/bullet-system.md
+    requirement: "11.2 一場最高密度戰鬥 GC Alloc = 0 B/frame（穩態）"
+    adr_coverage: ADR-0001
+    epic: bullet-sim
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "ADR-0001 Proposed — 待效能原型驗證閘門 LOCK"
+  - id: TR-bullet-003
+    system: bullet
+    gdd: design/gdd/bullet-system.md
+    requirement: "11.3 三頭目全部模式可由 EmitterPatternSO 撰寫，無需新增 shape 或程式；設計師可 Inspector 調整"
+    adr_coverage: ADR-0001, ADR-0003
+    epic: bullet-sim
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-bullet-004
+    system: bullet
+    gdd: design/gdd/bullet-system.md
+    requirement: "11.4 密度縮放 ceil(base × bullet_density_mult)；速度/形狀恆定；readability_cap_priority 截斷"
+    adr_coverage: ADR-0001, ADR-0003
+    epic: bullet-sim
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-bullet-005
+    system: bullet
+    gdd: design/gdd/bullet-system.md
+    requirement: "11.5 單點判定；玩家飛彈→on_missile_hit、雷射→on_laser_hit/on_l3_wave_hit；L4 穿透對縱列各發一次"
+    adr_coverage: ADR-0001, ADR-0002
+    epic: bullet-sim
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-bullet-006
+    system: bullet
+    gdd: design/gdd/bullet-system.md
+    requirement: "11.6 D4 最高密度「敵彈 vs 判定點」辨識率 ≥70%；敵彈暖色高對比、判定點恆亮永不遮蔽"
+    adr_coverage: ADR-0001
+    epic: bullet-sim
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "可讀性下界屬 design/playtest 驗收，護欄由 ADR-0001 執行"
+
+  # ===== 素材經濟 (KaijuBreaker.Economy) — epic: economy =====
+  # Source: design/gdd/material-economy.md §H.
+  - id: TR-economy-001
+    system: economy
+    gdd: design/gdd/material-economy.md
+    requirement: "H.1 端到端循環：破壞→HUD→結算記帳→升級→Tier 更新→戰場生效，跨局存檔無丟失、無回滾"
+    adr_coverage: ADR-0002, ADR-0004
+    epic: economy
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-economy-002
+    system: economy
+    gdd: design/gdd/material-economy.md
+    requirement: "H.2 產量公式正確：Standard/Precision/Perfect × 部位類型 × 巨獸主題 = 27 情境；主題核心映射"
+    adr_coverage: ADR-0003
+    epic: economy
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-economy-003
+    system: economy
+    gdd: design/gdd/material-economy.md
+    requirement: "H.3 升級效果無主導 loadout：Tier-3 普通部位 TTB 改善 ≤15%；64 組矩陣 ≤2.0×"
+    adr_coverage: ADR-0003
+    epic: economy
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-economy-004
+    system: economy
+    gdd: design/gdd/material-economy.md
+    requirement: "H.4 素材類型分流：主題核心正確歸屬；全破壞結算精魄 + 完成度碎片；非全破壞無加成"
+    adr_coverage: ADR-0002, ADR-0003
+    epic: economy
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-economy-005
+    system: economy
+    gdd: design/gdd/material-economy.md
+    requirement: "H.5 進程曲線可玩性：第一把 Tier0→1 兩場內、Tier2→3 於 7–13 場、升滿 15–21h ±30%"
+    adr_coverage: design-only
+    epic: economy
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收；數值全在 EconomyConfig (ADR-0003) 但曲線達標屬設計驗證"
+  - id: TR-economy-006
+    system: economy
+    gdd: design/gdd/material-economy.md
+    requirement: "H.6 最終養成不產生主導 loadout：全 Tier-3 試玩後每武器仍有最佳/近最佳情境"
+    adr_coverage: ADR-0003
+    epic: economy
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-economy-007
+    system: economy
+    gdd: design/gdd/material-economy.md
+    requirement: "H.7 MVP 子集閉環：2 武器 × ≤Tier2 × 1 巨獸端到端跑通、升級效果可感知"
+    adr_coverage: ADR-0002, ADR-0003
+    epic: economy
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== 難度系統 (KaijuBreaker.Difficulty) — epic: difficulty =====
+  # Source: design/gdd/difficulty-system.md §H.
+  - id: TR-difficulty-001
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.1 乘數正確應用：D1–D4 實際敵人數/子彈數 = config 值（ceil ±1）；≥24 測試案例"
+    adr_coverage: ADR-0003
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-difficulty-002
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.2 部位 TTB 在 D1–D4 恆定（阻斷）：全域部位旋鈕與 TTB_base 跨難度完全相等（4×3 矩陣）"
+    adr_coverage: ADR-0003
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-difficulty-003
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.3 武器輸出在 D1–D4 恆定（阻斷）：8 武器 30s 持續輸出跨難度相同（4×8 矩陣）"
+    adr_coverage: ADR-0003
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-difficulty-004
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.4 素材產量在 D1–D4 等量：difficulty_yield_bonus 恆 0；36 測試案例"
+    adr_coverage: ADR-0003
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-difficulty-005
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.5 內容可及性：D1–D4 所有關卡可選、莢艙保底生效、無難度鎖定判斷"
+    adr_coverage: ADR-0003
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-difficulty-006
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.6 D1 可及性承諾：5 人新手 Stage 1 完整循環達成 ≥80%；D1 彈幕辨識 ≥80%"
+    adr_coverage: design-only
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收；home: Stage 1 MVP 里程碑（stage epic QA）"
+  - id: TR-difficulty-007
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.7 D4 彈幕可讀性下界：辨識率 ≥70%；未達標優先調降 difficulty_bullet_mult[D4]（安全範圍）"
+    adr_coverage: design-only
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收；處置對齊 ADR-0001 可讀性優先；home: bullet-sim/game-feel VS 里程碑"
+  - id: TR-difficulty-008
+    system: difficulty
+    gdd: design/gdd/difficulty-system.md
+    requirement: "H.8 難度選擇 UI 行為：首次預選 D1、記憶上輪、輪中灰化"
+    adr_coverage: ADR-0003
+    epic: difficulty
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "config 預設由 ADR-0003；UI 呈現跨 hud-ui epic（TR-ui-006）"
+
+  # ===== 關卡系統與 Run 流程 (KaijuBreaker.Stage) — epic: stage =====
+  # Source: design/gdd/stage-system.md §L.
+  - id: TR-stage-001
+    system: stage
+    gdd: design/gdd/stage-system.md
+    requirement: "L.1 關卡結構完整性：引入→隨機波段×N→前頭目喘息→頭目；排序/no-repeat/難度過濾正確（100 次生成測試）"
+    adr_coverage: ADR-0005, ADR-0003
+    epic: stage
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-stage-002
+    system: stage
+    gdd: design/gdd/stage-system.md
+    requirement: "L.2 武器莢艙保底：抵達喘息前 ≥1 主 + ≥1 副莢；喘息補 1 莢（200 輪測試）"
+    adr_coverage: ADR-0003
+    epic: stage
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-stage-003
+    system: stage
+    gdd: design/gdd/stage-system.md
+    requirement: "L.3 難度縮放一致性：敵人數/子彈密度符 config；速度/波段池/莢艙規則 D1–D4 恆定"
+    adr_coverage: ADR-0003
+    epic: stage
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-stage-004
+    system: stage
+    gdd: design/gdd/stage-system.md
+    requirement: "L.4 引導設計達成率：Stage 1 新手描述核心循環 ≥70%；前 10 分必拾莢；首次破壞 <5 分"
+    adr_coverage: design-only
+    epic: stage
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收"
+  - id: TR-stage-005
+    system: stage
+    gdd: design/gdd/stage-system.md
+    requirement: "L.5 縱列預告效果：S3-02 縱列 x 偏差 ≤5px；L4 縱列 TTK ≤ 40%；穿透感知 ≥60%"
+    adr_coverage: design-only
+    epic: stage
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "design/playtest 驗收"
+  - id: TR-stage-006
+    system: stage
+    gdd: design/gdd/stage-system.md
+    requirement: "L.6 視覺可讀性：6 種雜兵子彈 D4 辨識 ≥80%；莢艙誤認 ≤10%；攜帶者圖示 ≥80%"
+    adr_coverage: design-only
+    epic: stage
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "design/playtest 驗收；對齊 ADR-0001 可讀性護欄"
+  - id: TR-stage-007
+    system: stage
+    gdd: design/gdd/stage-system.md
+    requirement: "Run 狀態機 LOADOUT→STAGE→BOSS→RESULTS 驅動，存檔觸發點對齊 meta 跨輪流程"
+    adr_coverage: ADR-0005
+    epic: stage
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== 可破壞部位系統 (KaijuBreaker.KaijuParts) — epic: kaiju-parts =====
+  # Source: design/gdd/kaiju-part-system.md §H.
+  - id: TR-part-001
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.1 狀態機正確性：B_fill 查表（unsoftened/softened/staggered/1.5）、BROKEN 不可逆終態、破壞後命中無事件"
+    adr_coverage: ADR-0002, ADR-0003
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-part-002
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.2 SOFTENED 視覺提示 ≤0.5s 出現、辨識率 ≥80%、D4 遮蓋 ≤50%（事件經 ADR-0002；視覺跨 GameFeel/UI 交付）"
+    adr_coverage: ADR-0002
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "事件由 ADR-0002 覆蓋；視覺呈現跨 game-feel(TR-gamefeel-001)/hud-ui(TR-ui-002) 交付"
+  - id: TR-part-003
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.3 ARMORED 護甲閘門：ARMOR_INTACT B_fill=0；ARMOR_STRIPPED 僅由 on_l3_wave_hit 觸發；BU 不清零"
+    adr_coverage: ADR-0002, ADR-0003
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-part-004
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.4 Boss Core 破壞發 on_boss_core_break；事件順序 on_part_break→on_boss_core_break；僅核心觸發勝利"
+    adr_coverage: ADR-0002
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-part-005
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.5 部位永不再生：part_regen_enabled 恆 false；新輪正確重置為 ALIVE"
+    adr_coverage: ADR-0003
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-part-006
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.6 相鄰鏈式：L2 T3 熱脈衝、M3 T3 連鎖（≤2 鄰居、不遞迴、護甲偏轉鏈式）"
+    adr_coverage: ADR-0002, ADR-0003
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-part-007
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.7 部位數值難度不縮放：D1–D4 全域旋鈕回傳完全相同；無寫入縮放路徑"
+    adr_coverage: ADR-0003
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-part-008
+    system: part
+    gdd: design/gdd/kaiju-part-system.md
+    requirement: "H.8 破壞即掉落：on_part_break 攜非空 drop_table_id；掉落 world_position 一致（整合測試）"
+    adr_coverage: ADR-0002
+    epic: kaiju-parts
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== 武器系統 (KaijuBreaker.Weapons) — epic: weapons =====
+  # Source: design/gdd/weapon-system.md §H.
+  - id: TR-weapon-001
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.1 等功率等價：單武器最優命中 30s 總輸出 ∈ D₀×[0.9,1.1]（自動化測試）"
+    adr_coverage: ADR-0003
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-weapon-002
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.2 無主導 loadout：8×8 TTB 任一 ≤ 最快 2.0×；無 loadout 於全部位類型均前三"
+    adr_coverage: ADR-0003
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-weapon-003
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.3 M3 熱衝擊破甲門檻：暴力破甲 TTB ≥ 正常蓄熱路徑 1.5×"
+    adr_coverage: ADR-0003
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-weapon-004
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.4 L3 波動砲弱點窗口可操作：2.0s 窗口內完成 M2 齊射 ≥80% 成功"
+    adr_coverage: ADR-0003
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-weapon-005
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.5 雙軌可讀性：軟化視覺提示 ≤0.5s 可辨識 ≥80%（事件經 ADR-0002；視覺呈現跨 GameFeel/UI 交付）"
+    adr_coverage: ADR-0002
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "事件由 ADR-0002；視覺跨 game-feel/hud-ui 覆蓋"
+  - id: TR-weapon-006
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.6 L4 關卡可用性：每 Boss ≥1 垂直對齊穿透情境（關卡設計評審確認）"
+    adr_coverage: design-only
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "design GDD + 關卡評審驗收"
+  - id: TR-weapon-007
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.7 Tier-3 深化身份：普通部位 TTB 相對 Tier-1 縮短 ≤15%（自動化測試）"
+    adr_coverage: ADR-0003
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-weapon-008
+    system: weapon
+    gdd: design/gdd/weapon-system.md
+    requirement: "H.8 標誌性搭配節奏差異：三組搭配可清晰區分打法節奏"
+    adr_coverage: design-only
+    epic: weapons
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "design GDD 主觀驗收"
+
+  # ===== 輸入系統 (KaijuBreaker.Input) — epic: input =====
+  # Source: design/gdd/input-system.md §L.
+  - id: TR-input-001
+    system: input
+    gdd: design/gdd/input-system.md
+    requirement: "L.1 觸控手感驗證（阻斷 pre-MVP）：專屬原型、遮蔽解決、彈幕閃避可行、L3 觸控可行"
+    adr_coverage: design-only
+    epic: input
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "原型驗證閘門（同 bullet-001 性質）；ADR-0003 僅覆蓋 InputSettings 資料"
+  - id: TR-input-002
+    system: input
+    gdd: design/gdd/input-system.md
+    requirement: "L.2 跨方案等價（阻斷 pre-VS）：觸控部位破壞中位數 ≥ 滑鼠 0.8×；L3 成功率各 ≥80%"
+    adr_coverage: design-only
+    epic: input
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收"
+  - id: TR-input-003
+    system: input
+    gdd: design/gdd/input-system.md
+    requirement: "L.3 鍵盤單一方案完整遊玩（阻斷）：WASD+空白+Z 可完成完整流程"
+    adr_coverage: design-only
+    epic: input
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收；Input 模組結構由 ADR-0005 承載"
+  - id: TR-input-004
+    system: input
+    gdd: design/gdd/input-system.md
+    requirement: "L.4 手柄完整遊玩（阻斷）：左搖桿+RT+LT+Start 可完成完整流程"
+    adr_coverage: design-only
+    epic: input
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收；Input 模組結構由 ADR-0005 承載"
+  - id: TR-input-005
+    system: input
+    gdd: design/gdd/input-system.md
+    requirement: "L.5 無障礙基線（阻斷）：L3 Toggle 等效、震動可完全關閉、READY 非顏色提示保留"
+    adr_coverage: ADR-0003
+    epic: input
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-input-006
+    system: input
+    gdd: design/gdd/input-system.md
+    requirement: "L.6/L.7 蓄力中斷 0.3s 寬限、副武器按鈕誤觸率 ≤10%（建議）"
+    adr_coverage: design-only
+    epic: input
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收"
+  - id: TR-input-007
+    system: input
+    gdd: design/gdd/input-system.md
+    requirement: "輸入手感數值資料驅動於 InputSettings，不隨難度縮放"
+    adr_coverage: ADR-0003
+    epic: input
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== 打擊感 (KaijuBreaker.GameFeel) — epic: game-feel =====
+  # Source: design/gdd/game-feel.md §I.
+  - id: TR-gamefeel-001
+    system: gamefeel
+    gdd: design/gdd/game-feel.md
+    requirement: "I.1 SOFTENED 感知 ≤0.5s、sfx 同幀播放、辨識率 ≥80%、D4 遮蔽 ≤50%（UX 阻斷）"
+    adr_coverage: ADR-0002
+    epic: game-feel
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-gamefeel-002
+    system: gamefeel
+    gdd: design/gdd/game-feel.md
+    requirement: "I.2 頓幀正確性：時長精確 ±5ms、輸入記錄後首幀執行不丟失、time_scale=0 敵彈靜止"
+    adr_coverage: ADR-0002
+    epic: game-feel
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "time_scale=0 凍結敵彈的 ECS 時間注入 [需查證 6.3 API]（與 ADR-0001 BulletSim 整合）"
+  - id: TR-gamefeel-003
+    system: gamefeel
+    gdd: design/gdd/game-feel.md
+    requirement: "I.3 慢動作正確性：timescale 降/回升；SFX 與玩家輸入不縮速"
+    adr_coverage: ADR-0002
+    epic: game-feel
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-gamefeel-004
+    system: gamefeel
+    gdd: design/gdd/game-feel.md
+    requirement: "I.4 螢幕震動上限：單事件 ≤24px；連續事件取最大不累加；死亡時敵彈仍可視"
+    adr_coverage: ADR-0003
+    epic: game-feel
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-gamefeel-005
+    system: gamefeel
+    gdd: design/gdd/game-feel.md
+    requirement: "I.5 可讀性護欄：閃光 ≤0.4s 淡出、SOFTENED 光暈渲染於敵彈層下、判定點閃光可辨"
+    adr_coverage: ADR-0003
+    epic: game-feel
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-gamefeel-006
+    system: gamefeel
+    gdd: design/gdd/game-feel.md
+    requirement: "I.7 Reduce-Motion：震動 25%、閃光消失、慢動作停用、頓幀縮 50%、即時生效"
+    adr_coverage: ADR-0003
+    epic: game-feel
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-gamefeel-007
+    system: gamefeel
+    gdd: design/gdd/game-feel.md
+    requirement: "I.8 全值資料驅動：GameFeelConfig 含 G 節全旋鈕、改值即時反映、無硬編碼繞過"
+    adr_coverage: ADR-0003
+    epic: game-feel
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== 巨獸內容 (KaijuBreaker.Content: KaijuDef + EmitterPatternSO) — epic: kaiju-roster =====
+  # Source: design/gdd/kaiju/01-carapex.md, 02-lacera.md, 03-voltwyrm.md §10.
+  - id: TR-kaiju-001
+    system: kaiju
+    gdd: design/gdd/kaiju/01-carapex.md
+    requirement: "CARAPEX AC-01 教學循環感知 ≥70%；首次大顎破壞 <3 分；5 分內發現 L3 剝甲"
+    adr_coverage: design-only
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "playtest 驗收"
+  - id: TR-kaiju-002
+    system: kaiju
+    gdd: design/gdd/kaiju/03-voltwyrm.md
+    requirement: "AC-02 / VOLTWYRM 10.2 ARMORED 護甲閘門（dorsal_cannon、雙護盾）依部位系統規則正確"
+    adr_coverage: ADR-0003, ADR-0002
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-kaiju-003
+    system: kaiju
+    gdd: design/gdd/kaiju/01-carapex.md
+    requirement: "AC-03 / 10.5 BOSS_CORE 勝利條件：核心破壞觸發勝利、事件順序保證"
+    adr_coverage: ADR-0002
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-kaiju-004
+    system: kaiju
+    gdd: design/gdd/kaiju/01-carapex.md
+    requirement: "AC-04 / 10.5 掉落表主題正確：CARAPEX→core_carapace、LACERA→core_limb、VOLTWYRM→core_energy"
+    adr_coverage: ADR-0003
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-kaiju-005
+    system: kaiju
+    gdd: design/gdd/kaiju/01-carapex.md
+    requirement: "AC-05 / 10.4 彈幕可讀性：各巨獸暖色彈幕 + 判定點辨識 ≥80%（D4 SOFTENED/弱點仍可辨）"
+    adr_coverage: design-only
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "design/playtest 驗收；對齊 ADR-0001 護欄"
+  - id: TR-kaiju-006
+    system: kaiju
+    gdd: design/gdd/kaiju/02-lacera.md
+    requirement: "AC-06 / LACERA 10.6 L4 垂直對齊窗口存在性（每 Phase1 ≥8 次；關卡評審確認）"
+    adr_coverage: design-only
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "design GDD + 關卡評審驗收"
+  - id: TR-kaiju-007
+    system: kaiju
+    gdd: design/gdd/kaiju/02-lacera.md
+    requirement: "LACERA 10.1 移動部位 world_position 每幀更新；M1 追蹤動態位置；破壞位置正確"
+    adr_coverage: ADR-0002
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "IPartStateQuery world_position 由 ADR-0002；移動實作屬 content/design"
+  - id: TR-kaiju-008
+    system: kaiju
+    gdd: design/gdd/kaiju/03-voltwyrm.md
+    requirement: "AC-07 / VOLTWYRM 10.5 階段轉換：部位破壞驅動模式切換、單向不可逆"
+    adr_coverage: ADR-0003
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "Boss Phase Controller framework（kaiju-roster story-001）+ design"
+  - id: TR-kaiju-009
+    system: kaiju
+    gdd: design/gdd/kaiju/01-carapex.md
+    requirement: "三頭目全部彈幕模式可由 EmitterPatternSO 撰寫無需新 shape（bullet 11.3 表達力）"
+    adr_coverage: ADR-0003, ADR-0001
+    epic: kaiju-roster
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "依 ADR-0001 (Proposed) BulletSim 模式表達力驗收；與 TR-bullet-003 對應"
+
+  # ===== 元進度/存檔 (KaijuBreaker.Meta) — epic: meta-save =====
+  # Source: design/gdd/meta-progression-system.md §H.
+  - id: TR-meta-001
+    system: meta
+    gdd: design/gdd/meta-progression-system.md
+    requirement: "H.1 進程於 on_part_break 後 100ms 內被殺，重啟後該素材完整（誤差 0）；suspend 後強殺存檔完整"
+    adr_coverage: ADR-0004
+    epic: meta-save
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-meta-002
+    system: meta
+    gdd: design/gdd/meta-progression-system.md
+    requirement: "H.2 材料入帳公式正確：27 情境 + hunt-end 精魄/碎片 + 連續破壞累加無溢位"
+    adr_coverage: ADR-0004
+    epic: meta-save
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-meta-003
+    system: meta
+    gdd: design/gdd/meta-progression-system.md
+    requirement: "H.3 武器所有權狀態機：新遊戲 L1/M1 owned；首次拾取→永久 owned；二次拾取不重複解鎖"
+    adr_coverage: ADR-0004
+    epic: meta-save
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-meta-004
+    system: meta
+    gdd: design/gdd/meta-progression-system.md
+    requirement: "H.4 原子寫入：write 後 rename 前被殺，磁碟 save.json 恆為舊/新完整之一，無損毀 JSON"
+    adr_coverage: ADR-0004
+    epic: meta-save
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-meta-005
+    system: meta
+    gdd: design/gdd/meta-progression-system.md
+    requirement: "H.5 CRC32 完整性校驗；失敗讀備份；皆損毀顯示重置畫面不崩潰"
+    adr_coverage: ADR-0004
+    epic: meta-save
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-meta-006
+    system: meta
+    gdd: design/gdd/meta-progression-system.md
+    requirement: "H.6 版本遷移純函數鏈；未來版本拒載；缺欄位以新遊戲預設填充"
+    adr_coverage: ADR-0004
+    epic: meta-save
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-meta-007
+    system: meta
+    gdd: design/gdd/meta-progression-system.md
+    requirement: "H.7/H.8 last_difficulty/last_loadout 預填；loadout 指向未擁有武器時 fallback 至 L1"
+    adr_coverage: ADR-0004
+    epic: meta-save
+    created: 2026-07-02
+    revised: ""
+    status: active
+
+  # ===== HUD / UI 系統 (KaijuBreaker.UI) — epic: hud-ui =====
+  # Source: design/gdd/hud-ui-system.md §M. UI framework governed by ADR-0006 (Accepted).
+  - id: TR-ui-001
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.1 彈幕可讀性不受 HUD 干擾（Alpha 阻斷）：D4 不遮敵彈外框 ≥70%；判定點閃光可辨；血條不錯位"
+    adr_coverage: ADR-0006
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "判定點 overlay sort 99 > flash；血條走 SpriteRenderer 不進彈幕區 Canvas（ADR-0006）"
+  - id: TR-ui-002
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.2 SOFTENED ≤0.5s 可讀：HEAT 條同幀切橙脈動；pulse_hz 與 part-system 一致；退出同幀停"
+    adr_coverage: ADR-0002
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-ui-003
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.3 副武器彈匣狀態正確：Pip 即時、換彈條、拾取補滿（狀態機自動化測試）"
+    adr_coverage: ADR-0002
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-ui-004
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.4 L3 蓄力條正確：僅 L3 顯示、填充時間符 l3_charge_time、90% 閃爍、冷卻遮罩"
+    adr_coverage: ADR-0002
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-ui-005
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.5 升級畫面費用顯示正確：不足紅✗灰化、庫存即時同步、Tier-3 模糊預覽、建議狩獵指向"
+    adr_coverage: ADR-0002
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "ISaveService 查詢（ADR-0002）"
+  - id: TR-ui-006
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.6 難度 UI 行為：首次預選 D1、記憶上輪、輪中灰化（自動化測試）"
+    adr_coverage: ADR-0002
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-ui-007
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.7 跨平台 HUD 安全區：手機 Portrait 15%/20% 條、觸控目標 ≥44dp、4K 整數倍銳利縮放"
+    adr_coverage: ADR-0006
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+  - id: TR-ui-008
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "M.8 無障礙功能：文字縮放 150%、色盲替代、Reduce-Motion、一級可達"
+    adr_coverage: ADR-0006
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "UGUI 程式碼方案（ADR-0006）；Reduce-Motion 與 game-feel(TR-gamefeel-006) 協調"
+  - id: TR-ui-009
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "UIScreenManager screen-stack 基礎設施（Push/Pop/Replace/ClearTo，IScreen 生命週期）——M.5/M.6/M.7/M.8 畫面共同依賴的無 AC 基礎組件"
+    adr_coverage: ADR-0006, ADR-0002
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "由 hud-ui story-006 placeholder-flag 形式化；無獨立 M.x AC，屬架構基礎組件（ADR-0006 §3）"
+  - id: TR-ui-010
+    system: ui
+    gdd: design/gdd/hud-ui-system.md
+    requirement: "Loadout 畫面（武器 1+1 裝配、卡片網格、手把導航）——screen-flow 循環的必需交付與 M.5/M.6 測試入口"
+    adr_coverage: ADR-0006
+    epic: hud-ui
+    created: 2026-07-02
+    revised: ""
+    status: active
+    note: "由 hud-ui story-007 placeholder-flag 形式化；對應 hud-ui-system.md §F Loadout Hub"

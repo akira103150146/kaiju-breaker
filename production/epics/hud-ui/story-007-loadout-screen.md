@@ -11,7 +11,7 @@
 ## Context
 
 **GDD**: `design/gdd/hud-ui-system.md`
-**Requirement**: `TR-ui-???` — no standalone M.x criterion; required deliverable for the screen-flow loop and entry point to M.5/M.6/M.7/M.8 tests. *(Warn: no TR-ID in tr-registry.yaml for loadout screen; add TR-ui-010 when registry is formalized.)*
+**Requirement**: `TR-ui-010` (Loadout 畫面；tr-registry.yaml 已正式化) — entry point to the screen-flow loop and to the M.5/M.6/M.7/M.8 screens.
 
 **ADR Governing Implementation**: ADR-0006: UI Framework Selection (Primary); ADR-0002: Event Architecture (Secondary)
 **ADR Governing Implementation (detail)**: Loadout Screen is a UGUI Screen Space – Overlay Canvas Prefab implementing `IScreen` (ADR-0006 §3). Managed by `UIScreenManager` (Story 006). Inventory display reads `ISaveService.GetInventory()` (ADR-0002 query interface). Weapon tier display reads `IWeaponTierQuery`. No direct reference to `Economy` or `Meta` assemblies.
