@@ -39,6 +39,14 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
-## Next Step
+## Stories
 
-Run `/create-stories stage` to break this epic into implementable stories.
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Run 狀態機 LOADOUT → STAGE → BOSS → RESULTS | Logic | Ready | ADR-0005 |
+| 002 | SO 驅動雜兵 Prefab 生成（從 SegmentDef 波次引用）| Integration | Ready | ADR-0003 |
+| 003 | 波段池隨機重組（加權 Fisher-Yates + No-Repeat Window）| Logic | Ready | ADR-0005 |
+| 004 | 菁英怪生成 + 莢艙保底掉落追蹤 | Integration | Ready | ADR-0003 |
+| 005 | 循環武器莢艙行為 — 下降、徘徊、循環顯示、拾取 | Integration | Ready | ADR-0003 |
+| 006 | 頭目入場與 Run 場景過渡 | Integration | Ready | ADR-0005 |
+| 007 | Stage 1 前 10 分鐘引導設計實作 | Integration | Ready | ADR-0003 |

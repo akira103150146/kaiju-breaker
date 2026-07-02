@@ -40,6 +40,17 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
-## Next Step
+## Stories
 
-Run `/create-stories weapons` to break this epic into implementable stories.
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | WeaponDef & WeaponBalanceConfig ScriptableObjects | Config/Data | Ready | ADR-0003 |
+| 002 | D₀ Balance Suite — Automated Formula Tests | Logic | Ready | ADR-0003 |
+| 003 | WeaponController Base & Dual-Track Event Bus Wiring | Integration | Ready | ADR-0002 |
+| 004 | Laser Family Firing — L1 Spread, L2 Focus, L4 Pierce | Integration | Ready | ADR-0002 |
+| 005 | L3 Wave Cannon — Dual-Mode Tap/Charge + L3WaveHit | Integration | Ready | ADR-0002 |
+| 006 | Missile Family Firing — M1 Homing, M2 Swarm, M4 Cluster | Integration | Ready | ADR-0002 |
+| 007 | M3 AP Torpedo — Heat-Shock Gate & Softened Query | Integration | Ready | ADR-0002 |
+| 008 | Laser Tier-3 Unique Mechanics (L1/L2/L3/L4) | Integration | Ready | ADR-0002 |
+| 009 | Missile Tier-3 Unique Mechanics (M1/M2/M3/M4) | Integration | Ready | ADR-0002 |
+| 010 | Loadout System — 1+1 Equip & Weapon Pod Pickup | Integration | Ready | ADR-0002 |

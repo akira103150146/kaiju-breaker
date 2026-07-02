@@ -12,11 +12,11 @@ Engine: Unity 6.3 LTS (C#)
 | Content 調校資料框架 | Foundation | 全系統調校資料 (`Content`) | docs/architecture/architecture.md §6 | 9 stories | Ready |
 | 元進度與存檔系統 | Foundation | S10 Meta/Save | design/gdd/meta-progression-system.md | 7 stories | Ready |
 | 子彈/彈幕引擎（DOTS） | Foundation | S9 Bullet Sim | design/gdd/bullet-system.md | 9 stories（1 Ready spike, 8 Blocked on ADR-0001） | Ready |
-| 武器系統 | Core | S1 Weapons | design/gdd/weapon-system.md | Not yet created | Ready |
-| 可破壞部位系統 | Core | S2 Kaiju Parts | design/gdd/kaiju-part-system.md | Not yet created | Ready |
-| 素材經濟與永久升級 | Core | S3 Economy | design/gdd/material-economy.md | Not yet created | Ready |
-| 難度系統 | Core | S5 Difficulty | design/gdd/difficulty-system.md | Not yet created | Ready |
-| 關卡系統與 Run 流程 | Core | S4 Stage | design/gdd/stage-system.md | Not yet created | Ready |
+| 武器系統 | Core | S1 Weapons | design/gdd/weapon-system.md | 10 stories | Ready |
+| 可破壞部位系統 | Core | S2 Kaiju Parts | design/gdd/kaiju-part-system.md | 6 stories | Ready |
+| 素材經濟與永久升級 | Core | S3 Economy | design/gdd/material-economy.md | 5 stories | Ready |
+| 難度系統 | Core | S5 Difficulty | design/gdd/difficulty-system.md | 4 stories | Ready |
+| 關卡系統與 Run 流程 | Core | S4 Stage | design/gdd/stage-system.md | 7 stories（002/004 部分待 ADR-0001） | Ready |
 | 巨獸內容（CARAPEX/LACERA/VOLTWYRM） | Feature | C1 Kaiju Roster | design/gdd/kaiju/01-carapex.md · 02-lacera.md · 03-voltwyrm.md | Not yet created | Ready |
 | 輸入系統 | Feature | S6 Input | design/gdd/input-system.md | Not yet created | Ready |
 | HUD / UI 系統 | Presentation | S7 HUD/UI | design/gdd/hud-ui-system.md | Not yet created | Ready |

@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/kaiju-part-system.md
 > **Architecture Module**: `KaijuBreaker.KaijuParts`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories kaiju-parts`
+> **Stories**: 6 stories
 
 ## Overview
 
@@ -40,6 +40,13 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
-## Next Step
+## Stories
 
-Run `/create-stories kaiju-parts` to break this epic into implementable stories.
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Part Entity & Two-Bar Data Model | Logic | Ready | ADR-0003 (primary), ADR-0002 |
+| 002 | Heat State Machine (INTACT ↔ SOFTENED) | Logic | Ready | ADR-0002 (primary), ADR-0003 |
+| 003 | Armor Gate & Stagger Timer | Logic | Ready | ADR-0002 (primary), ADR-0003 |
+| 004 | Break Condition & Event Emission | Logic | Ready | ADR-0002 (primary), ADR-0003 |
+| 005 | Adjacency Graph Load & Tier-3 Chain Consumers | Logic | Ready | ADR-0003 (primary), ADR-0002 |
+| 006 | Softened/Broken Readability Hooks | Visual/Feel | Ready | ADR-0002 |

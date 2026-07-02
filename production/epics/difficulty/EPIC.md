@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/difficulty-system.md
 > **Architecture Module**: `KaijuBreaker.Difficulty`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories difficulty`
+> **Stories**: 4 stories
 
 ## Overview
 
@@ -39,6 +39,19 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
-## Next Step
+## Stories
 
-Run `/create-stories difficulty` to break this epic into implementable stories.
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | DifficultyConfig ScriptableObject + Core 基礎型別與介面 | Config/Data | Ready | ADR-0003 |
+| 002 | DifficultySystem 實作 + 運行期乘數套用 | Integration | Ready | ADR-0003 |
+| 003 | 部位 TTB + 武器輸出不變性自動化測試（BLOCKING） | Logic | Ready | ADR-0003 |
+| 004 | 素材產量 + 內容可及性不變性自動化測試 | Logic | Ready | ADR-0003 |
+
+## Deferred / Cross-Epic Requirements
+
+| TR-ID | Requirement | Home Epic / Milestone |
+|-------|-------------|----------------------|
+| TR-difficulty-006 | H.6 D1 可及性 playtest（5 人新手，≥80%） | Stage 1 MVP 里程碑 playtest；屬 `stage` epic QA |
+| TR-difficulty-007 | H.7 D4 彈幕可讀性下界（≥70%） | Vertical Slice 里程碑 playtest；屬 `bullet-sim` / `game-feel` epic |
+| TR-difficulty-008 (UI) | H.8 難度選擇畫面、輪中灰化 UI 呈現 | `hud-ui` epic（config defaults 已含於 Story 001）|

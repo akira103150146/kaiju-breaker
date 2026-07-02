@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/material-economy.md
 > **Architecture Module**: `KaijuBreaker.Economy`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories economy`
+> **Stories**: 5 stories — see table below
 
 ## Overview
 
@@ -39,6 +39,16 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Part-Break Material Yield Computation | Logic | Ready | ADR-0002 |
+| 002 | Full-Clear Essence Award | Logic | Ready | ADR-0002 |
+| 003 | Material Inventory — Persistence Handoff to Meta-Save | Integration | Ready | ADR-0002 |
+| 004 | Tier 0→3 Upgrade Transaction | Logic | Ready | ADR-0003 |
+| 005 | Anti-Degenerate Loadout Guard (TTB Matrix Assertion) | Logic | Ready | ADR-0003 |
+
 ## Next Step
 
-Run `/create-stories economy` to break this epic into implementable stories.
+Run `/story-readiness production/epics/economy/story-001-yield-on-break.md` to begin implementation.
