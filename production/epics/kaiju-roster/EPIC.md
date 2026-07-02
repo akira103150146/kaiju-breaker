@@ -40,6 +40,23 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Boss Phase Controller Framework (Shared) | Logic | Ready | ADR-0002 + ADR-0003 |
+| 002 | CARAPEX KaijuDef SO & Part Data | Config/Data | Ready | ADR-0003 |
+| 003 | CARAPEX EmitterPatternSO Definitions (A/B/C) | Config/Data | Ready | ADR-0003 |
+| 004 | CARAPEX Encounter Integration (Armor Gate, Phase Firing, Tutorial Loop) | Integration | Blocked | ADR-0001 (Proposed) + ADR-0002 + ADR-0003 |
+| 005 | LACERA KaijuDef SO & Part Data (Moving Parts) | Config/Data | Ready | ADR-0003 |
+| 006 | LACERA EmitterPatternSO Definitions (A/B/C) | Config/Data | Ready | ADR-0003 |
+| 007 | LACERA Encounter Integration (Sweeping Limbs, Dynamic World Position, L4 Window) | Integration | Blocked | ADR-0001 (Proposed) + ADR-0002 + ADR-0003 |
+| 008 | VOLTWYRM KaijuDef SO & Part Data (Vertical Pierce Corridor) | Config/Data | Ready | ADR-0003 |
+| 009 | VOLTWYRM EmitterPatternSO Definitions (A/B/C + Core Direct-Fire) | Config/Data | Ready | ADR-0003 |
+| 010 | VOLTWYRM Encounter Integration (Vertical Pierce, Shield Gates, Phase Transitions) | Integration | Blocked | ADR-0001 (Proposed) + ADR-0002 + ADR-0003 |
+
+> **Note**: Stories 004, 007, 010 are Blocked pending ADR-0001 LOCK (enemy-firing runtime: 1,000 bullets @60fps, 0 GC/frame on mobile). Stories 001–003, 005–006, 008–009 are Ready and can proceed immediately.
+
 ## Next Step
 
-Run `/create-stories kaiju-roster` to break this epic into implementable stories.
+Run `/story-readiness production/epics/kaiju-roster/story-001-boss-phase-controller-framework.md` to begin implementation.

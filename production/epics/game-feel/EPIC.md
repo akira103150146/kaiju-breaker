@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/game-feel.md
 > **Architecture Module**: `KaijuBreaker.GameFeel`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories game-feel`
+> **Stories**: 7 stories
 
 ## Overview
 
@@ -39,6 +39,18 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | GameFeelConfig ScriptableObject | Config/Data | Ready | ADR-0003 |
+| 002 | 頓幀系統 (Hitstop System) | Logic | Ready | ADR-0002, ADR-0003 |
+| 003 | 慢動作系統 (Slow-Motion System) | Logic | Ready | ADR-0002, ADR-0003 |
+| 004 | 螢幕震動系統 (Screen Shake System) | Logic | Ready | ADR-0002, ADR-0003 |
+| 005 | SOFTENED 簽章與 STAGGERED 回饋 | Visual/Feel | Ready | ADR-0002, ADR-0003 |
+| 006 | 破壞爆破酬勞序列 (Break Payoff Sequence) | Integration | Ready | ADR-0002, ADR-0003 |
+| 007 | Reduce-Motion 無障礙開關 | Logic | Ready | ADR-0003 |
+
 ## Next Step
 
-Run `/create-stories game-feel` to break this epic into implementable stories.
+Run `/story-readiness production/epics/game-feel/story-001-game-feel-config-so.md` to begin implementation.

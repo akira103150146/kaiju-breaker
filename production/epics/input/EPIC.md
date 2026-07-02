@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/input-system.md
 > **Architecture Module**: `KaijuBreaker.Input`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories input`
+> **Stories**: 6 stories
 
 ## Overview
 
@@ -40,6 +40,17 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | 觸控手感原型驗證 Spike (Touch Feel Prototype Spike) | Visual/Feel | Ready | N/A — prototype spike |
+| 002 | 抽象動作映射與 InputSettings SO (Action Map & InputSettings SO) | Logic | Ready | ADR-0003 (primary), ADR-0005 (secondary) |
+| 003 | 觸控方案實作 (Touch Scheme Implementation) | Integration | Ready | ADR-0005 (primary), ADR-0003 (secondary) |
+| 004 | 鍵盤＋滑鼠方案 (KB+Mouse Scheme) | Integration | Ready | ADR-0005 (primary), ADR-0003 (secondary) |
+| 005 | 手柄方案 (Gamepad Scheme) | Integration | Ready | ADR-0005 (primary), ADR-0003 (secondary) |
+| 006 | 重映射與無障礙基線 (Remapping & Accessibility Baseline) | Integration | Ready | ADR-0003 (primary), ADR-0005 (secondary) |
+
 ## Next Step
 
-Run `/create-stories input` to break this epic into implementable stories.
+Run `/story-readiness production/epics/input/story-001-touch-feel-spike.md` to begin implementation.

@@ -72,6 +72,7 @@
 - **ADR-0003** — [Data-driven config via ScriptableObjects](../../docs/architecture/adr/0003-data-driven-config-scriptableobjects.md) — *Accepted* (supersedes the GDDs' `assets/data/**/*.yaml` placeholder paths)
 - **ADR-0004** — [Save system — atomic JSON + CRC32 + migration chain](../../docs/architecture/adr/0004-save-system.md) — *Accepted*
 - **ADR-0005** — [Project structure & assembly definitions (DI, module isolation)](../../docs/architecture/adr/0005-project-structure-assemblies.md) — *Accepted*
+- **ADR-0006** — [UI framework — SpriteRenderer world-space bars + UGUI HUD/meta screens](../../docs/architecture/adr/0006-ui-framework.md) — *Accepted*
 - Master blueprint: [docs/architecture/architecture.md](../../docs/architecture/architecture.md)
 
 ## Engine Specialists
