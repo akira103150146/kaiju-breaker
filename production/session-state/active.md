@@ -48,9 +48,17 @@
 - [x] **ADR-0006 UI 框架**(三層:SpriteRenderer 血條 + UGUI HUD/meta;Accepted)→ 解 HUD/UI untraced 需求
 - [x] **Feature + Presentation 層 34 stories**(kaiju-roster 10〔3 Blocked on ADR-0001〕/ input 6〔001=觸控 spike〕/ hud-ui 11 / game-feel 7)
 - [x] **完整 story backlog 完成:97 stories 跨 13 epics**(`production/epics/index.md` 為入口)
-- [ ] `/test-setup`(CI);`/story-readiness` → `/dev-story` 開始實作
+- [x] **tr-registry.yaml 正式化** + `/architecture-review`(verdict CONCERNS→無阻斷;95 需求;ADR-0006 文件同步修好)
+- [x] **CI 骨架** `.github/workflows/ci-tests.yml`(game-ci;EditMode+PlayMode;no-merge-on-fail)+ `Assets/_Project/Tests/README.md`
+- [x] **Sprint 1 草案** `production/sprints/sprint-01.md`(Foundation 實作 + 2 spikes;capacity 待導演確認)
+- [ ] **等導演 Unity 就緒** → 跑 2 個 spike(bullet-sim 001 效能、input 001 觸控)+ 開始實作 Foundation(`/story-readiness` → `/dev-story`)
 - [ ] `/vertical-slice` 用真引擎驗證完整循環
-- **待決小項**:reduce-motion 乘數放 save/settings 可變層(非唯讀 SO;已合 architecture SO-vs-save 分離);tr-registry.yaml 正式化(`/architecture-review`)
+
+## 導演待辦(需 Unity / GitHub)
+- 提交 Unity 產生的 `ProjectSettings/*.asset` + `Packages/packages-lock.json` + `*.meta`(我未碰)
+- GitHub Secret `UNITY_LICENSE`(+ 視情況 EMAIL/PASSWORD)給 CI;確認 workflow 的 6.3 editor image tag
+- Sprint 1 開放問題:人力模型(單人 vs dev+導演跑 spike)、sprint 長度(2 vs 3 週)、DF-001 與 CC-003 的 DifficultyConfig SO 擇一為權威(建議 CC-003)、`/qa-plan sprint`
+- reduce-motion 乘數放 save/settings 可變層(非唯讀 SO;合 architecture SO-vs-save 分離)
 
 ## Key Decisions
 - 5 pillars locked;武器雙軌骨架(雷射蓄熱軟化→飛彈破甲擊破)
