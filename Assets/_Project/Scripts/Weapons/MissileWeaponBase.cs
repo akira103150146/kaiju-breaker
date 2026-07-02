@@ -72,9 +72,11 @@ namespace KaijuBreaker.Weapons
 
         /// <summary>
         /// Advance the reload timer by one scaled-time frame. When it elapses, the magazine is
-        /// refilled to <see cref="MagCapacity"/> and the weapon returns to READY.
+        /// refilled to <see cref="MagCapacity"/> and the weapon returns to READY. Virtual so a
+        /// subclass (e.g. M2's inter-burst cooldown) can extend per-frame timing — override and
+        /// call <c>base.Tick(deltaTime)</c>.
         /// </summary>
-        public void Tick(float deltaTime)
+        public virtual void Tick(float deltaTime)
         {
             if (_reloadTimer <= 0f) return;
             _reloadTimer -= deltaTime;

@@ -1,3 +1,4 @@
+using KaijuBreaker.Core;
 using UnityEngine;
 
 namespace KaijuBreaker.Content
@@ -71,6 +72,15 @@ namespace KaijuBreaker.Content
         [Tooltip("BU required to break a Boss Core part. Safe range [160, 280]. Default = BMaxBossCore.")]
         [SerializeField] private float _requiredBreakThresholdBossCore = 200f;
 
+        [Header("Default Loadout (first-playthrough fallback)")]
+        [Tooltip("Primary-pool weapon a fresh save starts with when ISaveService has no stored loadout. " +
+                 "MUST be a laser (L1–L4). weapon-system.md F.3 — data-driven default, not hardcoded in Weapons.")]
+        [SerializeField] private WeaponId _defaultPrimary = WeaponId.L1;
+
+        [Tooltip("Secondary-pool weapon a fresh save starts with when ISaveService has no stored loadout. " +
+                 "MUST be a missile (M1–M4). weapon-system.md F.3.")]
+        [SerializeField] private WeaponId _defaultSecondary = WeaponId.M1;
+
         [Header("Stagger (L3 Wave Cannon)")]
         [Tooltip("Duration of the STAGGERED overlay (s). Safe range [1.5, 3.0]. " +
                  "SINGLE SOURCE for weapon-system.md G.2 l3_stagger_window " +
@@ -139,6 +149,12 @@ namespace KaijuBreaker.Content
         /// <summary>Break-fill multiplier while STAGGERED. weapon-system.md G.1.</summary>
         public float StaggerBreakMult => _staggerBreakMult;
 
+        /// <summary>Fresh-save default primary (laser) weapon. weapon-system.md F.3.</summary>
+        public WeaponId DefaultPrimary => _defaultPrimary;
+
+        /// <summary>Fresh-save default secondary (missile) weapon. weapon-system.md F.3.</summary>
+        public WeaponId DefaultSecondary => _defaultSecondary;
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
@@ -165,6 +181,13 @@ namespace KaijuBreaker.Content
                 Debug.LogError(
                     $"[WeaponBalanceConfig] ThetaSExit ({_thetaSExit}) must be strictly less than " +
                     $"ThetaS ({_thetaS}) to maintain the softened hysteresis band.", this);
+
+            if ((int)_defaultPrimary >= 4)
+                Debug.LogError(
+                    $"[WeaponBalanceConfig] DefaultPrimary ({_defaultPrimary}) must be a laser (L1–L4).", this);
+            if ((int)_defaultSecondary < 4)
+                Debug.LogError(
+                    $"[WeaponBalanceConfig] DefaultSecondary ({_defaultSecondary}) must be a missile (M1–M4).", this);
         }
 
         private void Validate(string field, float value, float min, float max)

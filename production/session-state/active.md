@@ -1,10 +1,22 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-02*
+*Last updated: 2026-07-02 (session 3 — perf-spike desktop verify + weapons epic)*
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
+*Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — back up upcoming design/handoff artifacts there.*
+
+## Session 3 progress (2026-07-02, Unity MCP live)
+- **User directives this session**: (1) dev/test **PC-first** — cannot freely connect a phone remotely, so phone-gated spikes (ADR-0001 phone FPS, touch-feel) are parked, not blocking pure-logic work. (2) After weapons testing is roughly done, integrate the 7 gameplay-feedback points (`design/feedback/2026-07-02-*`). (3) Back up upcoming artifacts to the Obsidian vault above.
+- **ADR-0001 perf spike — DESKTOP smoke PASS** (Unity MCP): compile clean, Play spawns 1000 `BulletVelocity` entities, Burst `IJobEntity` moves them each frame. Recorded in ADR-0001 (status stays **Proposed** — phone gate open). Commit `afacd58`.
+- **weapons epic — IN PROGRESS**. Verified GREEN via Unity MCP `run_tests`:
+  - Phase 0 shared contracts (commit `a0eec88`): `WeaponBalanceConfig.BuPerD0(10)/HuPerD0(25, inferred)/DefaultPrimary/DefaultSecondary`; `IPartStateQuery.GetHottestAlivePartId()`; `ISaveService.GetInitialLoadout()`; `WeaponEquipped` event.
+  - Phase 1 base + Story 003 (`a0eec88`): `WeaponBehaviourBase`/`LaserWeaponBase`/`MissileWeaponBase` (ctor-DI, PartBroke→ClearCollider, magazine SM), stubs `StubPartStateQuery`/`StubWeaponTierQuery`, 9 base tests. **64/64 EditMode GREEN**.
+  - Story 010 loadout (`LoadoutController` + tests) implemented, awaiting combined compile.
+  - Stories 004/005/008 (laser family) + 006/007/009 (missile family) delegated to 2 parallel gameplay-programmer subagents (disjoint files); pending compile+test+fix pass.
+  - Story 002 (D₀ balance suite) = the epic's real done-gate; write after families land to keep formulas consistent.
+- **Key weapons reconciliations** (like the kaiju-parts ones — for review): skip Weapons-side M3-T3 chain (KaijuParts already owns it, avoids double-count); `WaveHit` has no StaggerDuration field; ripple % read from `PartSystemConfig` not `WeaponDef`; M4 AoE uses corrected piecewise formula; tests live in `Tests/EditMode/Weapons/` not `Tests/Weapons/`. **HuPerD0=25 is inferred from G.2 laser defaults — wants an eventual design nod.**
 
 ## Where we are
-- **Stage**: Pre-Production → **implementing**. Design frozen & consistent; architecture locked; Unity project live; Foundation code done.
+- **Stage**: Pre-Production → **implementing**. Design frozen & consistent; architecture locked; Unity project live; Foundation + kaiju-parts done; weapons in progress.
 - **Engine**: Unity 6.3 LTS, C#. Project opens; packages resolved (URP, 2D feature, Input System, Addressables, DOTS Entities/Burst/Collections/Mathematics, Test Framework).
 - **Git**: everything committed & **pushed** to `github.com/akira103150146/kaiju-breaker` (origin/main). Working tree clean.
 - **Review mode**: lean. **Director authorization standing**: autonomous design/implementation + direct commit (see memory [[user-autonomy-commit]]).
