@@ -1,8 +1,2 @@
-# VERIFY: The exact build string (revision hash, patch suffix) must be confirmed
-# against the installed Unity 6.3 LTS editor. Unity 6.x uses the 6000.x.y versioning
-# scheme. 6000.3.0f1 is a plausible format for Unity 6.3.0 LTS release candidate;
-# the actual shipping build string may differ (e.g. 6000.3.2f1).
-# Update this file by opening the project in the correct editor and letting Unity
-# rewrite it, or check the editor's About dialog.
 m_EditorVersion: 6000.3.0f1
-m_EditorVersionWithRevision: 6000.3.0f1 (verify-revision-hash-here)
+m_EditorVersionWithRevision: 6000.3.0f1 (d1870ce95baf)

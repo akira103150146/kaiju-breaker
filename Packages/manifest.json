@@ -1,6 +1,15 @@
 {
   "_comment": "MINIMAL manifest — only built-in modules (always valid) so the project OPENS cleanly. The earlier pinned registry-package versions were unverified estimates and one (com.unity.2d.pixel-perfect@6.0.3) does not exist. Add the project's real packages via Window > Package Manager (Unity Registry), which installs the version matching THIS editor. Packages to add: com.unity.render-pipelines.universal (URP), com.unity.feature.2d (2D feature — includes Pixel Perfect / Sprite / Tilemap / Animation), com.unity.inputsystem, com.unity.addressables, com.unity.entities + com.unity.burst + com.unity.collections + com.unity.mathematics (DOTS, for BulletSim), com.unity.test-framework, com.unity.ugui. See docs/architecture/architecture.md §9 and ADR-0001/0003/0006.",
   "dependencies": {
+    "com.unity.addressables": "3.1.0",
+    "com.unity.burst": "1.8.29",
+    "com.unity.entities": "1.4.7",
+    "com.unity.feature.2d": "2.0.2",
+    "com.unity.inputsystem": "1.19.0",
+    "com.unity.mathematics": "1.3.3",
+    "com.unity.render-pipelines.universal": "17.3.0",
+    "com.unity.test-framework": "1.6.0",
+    "com.unity.ugui": "2.0.0",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
