@@ -21,6 +21,7 @@
 | S6 | **輸入系統 (Input System)** | `gdd/input-system.md` | ✅ 草稿完整 | 雙輸入(觸控 Sky Force 拖曳偏移 + 鍵鼠/手柄);觸控手感仍待專屬原型驗證 |
 | S7 | **HUD / UI 系統** | `gdd/hud-ui-system.md` | ✅ 草稿完整 | world-space 部位血條、武器 HUD、素材計數、loadout/升級/難度三畫面、手機安全區 |
 | S8 | **VFX / SFX / 打擊感 (Game Feel)** | `gdd/game-feel.md` | ✅ 草稿完整 | juice:hitstop 115ms、慢動作、螢幕震動(≤24px 護欄)、軟化簽章(#FF6600 ≤0.5s 可辨,解阻斷 #4)、破部位爆發;含 reduce-motion 開關 |
+| S8b | **打擊感分級 (Hit-Feel Tiering)** | `gdd/hit-feel-tiering.md` | ✅ 草稿完整 | 疊加於 S8 之上;沿用 `enemy-tier-system.md` 的 `EnemyTier`(Trash/Elite/Mid/Boss);Trash/Elite 補全新雜兵擊殺回饋(無既有規格);Mid 新增 `on_mid_encounter_cleared` 遭遇清除回饋(介於 Elite 與 Boss 死亡之間);Boss 沿用 S8 既有數值不變 |
 | S9 | **子彈/彈幕引擎 (Bullet System)** | `gdd/bullet-system.md` | ✅ 草稿完整 | 物件池、資料驅動彈幕 DSL、DOTS/Burst 效能策略、單點判定、可讀性護欄;手機 1000 彈@60fps 待引擎驗證 |
 | S10 | **存檔/元進度系統 (Meta & Save)** | `gdd/meta-progression-system.md` | ✅ 草稿完整 | 永久 vs 每輪狀態、武器所有權模型(拾取=永久解鎖)、JSON schema、原子寫入、永不丟失保證 |
 | — | **美術聖經 (Art Bible)** | `design/art-bible.md` | ✅ 草稿完整 | 兩大美術鐵律、~35 色調色盤(冷/暖家族)、像素規格、彈幕可讀性、3 巨獸剪影、資產生產標準 |

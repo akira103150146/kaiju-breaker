@@ -469,9 +469,11 @@ HP_current = clamp(75 − 30, 0, 75) = 45
 
 - 既有 `elite_shard_bonus` 機制不變；Mid/Boss 掉落沿用 `kaiju-part-system.md` 既有的 `drop_table_id` 機制（見 F.1），本文件不新增掉落規則。
 
-### F.6 打擊感分級（回饋 §A.6，未來 GDD）—— 弱耦合，供未來對接
+### F.6 打擊感分級（`design/gdd/hit-feel-tiering.md`）—— 弱耦合，已對接
 
-- 回饋 §A.6「打擊感依怪物種類分級」與本文件的 Tier 分類**高度相關但職責不同**：本文件定義「這隻怪是什麼」，未來的打擊感 GDD 定義「打中/打死不同 Tier 時螢幕該有什麼反應」。建議未來打擊感 GDD 直接以本文件的 `EnemyTier` 作為分級索引鍵，避免另起一套獨立分級。
+- 回饋 §A.6「打擊感依怪物種類分級」與本文件的 Tier 分類**高度相關但職責不同**：本文件定義「這隻怪是什麼」，`hit-feel-tiering.md` 定義「打中/打死不同 Tier 時螢幕該有什麼反應」。`hit-feel-tiering.md` 直接以本文件的 `EnemyTier`（`Trash`/`Elite`/`Mid`/`Boss`）作為分級索引鍵，未另起獨立分級。
+- **消費本文件的關鍵規則**：C.4 的 Mid/Boss 判別權威規則（`on_boss_core_break` 僅 `Boss` 可用）——`hit-feel-tiering.md` 據此為 `Mid` 新增獨立的 `on_mid_encounter_cleared` 回饋事件（不可誤用既有 Boss 死亡規格）；C.5 的既有三隻巨獸（CARAPEX/LACERA/VOLTWYRM）預設 `Tier = Boss`——`hit-feel-tiering.md` 據此確認 `Boss` 階打擊感對現有巨獸與未來最終頭目一視同仁，不做任何加成。
+- **反向新增需求**：`hit-feel-tiering.md` 要求 Stage System 額外發出 `on_mid_encounter_cleared` 事件（監聽 Mid `KaijuDef` 全部部位 `BROKEN`），並在其自身 `on_part_break` 頓幀序列結束後才觸發——這與本文件 C.4／F.4 描述的「Stage System 監聽全部部位 BROKEN、觸發局部效果」職責一致，`stage-system.md` 落地時應同時參照兩份文件。
 
 ---
 

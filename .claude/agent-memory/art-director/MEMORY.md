@@ -1,0 +1,2 @@
+- [Five-zone draft vs three-stage canon](project_five-zone-vs-three-stage-canon.md) — unresolved zone/boss mapping conflict; treat 5-zone draft as reference-only until director confirms.
+- [Feedback backlog doc conventions](reference_feedback-backlog-doc.md) — `design/feedback/` seeds work; adjacent unconfirmed items in the same doc are not automatically canon.
