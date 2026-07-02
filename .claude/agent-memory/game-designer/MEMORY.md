@@ -1,0 +1,2 @@
+- [Weapon D0 equal-power gap](project_weapon_d0_gap.md) — weapon-system.md's ±10% claim fails for 6/8 weapons raw; fix proposal in design/balance/weapon-d0-equal-power-analysis.md
+- [Design doc language convention](feedback_doc_conventions.md) — kaiju-breaker design docs are Traditional Chinese prose + English technical identifiers
