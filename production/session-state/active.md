@@ -3,7 +3,7 @@
 *Last updated: 2026-07-01*
 
 ## Current Task
-**自主推進設計管線**（導演授權:自主設計＋可直接 commit）。已完成 Phase A–D 一大批。
+**Pre-Production 推進中**(導演授權:自主推進＋可直接 commit)。設計全數凍結一致 → 架構 + ADR + Unity 骨架 + control-manifest + 13 epics + Foundation 層 31 stories 已完成入庫。
 
 ## Project Snapshot
 - **Game**: 殲獸戰機 / KAIJU BREAKER — 科幻縱向彈幕射擊 ＋ 破壞部位狩獵養成
@@ -37,12 +37,16 @@
 - [x] **技術架構 + 5 ADR** `docs/architecture/`(主藍圖 + ADR-0001 彈幕後端 hybrid DOTS/Mono〔Proposed,待效能原型〕/ 0002 事件匯流排 / 0003 SO 資料驅動 / 0004 存檔 / 0005 asmdef 模組)。technical-preferences ADR log/套件/禁用模式已登錄
 - [x] **Unity 專案骨架** `Assets/_Project/`(13 模組 + 2 測試 asmdef、3 anchor stub、manifest、ProjectVersion;依 ADR-0005 模組隔離)
 
-## Pre-Production 下一步
-- Unity 骨架完成 → commit
-- **效能原型驗證 ADR-0001**(手機 1000 彈@60fps、0 GC)→ LOCK 彈幕後端
-- `/test-setup` 測試框架 + CI;`/create-control-manifest` 程式規則sheet
-- `/create-epics` → `/create-stories`(把 GDD 拆成可實作 story)
-- `/vertical-slice` 用真引擎驗證完整循環
+## Pre-Production 進度
+- [x] Unity 專案骨架(`Assets/_Project`,13 模組 asmdef)
+- [x] `control-manifest.md`(程式規則 sheet)
+- [x] **13 epics** `production/epics/`(4 Foundation / 5 Core / 2 Feature / 2 Presentation)
+- [x] **Foundation 層 31 stories**(core-foundation 6 / content-config 9 / meta-save 7 / bullet-sim 9)
+- [ ] **效能原型驗證 ADR-0001**(手機 1000 彈@60fps、0 GC)→ bullet-sim story-001 spike;**需 Unity 編輯器,在導演機器上做**;過關才 LOCK ADR-0001、解 blocked 的 8 個 bullet stories
+- [ ] Core 層 stories(接近時再拆:weapons/kaiju-parts/economy/difficulty/stage)
+- [ ] ADR-0006 UI 框架(UGUI vs UI Toolkit)→ 解 HUD/UI epic 的 untraced 需求
+- [ ] `/test-setup`(CI);`/story-readiness` → `/dev-story` 開始實作 Foundation
+- [ ] `/vertical-slice` 用真引擎驗證完整循環
 
 ## Key Decisions
 - 5 pillars locked;武器雙軌骨架(雷射蓄熱軟化→飛彈破甲擊破)
