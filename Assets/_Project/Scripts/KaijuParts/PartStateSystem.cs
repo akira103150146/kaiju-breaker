@@ -1,0 +1,396 @@
+using System;
+using System.Collections.Generic;
+using KaijuBreaker.Content;
+using KaijuBreaker.Core;
+using UnityEngine;
+
+namespace KaijuBreaker.KaijuParts
+{
+    /// <summary>
+    /// The authoritative dual-track soften→break state machine (kaiju-part-system.md).
+    /// Owns every <see cref="BreakablePart"/> for the active kaiju, consumes the weapon
+    /// hit events (<see cref="LaserHit"/> heat / <see cref="WaveHit"/> armor-strip+stagger /
+    /// <see cref="MissileHit"/> break), and is the SOLE emitter of the part-state and break
+    /// events (<see cref="PartSoftened"/>, <see cref="PartSoftenedExit"/>, <see cref="PartStaggered"/>,
+    /// <see cref="PartStaggerEnd"/>, <see cref="PartBroke"/>, <see cref="BossCoreBroke"/>).
+    /// Implements <see cref="IPartStateQuery"/> for Weapons/UI/GameFeel reads.
+    ///
+    /// This is the combat-chain hub (ADR-0002 §3): break_quality is computed on the break
+    /// frame and carried in the payload so no consumer must re-query. Breaks are irreversible;
+    /// parts never regenerate within a run.
+    ///
+    /// Tuning is data-driven (ADR-0003): heat/break/stagger knobs come from
+    /// <see cref="WeaponBalanceConfig"/> (single source), part/chain/adjacency knobs from
+    /// <see cref="PartSystemConfig"/>. No hardcoded balance values, no DOTS types (§5 manifest).
+    ///
+    /// Threading: main-thread only. Call <see cref="Tick"/> once per scaled-time game frame.
+    /// </summary>
+    public sealed class PartStateSystem : IPartStateQuery, IDisposable
+    {
+        private readonly IEventBus _bus;
+        private readonly WeaponBalanceConfig _balance;
+        private readonly PartSystemConfig _partConfig;
+
+        private readonly Dictionary<int, BreakablePart> _parts = new Dictionary<int, BreakablePart>(16);
+        private readonly Dictionary<string, int> _partIdByName = new Dictionary<string, int>(16);
+        private readonly Dictionary<string, int> _dropTableIdByName = new Dictionary<string, int>(16);
+
+        // Heat deltas accumulated this frame per part; applied and cleared in TickHeat so that
+        // fill and decay are mutually exclusive per frame (kaiju-part-system.md D.1).
+        private readonly Dictionary<int, float> _pendingHeatDeltas = new Dictionary<int, float>(16);
+
+        private readonly Action<LaserHit> _onLaserHit;
+        private readonly Action<WaveHit> _onWaveHit;
+        private readonly Action<MissileHit> _onMissileHit;
+        private readonly Action<PartBroke> _onPartBroke;
+
+        public PartStateSystem(IEventBus bus, WeaponBalanceConfig balance, PartSystemConfig partConfig)
+        {
+            _bus = bus ?? throw new ArgumentNullException(nameof(bus));
+            _balance = balance ? balance : throw new ArgumentNullException(nameof(balance));
+            _partConfig = partConfig ? partConfig : throw new ArgumentNullException(nameof(partConfig));
+
+            _onLaserHit = HandleLaserHit;
+            _onWaveHit = HandleWaveHit;
+            _onMissileHit = HandleMissileHit;
+            _onPartBroke = OnPartBroke;
+
+            _bus.Subscribe(_onLaserHit);
+            _bus.Subscribe(_onWaveHit);
+            _bus.Subscribe(_onMissileHit);
+            _bus.Subscribe(_onPartBroke); // M3 Tier-3 chain handler (kaiju-part-system.md E.4)
+        }
+
+        public void Dispose()
+        {
+            _bus.Unsubscribe(_onLaserHit);
+            _bus.Unsubscribe(_onWaveHit);
+            _bus.Unsubscribe(_onMissileHit);
+            _bus.Unsubscribe(_onPartBroke);
+        }
+
+        /// <summary>Live view of the parts (read-only) — for tests and diagnostics.</summary>
+        public IReadOnlyDictionary<int, BreakablePart> Parts => _parts;
+
+        /// <summary>Runtime int id for a part's authored string id (−1 if unknown).</summary>
+        public int GetPartId(string partName) => _partIdByName.TryGetValue(partName, out int id) ? id : -1;
+
+        // ── Load / reset (Story 001, Story 005 graph build) ──────────────────────
+
+        /// <summary>
+        /// (Re)initialise all parts for a kaiju to a fresh ALIVE state and build the
+        /// bidirectional adjacency graph. Calling it again (new round) fully resets state —
+        /// no carry-over from prior BROKEN parts (kaiju-part-system.md H.5). The caller
+        /// supplies the runtime <paramref name="kaijuId"/> int (the SO carries a string id).
+        /// </summary>
+        public void InitializeParts(KaijuDef def, int kaijuId)
+        {
+            if (def == null) throw new ArgumentNullException(nameof(def));
+
+            _parts.Clear();
+            _partIdByName.Clear();
+            _dropTableIdByName.Clear();
+            _pendingHeatDeltas.Clear();
+
+            var parts = def.Parts;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                PartDef pd = parts[i];
+                if (pd == null) continue;
+
+                int id = i; // stable within this kaiju load — part id = declaration index
+                float hMax = pd.HMaxUseOverride ? pd.HMaxOverride : GlobalHMax(pd.PartType);
+                float bMax = pd.BMaxUseOverride ? pd.BMaxOverride : GlobalBMax(pd.PartType);
+                int dropTableId = ResolveDropTableId(pd.DropTableId);
+
+                var part = new BreakablePart(
+                    id, pd.PartId, kaijuId, pd.PartType, hMax, bMax,
+                    dropTableId, pd.DropTableId, pd.Adjacency);
+
+                _parts[id] = part;
+                if (!string.IsNullOrEmpty(pd.PartId))
+                    _partIdByName[pd.PartId] = id;
+            }
+
+            BuildAdjacencyGraph();
+        }
+
+        /// <summary>
+        /// Advance all per-frame timers for one scaled-time game frame: heat fill/decay +
+        /// soften evaluation, then stagger countdown. Hit events are handled synchronously
+        /// as they arrive (mid-frame); this drives the time-based decay/countdown only.
+        /// </summary>
+        public void Tick(float deltaTime)
+        {
+            TickHeat(deltaTime);
+            TickStagger(deltaTime);
+        }
+
+        /// <summary>Assign the part's world position (called by the scene wiring / Stage). Defaults to zero.</summary>
+        public void SetWorldPosition(int partId, Vector2 worldPosition)
+        {
+            if (_parts.TryGetValue(partId, out var part)) part.WorldPosition = worldPosition;
+        }
+
+        private float GlobalHMax(PartType type) => type switch
+        {
+            PartType.Armored => _balance.HMaxArmored,
+            PartType.BossCore => _balance.HMaxBossCore,
+            _ => _balance.HMaxNormal
+        };
+
+        private float GlobalBMax(PartType type) => type switch
+        {
+            PartType.Armored => _balance.BMaxArmored,
+            PartType.BossCore => _balance.BMaxBossCore,
+            _ => _balance.BMaxNormal
+        };
+
+        private float GetBreakThreshold(PartType type) => type switch
+        {
+            PartType.Armored => _balance.RequiredBreakThresholdArmored,
+            PartType.BossCore => _balance.RequiredBreakThresholdBossCore,
+            _ => _balance.RequiredBreakThresholdNormal
+        };
+
+        // Map each distinct authored drop-table string to a stable positive int (0 = none/empty).
+        private int ResolveDropTableId(string dropTableName)
+        {
+            if (string.IsNullOrEmpty(dropTableName)) return 0;
+            if (_dropTableIdByName.TryGetValue(dropTableName, out int id)) return id;
+            id = _dropTableIdByName.Count + 1;
+            _dropTableIdByName[dropTableName] = id;
+            return id;
+        }
+
+        // ── Adjacency graph (Story 005) ──────────────────────────────────────────
+
+        private void BuildAdjacencyGraph()
+        {
+            var graph = new Dictionary<int, HashSet<int>>(_parts.Count);
+            foreach (var part in _parts.Values)
+                graph[part.Id] = new HashSet<int>();
+
+            int cap = _partConfig.AdjacencyMaxNeighbors;
+            foreach (var part in _parts.Values)
+            {
+                int registered = 0;
+                var names = part.AdjacencyNames;
+                for (int i = 0; i < names.Length && registered < cap; i++)
+                {
+                    if (!_partIdByName.TryGetValue(names[i], out int neighborId)) continue; // unknown name — skip
+                    if (neighborId == part.Id) continue;                                    // no self-edges
+                    graph[part.Id].Add(neighborId);
+                    graph[neighborId].Add(part.Id); // bidirectional
+                    registered++;
+                }
+            }
+
+            foreach (var part in _parts.Values)
+            {
+                var set = graph[part.Id];
+                var ids = new int[set.Count];
+                set.CopyTo(ids);
+                Array.Sort(ids); // deterministic chain-target ordering
+                part.AdjacencyIds = ids;
+            }
+        }
+
+        // ── Heat track (Story 002) ───────────────────────────────────────────────
+
+        private void HandleLaserHit(LaserHit evt)
+        {
+            if (!_parts.TryGetValue(evt.PartId, out var part)) return;
+            if (part.BreakState == BreakState.Broken) return;
+            if (evt.HeatDelta <= 0f) return; // heat delta must be > 0 (GDD D.1)
+
+            _pendingHeatDeltas.TryGetValue(evt.PartId, out float acc);
+            _pendingHeatDeltas[evt.PartId] = acc + evt.HeatDelta;
+        }
+
+        /// <summary>
+        /// Apply this frame's heat: parts that received laser fire this frame fill (decay
+        /// suppressed); all others decay. Then evaluate the INTACT↔SOFTENED hysteresis.
+        /// </summary>
+        public void TickHeat(float deltaTime)
+        {
+            foreach (var part in _parts.Values)
+            {
+                if (part.BreakState == BreakState.Broken) continue;
+
+                if (_pendingHeatDeltas.TryGetValue(part.Id, out float delta))
+                    part.HCurrent = Mathf.Clamp(part.HCurrent + delta, 0f, part.HMax);
+                else
+                    part.HCurrent = Mathf.Clamp(part.HCurrent - _balance.HDecayRate * deltaTime, 0f, part.HMax);
+
+                EvaluateHeatState(part);
+            }
+            _pendingHeatDeltas.Clear();
+        }
+
+        private void EvaluateHeatState(BreakablePart part)
+        {
+            if (part.HeatState == HeatState.Intact && part.HCurrent >= _balance.ThetaS)
+            {
+                part.HeatState = HeatState.Softened;
+                _bus.Publish(new PartSoftened(part.Id, part.KaijuId, part.HCurrent, part.HMax));
+            }
+            else if (part.HeatState == HeatState.Softened && part.HCurrent < _balance.ThetaSExit)
+            {
+                part.HeatState = HeatState.Intact;
+                _bus.Publish(new PartSoftenedExit(part.Id, part.KaijuId));
+            }
+        }
+
+        // ── Armor gate & stagger (Story 003) ─────────────────────────────────────
+
+        private void HandleWaveHit(WaveHit evt)
+        {
+            if (!_parts.TryGetValue(evt.PartId, out var part)) return;
+            if (part.BreakState == BreakState.Broken) return;
+
+            part.StaggerTimer = _balance.StaggerDuration; // reset, never additive
+            bool armorStripped = part.PartType == PartType.Armored;
+            if (armorStripped) part.ArmorState = ArmorState.Stripped;
+
+            _bus.Publish(new PartStaggered(part.Id, part.KaijuId, _balance.StaggerDuration, armorStripped));
+        }
+
+        /// <summary>Count down active stagger windows; restore armor and emit PartStaggerEnd at expiry.</summary>
+        public void TickStagger(float deltaTime)
+        {
+            foreach (var part in _parts.Values)
+            {
+                if (part.StaggerTimer <= 0f || part.BreakState == BreakState.Broken) continue;
+
+                part.StaggerTimer = Mathf.Max(part.StaggerTimer - deltaTime, 0f);
+                if (part.StaggerTimer == 0f)
+                {
+                    bool armorRestored = part.PartType == PartType.Armored;
+                    if (armorRestored) part.ArmorState = ArmorState.Intact; // B_current preserved (E.2)
+                    _bus.Publish(new PartStaggerEnd(part.Id, part.KaijuId, armorRestored));
+                }
+            }
+        }
+
+        // ── Break track & event emission (Story 004) ─────────────────────────────
+
+        private void HandleMissileHit(MissileHit evt)
+        {
+            if (!_parts.TryGetValue(evt.PartId, out var part)) return;
+            if (part.BreakState == BreakState.Broken) return;
+            if (evt.BreakDeltaBase <= 0f) return;
+
+            float mult = LookupStateMult(part);
+            float bFill = evt.BreakDeltaBase * mult;
+            part.BCurrent = Mathf.Clamp(part.BCurrent + bFill, 0f, part.BMax);
+
+            if (part.BCurrent >= GetBreakThreshold(part.PartType))
+                TriggerPartBreak(part, isChainBreak: false);
+        }
+
+        /// <summary>
+        /// The D.3 break-fill state multiplier. Priority: (1) ARMORED+ARMOR_INTACT deflects (0);
+        /// (2) any stagger window open → stagger mult (covers SOFTENED+STAGGERED in one lookup,
+        /// not a double-multiply); (3) SOFTENED → 1.0; (4) unsoftened → B_unsoftened_mult.
+        /// </summary>
+        public float LookupStateMult(BreakablePart part)
+        {
+            if (part.PartType == PartType.Armored && part.ArmorState == ArmorState.Intact)
+                return 0f;
+            if (part.StaggerTimer > 0f)
+                return _balance.StaggerBreakMult;
+            if (part.HeatState == HeatState.Softened)
+                return 1.0f;
+            return _balance.BUnsoftenedMult;
+        }
+
+        private BreakQuality ComputeBreakQuality(BreakablePart part)
+        {
+            if (part.HeatState == HeatState.Softened && part.StaggerTimer > 0f)
+                return BreakQuality.SoftenedStaggered;
+            if (part.HeatState == HeatState.Softened)
+                return BreakQuality.Softened;
+            return BreakQuality.Normal;
+        }
+
+        /// <summary>
+        /// Break a part: snapshot break_quality from live state, guard the drop table, flip to
+        /// terminal BROKEN (zeroing both bars), emit <see cref="PartBroke"/>, and for a boss core
+        /// emit <see cref="BossCoreBroke"/> immediately after in the same synchronous call stack
+        /// (fixed order — kaiju-part-system.md E.6). <paramref name="isChainBreak"/> is true only
+        /// for M3 Tier-3 knock-on breaks, which must not chain again.
+        /// </summary>
+        public void TriggerPartBreak(BreakablePart part, bool isChainBreak)
+        {
+            if (string.IsNullOrEmpty(part.DropTableName))
+                throw new InvalidOperationException(
+                    $"[PartStateSystem] Part '{part.Name}' (kaiju {part.KaijuId}) broke with an empty drop_table_id — " +
+                    "invalid KaijuDef. Every breakable part must declare a non-empty drop table (kaiju-part-system.md H.8).");
+
+            BreakQuality quality = ComputeBreakQuality(part);
+            part.BreakState = BreakState.Broken;
+            part.HCurrent = 0f;
+            part.BCurrent = 0f;
+
+            _bus.Publish(new PartBroke(
+                part.Id, part.KaijuId, part.PartType, part.WorldPosition,
+                part.DropTableId, quality, part.AdjacencyIds, isChainBreak));
+
+            if (part.PartType == PartType.BossCore)
+                _bus.Publish(new BossCoreBroke(part.KaijuId, part.WorldPosition));
+        }
+
+        // ── M3 Tier-3 adjacency chain (Story 005) ────────────────────────────────
+
+        private void OnPartBroke(PartBroke evt)
+        {
+            if (evt.IsChainBreak) return; // NON-RECURSIVE GUARD (E.4) — chains never chain again
+            ApplyM3Chain(evt.PartId);
+        }
+
+        private void ApplyM3Chain(int brokenPartId)
+        {
+            if (!_parts.TryGetValue(brokenPartId, out var broken)) return;
+
+            int max = _partConfig.M3T3ChainMaxTargets;
+            int hit = 0;
+            var neighbors = broken.AdjacencyIds; // sorted ascending → deterministic selection
+            for (int i = 0; i < neighbors.Length && hit < max; i++)
+            {
+                if (!_parts.TryGetValue(neighbors[i], out var target)) continue;
+                if (target.BreakState == BreakState.Broken) continue; // skip already-broken neighbours
+                ApplyChainDamage(target);
+                hit++;
+            }
+        }
+
+        private void ApplyChainDamage(BreakablePart target)
+        {
+            float bChain = _partConfig.M3T3ChainDmgMult * _partConfig.M3ChainDamageBase * LookupStateMult(target);
+            if (bChain <= 0f) return; // ARMOR_INTACT neighbour deflects (mult = 0) — no state change
+            target.BCurrent = Mathf.Clamp(target.BCurrent + bChain, 0f, target.BMax);
+            if (target.BCurrent >= GetBreakThreshold(target.PartType))
+                TriggerPartBreak(target, isChainBreak: true);
+        }
+
+        // ── IPartStateQuery (Story 001) ──────────────────────────────────────────
+        // Unknown part ids throw KeyNotFoundException (documented sentinel), except
+        // IsPartAlive which returns false ("or does not exist" per the interface contract).
+
+        public HeatState GetHeatState(int partId) => Require(partId).HeatState;
+        public ArmorState GetArmorState(int partId) => Require(partId).ArmorState;
+        public float GetCurrentHeat(int partId) => Require(partId).HCurrent;
+        public float GetMaxHeat(int partId) => Require(partId).HMax;
+        public Vector2 GetWorldPosition(int partId) => Require(partId).WorldPosition;
+
+        public bool IsPartAlive(int partId) =>
+            _parts.TryGetValue(partId, out var part) && part.BreakState == BreakState.Alive;
+
+        private BreakablePart Require(int partId)
+        {
+            if (_parts.TryGetValue(partId, out var part)) return part;
+            throw new KeyNotFoundException($"[PartStateSystem] No part with id {partId} is loaded.");
+        }
+    }
+}

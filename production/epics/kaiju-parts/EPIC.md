@@ -44,9 +44,19 @@ This epic is complete when:
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | Part Entity & Two-Bar Data Model | Logic | Ready | ADR-0003 (primary), ADR-0002 |
-| 002 | Heat State Machine (INTACT ↔ SOFTENED) | Logic | Ready | ADR-0002 (primary), ADR-0003 |
-| 003 | Armor Gate & Stagger Timer | Logic | Ready | ADR-0002 (primary), ADR-0003 |
-| 004 | Break Condition & Event Emission | Logic | Ready | ADR-0002 (primary), ADR-0003 |
-| 005 | Adjacency Graph Load & Tier-3 Chain Consumers | Logic | Ready | ADR-0003 (primary), ADR-0002 |
-| 006 | Softened/Broken Readability Hooks | Visual/Feel | Ready | ADR-0002 |
+| 001 | Part Entity & Two-Bar Data Model | Logic | Done (tests GREEN) | ADR-0003 (primary), ADR-0002 |
+| 002 | Heat State Machine (INTACT ↔ SOFTENED) | Logic | Done (tests GREEN) | ADR-0002 (primary), ADR-0003 |
+| 003 | Armor Gate & Stagger Timer | Logic | Done (tests GREEN) | ADR-0002 (primary), ADR-0003 |
+| 004 | Break Condition & Event Emission | Logic | Done (tests GREEN) | ADR-0002 (primary), ADR-0003 |
+| 005 | Adjacency Graph Load & Tier-3 Chain Consumers | Logic | Done (tests GREEN) | ADR-0003 (primary), ADR-0002 |
+| 006 | Softened/Broken Readability Hooks | Visual/Feel | Ready (director — VFX + user study) | ADR-0002 |
+
+> **Implementation note (2026-07-02):** Stories 001–005 implemented in
+> `Assets/_Project/Scripts/KaijuParts/` (`BreakablePart`, `PartStateSystem`) with EditMode
+> tests in `Assets/_Project/Tests/EditMode/KaijuParts/` — **56/56 EditMode tests GREEN**
+> (headless Unity 6000.3.0f1 runner, 31 KaijuParts cases + 25 pre-existing). Reconciliations
+> vs. story text (all following the already-committed Core/Content contracts): part/kaiju/
+> drop-table ids are **ints** (string→int mapping built at load), heat/break/stagger knobs are
+> read from **`WeaponBalanceConfig`** (single source) with only chain/adjacency/lifecycle knobs
+> on `PartSystemConfig` (chain knobs added this pass), and the `PartSoftened` / `PartStaggered` /
+> `PartStaggerEnd` payloads were extended to carry the heat/armor fields the ACs assert.

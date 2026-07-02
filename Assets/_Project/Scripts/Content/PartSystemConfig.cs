@@ -24,6 +24,22 @@ namespace KaijuBreaker.Content
                  "kaiju-part-system.md G.3 chain_break_is_recursive.")]
         [SerializeField] private bool _chainBreakIsRecursive = false;
 
+        [Tooltip("M3 T3 chain break-fill multiplier applied to each adjacent target. Safe range [1.0, 2.0]. " +
+                 "kaiju-part-system.md G.3 m3_t3_chain_dmg_mult.")]
+        [SerializeField] private float _m3T3ChainDmgMult = 1.5f;
+
+        [Tooltip("Max adjacent targets an M3 T3 chain break may propagate to. Safe range {1, 2}. " +
+                 "kaiju-part-system.md G.3 m3_t3_chain_max_targets.")]
+        [SerializeField] private int _m3T3ChainMaxTargets = 2;
+
+        [Tooltip("Base break-fill (BU) applied to a chain target before the state multiplier. Safe range [5, 30]. " +
+                 "kaiju-part-system.md D.6 chain_damage_base — B_chain = m3_t3_chain_dmg_mult × base × M_state_mult(target).")]
+        [SerializeField] private float _m3ChainDamageBase = 10f;
+
+        [Tooltip("L2 T3 heat-ripple: fraction of an adjacent part's H_max deposited as heat when a neighbour breaks. " +
+                 "Safe range [0.20, 0.50]. Consumed by the Weapons system; owned here per kaiju-part-system.md G.3 l2_t3_adjacent_heat_pct.")]
+        [SerializeField] private float _l2T3AdjacentHeatPct = 0.30f;
+
         [Header("Adjacency Graph")]
         [Tooltip("Maximum neighbours a single part may declare in its adjacency list. Safe range [1, 8]. " +
                  "Prevents chain effects from spreading too broadly. kaiju-part-system.md G.3.")]
@@ -58,6 +74,18 @@ namespace KaijuBreaker.Content
         /// </summary>
         public bool ChainBreakIsRecursive => _chainBreakIsRecursive;
 
+        /// <summary>M3 T3 chain break-fill multiplier per target. kaiju-part-system.md G.3.</summary>
+        public float M3T3ChainDmgMult => _m3T3ChainDmgMult;
+
+        /// <summary>Max adjacent targets an M3 T3 chain may break (≤ 2). kaiju-part-system.md G.3.</summary>
+        public int M3T3ChainMaxTargets => _m3T3ChainMaxTargets;
+
+        /// <summary>Base chain break-fill (BU) before the target's state multiplier. kaiju-part-system.md D.6.</summary>
+        public float M3ChainDamageBase => _m3ChainDamageBase;
+
+        /// <summary>L2 T3 heat-ripple fraction of a neighbour's H_max (consumed by Weapons). kaiju-part-system.md G.3.</summary>
+        public float L2T3AdjacentHeatPct => _l2T3AdjacentHeatPct;
+
         /// <summary>
         /// Max neighbours per part in the adjacency graph.
         /// kaiju-part-system.md G.3 adjacency_max_neighbors.
@@ -90,6 +118,23 @@ namespace KaijuBreaker.Content
                 Debug.LogError(
                     $"[PartSystemConfig] AdjacencyMaxNeighbors = {_adjacencyMaxNeighbors} " +
                     "is outside safe range [1, 8].", this);
+
+            if (_m3T3ChainDmgMult < 1.0f || _m3T3ChainDmgMult > 2.0f)
+                Debug.LogError(
+                    $"[PartSystemConfig] M3T3ChainDmgMult = {_m3T3ChainDmgMult} is outside safe range [1.0, 2.0].", this);
+
+            if (_m3T3ChainMaxTargets < 1 || _m3T3ChainMaxTargets > 2)
+                Debug.LogError(
+                    $"[PartSystemConfig] M3T3ChainMaxTargets = {_m3T3ChainMaxTargets} must be 1 or 2 " +
+                    "(GDD G.3 constrains T3 chain to ≤ 2 targets).", this);
+
+            if (_m3ChainDamageBase < 5f || _m3ChainDamageBase > 30f)
+                Debug.LogError(
+                    $"[PartSystemConfig] M3ChainDamageBase = {_m3ChainDamageBase} is outside safe range [5, 30].", this);
+
+            if (_l2T3AdjacentHeatPct < 0.20f || _l2T3AdjacentHeatPct > 0.50f)
+                Debug.LogError(
+                    $"[PartSystemConfig] L2T3AdjacentHeatPct = {_l2T3AdjacentHeatPct} is outside safe range [0.20, 0.50].", this);
 
             ValidateMultiplier("HitboxSizeMultiplierNormal",  _hitboxSizeMultiplierNormal);
             ValidateMultiplier("HitboxSizeMultiplierArmored", _hitboxSizeMultiplierArmored);

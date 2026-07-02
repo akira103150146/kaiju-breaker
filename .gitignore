@@ -142,3 +142,7 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+# Headless test run artifacts
+test-results.xml
+unity-test.log
