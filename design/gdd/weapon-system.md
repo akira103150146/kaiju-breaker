@@ -446,6 +446,8 @@ H_residual_fill(t) = max(l1_residual_rate, l4_afterimage_rate) × Δt
 
 武器系統消費此系統的輸出（武器莢艙）。掉落池由關卡設定決定，武器系統不控制掉落頻率。
 
+> 莢艙採**循環顯示（Cycling Pod）**機制:依池分型(Primary=雷射系 / Secondary=飛彈系),每 `pod_cycle_interval`(~3s)輪替顯示該池的一把武器,並在玩家可達區域逗留 `pod_dwell_time`,讓玩家等到想要的武器再撿取(撿取=裝備並永久解鎖該把)。完整規格與菁英怪掉落來源見 `stage-system.md`;所有權見 `meta-progression-system.md`。
+
 ### F.3 永久強化系統（Permanent Upgrade System）
 
 - 武器的 Tier 等級由此系統控制，影響讀取的調校旋鈕數值（Tier-3 觸發各武器的獨特機制）。
