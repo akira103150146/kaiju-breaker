@@ -8,10 +8,10 @@ Engine: Unity 6.3 LTS (C#)
 
 | Epic | Layer | System | GDD | Stories | Status |
 |------|-------|--------|-----|---------|--------|
-| Core 基礎設施（事件匯流排 + DI） | Foundation | 橫切 (`Core`/`App`) | docs/architecture/architecture.md §2/§5 | Not yet created | Ready |
-| Content 調校資料框架 | Foundation | 全系統調校資料 (`Content`) | docs/architecture/architecture.md §6 | Not yet created | Ready |
-| 元進度與存檔系統 | Foundation | S10 Meta/Save | design/gdd/meta-progression-system.md | Not yet created | Ready |
-| 子彈/彈幕引擎（DOTS） | Foundation | S9 Bullet Sim | design/gdd/bullet-system.md | Not yet created | Ready |
+| Core 基礎設施（事件匯流排 + DI） | Foundation | 橫切 (`Core`/`App`) | docs/architecture/architecture.md §2/§5 | 6 stories | Ready |
+| Content 調校資料框架 | Foundation | 全系統調校資料 (`Content`) | docs/architecture/architecture.md §6 | 9 stories | Ready |
+| 元進度與存檔系統 | Foundation | S10 Meta/Save | design/gdd/meta-progression-system.md | 7 stories | Ready |
+| 子彈/彈幕引擎（DOTS） | Foundation | S9 Bullet Sim | design/gdd/bullet-system.md | 9 stories（1 Ready spike, 8 Blocked on ADR-0001） | Ready |
 | 武器系統 | Core | S1 Weapons | design/gdd/weapon-system.md | Not yet created | Ready |
 | 可破壞部位系統 | Core | S2 Kaiju Parts | design/gdd/kaiju-part-system.md | Not yet created | Ready |
 | 素材經濟與永久升級 | Core | S3 Economy | design/gdd/material-economy.md | Not yet created | Ready |

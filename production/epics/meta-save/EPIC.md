@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/meta-progression-system.md
 > **Architecture Module**: `KaijuBreaker.Meta`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories meta-save`
+> **Stories**: 7 stories — see table below
 
 ## Overview
 
@@ -39,6 +39,18 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | SaveData Schema & Canonical JSON Serializer | Logic | Ready | ADR-0004 |
+| 002 | Atomic Temp-Then-Rename Write & Backup | Logic | Ready | ADR-0004 |
+| 003 | CRC32 Integrity Check, Load & Corruption Repair | Logic | Ready | ADR-0004 |
+| 004 | Save Versioning & Migration Chain | Logic | Ready | ADR-0004 |
+| 005 | Persistent vs Per-Run State Boundary & New Game Init | Logic | Ready | ADR-0004 |
+| 006 | Autosave-on-Bank: on_part_break Instant Credit & Suspend Sync | Integration | Ready | ADR-0004, ADR-0002 |
+| 007 | Weapon Ownership & Unlock Persistence | Logic | Ready | ADR-0004 |
+
 ## Next Step
 
-Run `/create-stories meta-save` to break this epic into implementable stories.
+Run `/story-readiness production/epics/meta-save/story-001-save-schema-serializer.md` to begin implementation. Work through stories in order — each story's `Depends on:` field tells you what must be DONE before starting it.

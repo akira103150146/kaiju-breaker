@@ -4,7 +4,7 @@
 > **GDD**: docs/architecture/architecture.md §2/§5（橫切基礎設施，無專屬 GDD）
 > **Architecture Module**: `KaijuBreaker.Core` + `KaijuBreaker.App`（組合根）
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories core-foundation`
+> **Stories**: 6 stories — see §6 below
 
 ## Overview
 
@@ -40,4 +40,17 @@ This epic is complete when:
 
 ## Next Step
 
-Run `/create-stories core-foundation` to break this epic into implementable stories.
+Run `/story-readiness production/epics/core-foundation/story-001-core-asmdef-shared-types.md` to begin implementation.
+
+---
+
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Core .asmdef 建立與共用型別定義 | Logic | Ready | ADR-0005, ADR-0002 |
+| 002 | IEventBus 介面與 GDD 事件 readonly struct 定義 | Logic | Ready | ADR-0002, ADR-0005 |
+| 003 | 唯讀查詢介面定義 | Logic | Ready | ADR-0002, ADR-0005 |
+| 004 | EventBus 具體實作（同步分發 + 穩態零 GC） | Logic | Ready | ADR-0002, ADR-0005 |
+| 005 | DOTS↔Mono Bridge 值型 struct 合約 | Logic | Ready | ADR-0002, ADR-0005 |
+| 006 | App 組合根 DI 佈線合約 | Integration | Ready | ADR-0005, ADR-0002 |

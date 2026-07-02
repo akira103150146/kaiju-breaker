@@ -4,7 +4,7 @@
 > **GDD**: docs/architecture/architecture.md §6（全系統調校資料，無專屬 GDD）
 > **Architecture Module**: `KaijuBreaker.Content`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories content-config`
+> **Stories**: 9 stories — see table below
 
 ## Overview
 
@@ -36,6 +36,16 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
-## Next Step
+## Stories
 
-Run `/create-stories content-config` to break this epic into implementable stories.
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | [WeaponBalanceConfig + WeaponDef ScriptableObjects](story-001-weapon-balance-config-so.md) | Config/Data | Ready | ADR-0003 |
+| 002 | [PartSystemConfig + KaijuDef ScriptableObjects](story-002-part-kaiju-so.md) | Config/Data | Ready | ADR-0003 |
+| 003 | [DifficultyConfig ScriptableObject](story-003-difficulty-config-so.md) | Config/Data | Ready | ADR-0003 |
+| 004 | [GameFeelConfig ScriptableObject](story-004-game-feel-config-so.md) | Config/Data | Ready | ADR-0003 |
+| 005 | [EmitterPatternSO + MovementPatternSO + EnemyDef](story-005-emitter-movement-pattern-so.md) | Config/Data | Ready | ADR-0003 |
+| 006 | [StageDef + SegmentDef + PodDropConfig ScriptableObjects](story-006-stage-segment-so.md) | Config/Data | Ready | ADR-0003 |
+| 007 | [EconomyConfig + InputSettings + SaveConfig ScriptableObjects](story-007-peripheral-config-so.md) | Config/Data | Ready | ADR-0003 |
+| 008 | [ContentRegistry Service](story-008-content-registry.md) | Integration | Ready | ADR-0003 |
+| 009 | [SO Test Fixture Support](story-009-so-test-fixtures.md) | Logic | Ready | ADR-0003 |

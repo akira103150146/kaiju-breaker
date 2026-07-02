@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/bullet-system.md
 > **Architecture Module**: `KaijuBreaker.BulletSim`
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories bullet-sim`
+> **Stories**: 9 stories created
 
 ## Overview
 
@@ -39,6 +39,22 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/`
 - All Visual/Feel and UI stories have evidence docs with sign-off in `production/qa/evidence/`
 
+## Stories
+
+| # | Story | Type | Status | ADR |
+|---|-------|------|--------|-----|
+| 001 | Perf-Prototype Spike — DOTS/ECS Mobile Baseline | Integration | Ready | ADR-0001 (Proposed — this story validates it) |
+| 002 | Bullet Pool Pre-allocation (ECS World + NativeArray) | Logic | Blocked | ADR-0001 |
+| 003 | EmitterPatternSO Authoring Layer & Blob Baking | Integration | Blocked | ADR-0001 / ADR-0003 |
+| 004 | Burst Simulation Job (Position Integration & Offscreen Culling) | Logic | Blocked | ADR-0001 |
+| 005 | Density Scaling & Readability Cap Enforcement | Logic | Blocked | ADR-0001 / ADR-0003 |
+| 006 | Spatial Hash Broad-phase Collision | Logic | Blocked | ADR-0001 |
+| 007 | DOTS↔Mono Bridge (NativeQueue → IEventBus) | Integration | Blocked | ADR-0001 |
+| 008 | Player Missile Pool & Hit Events | Integration | Blocked | ADR-0001 |
+| 009 | Readability Guardrails | Visual/Feel | Blocked | ADR-0001 / ADR-0003 |
+
+> Stories 002–009 are blocked until Story 001 DONE and ADR-0001 advanced Proposed → Accepted via `/architecture-decision`.
+
 ## Next Step
 
-Run `/create-stories bullet-sim` to break this epic into implementable stories.
+Run `/story-readiness production/epics/bullet-sim/story-001-perf-prototype-spike.md` to begin the perf-prototype spike.
