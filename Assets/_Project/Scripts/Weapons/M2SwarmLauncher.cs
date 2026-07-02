@@ -43,7 +43,7 @@ namespace KaijuBreaker.Weapons
 
         private int BurstSize => Def.M2T3MagCount / 2;
 
-        private float PerMicroBreakDelta => (Balance.D0Reference / Def.M2MicroCount) * Balance.BuPerD0;
+        private float PerMicroBreakDelta => Balance.BuPerD0 / Def.M2MicroCount;
 
         /// <summary>
         /// Fire one salvo. <paramref name="hitPartIds"/> is the scene shell's already-resolved list

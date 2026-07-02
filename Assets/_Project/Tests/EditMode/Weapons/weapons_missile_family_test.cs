@@ -50,7 +50,8 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             foreach (var hit in bus.Events<MissileHit>())
             {
                 Assert.That(hit.PartId, Is.EqualTo(1));
-                Assert.That(hit.BreakDeltaBase, Is.EqualTo(500f).Within(1e-3f));
+                // 0.5×D₀ per missile in BU: M1DmgPerMissileMult(0.5) × BuPerD0(10) = 5 BU (2 missiles = 1×D₀).
+                Assert.That(hit.BreakDeltaBase, Is.EqualTo(5f).Within(1e-3f));
                 Assert.That(hit.Weapon, Is.EqualTo(WeaponId.M1));
             }
         }
@@ -94,8 +95,9 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
 
             Assert.That(fired, Is.True);
             Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(8));
+            // D₀/8 per micro-missile in BU: BuPerD0(10) / M2MicroCount(8) = 1.25 BU (8 micros = 1×D₀).
             foreach (var hit in bus.Events<MissileHit>())
-                Assert.That(hit.BreakDeltaBase, Is.EqualTo(125f).Within(1e-3f));
+                Assert.That(hit.BreakDeltaBase, Is.EqualTo(1.25f).Within(1e-3f));
         }
 
         [Test]
@@ -139,8 +141,9 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
 
             Assert.That(fired, Is.True);
             Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(2));
+            // N=2 AoE split in BU: (M4TotalOutputCapMult(1) / N(2)) × BuPerD0(10) = 5 BU each (total cap = 1×D₀).
             foreach (var hit in bus.Events<MissileHit>())
-                Assert.That(hit.BreakDeltaBase, Is.EqualTo(500f).Within(1e-3f));
+                Assert.That(hit.BreakDeltaBase, Is.EqualTo(5f).Within(1e-3f));
         }
 
         [Test]
@@ -152,7 +155,8 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             m4.TryFire(new List<int> { 1 }, kaijuId: 0);
 
             Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(1));
-            Assert.That(bus.Events<MissileHit>()[0].BreakDeltaBase, Is.EqualTo(2000f).Within(1e-3f));
+            // N=1 single-target in BU: M4SingleTargetMult(2) × BuPerD0(10) = 20 BU (2×D₀).
+            Assert.That(bus.Events<MissileHit>()[0].BreakDeltaBase, Is.EqualTo(20f).Within(1e-3f));
         }
 
         [Test]

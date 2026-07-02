@@ -64,8 +64,8 @@ namespace KaijuBreaker.Weapons
             if (n <= 0) return;
 
             float breakDeltaBase = n == 1
-                ? Def.M4SingleTargetMult * Balance.D0Reference * Balance.BuPerD0
-                : (Def.M4TotalOutputCapMult * Balance.D0Reference / n) * Balance.BuPerD0;
+                ? Def.M4SingleTargetMult * Balance.BuPerD0
+                : (Def.M4TotalOutputCapMult / n) * Balance.BuPerD0;
 
             for (int i = 0; i < n; i++)
                 EmitMissileHit(targetPartIds[i], kaijuId, breakDeltaBase);
@@ -75,7 +75,7 @@ namespace KaijuBreaker.Weapons
         {
             if (targetPartIds == null) return;
 
-            float perChild = Def.M4T3ChildDmgPct * Balance.D0Reference * Balance.BuPerD0;
+            float perChild = Def.M4T3ChildDmgPct * Balance.BuPerD0;
             for (int i = 0; i < targetPartIds.Count; i++)
                 EmitMissileHit(targetPartIds[i], kaijuId, perChild);
         }

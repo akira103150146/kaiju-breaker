@@ -48,8 +48,8 @@ namespace KaijuBreaker.Weapons
 
             HeatState heat = PartQuery.GetHeatState(targetPartId);
             float breakDeltaBase = heat == HeatState.Softened
-                ? Def.M3DmgUnsoftenedMult * Def.M3HeatShockFillMult * Balance.D0Reference * Balance.BuPerD0
-                : Def.M3DmgUnsoftenedMult * Balance.D0Reference * Balance.BuPerD0;
+                ? Def.M3DmgUnsoftenedMult * Def.M3HeatShockFillMult * Balance.BuPerD0
+                : Def.M3DmgUnsoftenedMult * Balance.BuPerD0;
 
             EmitMissileHit(targetPartId, kaijuId, breakDeltaBase);
             return true;

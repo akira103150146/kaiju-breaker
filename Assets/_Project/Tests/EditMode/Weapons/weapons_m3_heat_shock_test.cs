@@ -22,7 +22,7 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
         private static WeaponDef M3Def() =>
             ContentTestFactory.Create<WeaponDef>(("_id", WeaponId.M3), ("_type", WeaponType.Missile));
 
-        // ── AC-1: SOFTENED target triggers heat-shock detonation (6000) ──────────
+        // ── AC-1: SOFTENED target triggers heat-shock detonation (60 BU) ─────────
 
         [Test]
         public void test_m3_tryfire_softened_target_triggers_heat_shock_detonation()
@@ -40,11 +40,12 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             Assert.That(fired, Is.True);
             Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(1));
             var hit = bus.Events<MissileHit>()[0];
-            Assert.That(hit.BreakDeltaBase, Is.EqualTo(6000f).Within(1e-2f));
+            // 6×D₀ heat-shock in BU: M3DmgUnsoftenedMult(3) × M3HeatShockFillMult(2) × BuPerD0(10) = 60 BU.
+            Assert.That(hit.BreakDeltaBase, Is.EqualTo(60f).Within(1e-2f));
             Assert.That(hit.Weapon, Is.EqualTo(WeaponId.M3));
         }
 
-        // ── AC-2: unsoftened target deals base break only (3000, no state mult applied here) ─
+        // ── AC-2: unsoftened target deals base break only (30 BU, no state mult applied here) ─
 
         [Test]
         public void test_m3_tryfire_unsoftened_target_deals_base_break_only()
@@ -57,7 +58,8 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             m3.TryFire(targetPartId: 1, kaijuId: 0);
 
             var hit = bus.Events<MissileHit>()[0];
-            Assert.That(hit.BreakDeltaBase, Is.EqualTo(3000f).Within(1e-2f),
+            // 3×D₀ base in BU: M3DmgUnsoftenedMult(3) × BuPerD0(10) = 30 BU (KaijuParts applies 0.35 downstream).
+            Assert.That(hit.BreakDeltaBase, Is.EqualTo(30f).Within(1e-2f),
                 "unsoftened base value; KaijuParts applies B_unsoftened_mult downstream, not tested here");
         }
 
@@ -101,8 +103,8 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
 
             var hits = bus.Events<MissileHit>();
             Assert.That(hits.Count, Is.EqualTo(2));
-            Assert.That(hits[0].BreakDeltaBase, Is.EqualTo(3000f).Within(1e-2f));
-            Assert.That(hits[1].BreakDeltaBase, Is.EqualTo(6000f).Within(1e-2f));
+            Assert.That(hits[0].BreakDeltaBase, Is.EqualTo(30f).Within(1e-2f)); // NORMAL: 3×D₀ × BuPerD0
+            Assert.That(hits[1].BreakDeltaBase, Is.EqualTo(60f).Within(1e-2f)); // SOFTENED: 6×D₀ × BuPerD0
         }
     }
 }

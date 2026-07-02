@@ -36,7 +36,7 @@ namespace KaijuBreaker.Weapons
 
         private int MissilesPerShot => CurrentTier == 3 ? Def.M1T3MissilesPerShot : Def.M1MissilesPerShot;
 
-        private float PerMissileBreakDelta => Def.M1DmgPerMissileMult * Balance.D0Reference * Balance.BuPerD0;
+        private float PerMissileBreakDelta => Def.M1DmgPerMissileMult * Balance.BuPerD0;
 
         /// <summary>
         /// Fire one shot at <paramref name="targetPartId"/> (the scene shell's resolved lock).

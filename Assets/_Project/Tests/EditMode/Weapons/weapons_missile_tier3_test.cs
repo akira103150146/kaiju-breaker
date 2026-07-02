@@ -161,7 +161,7 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
                 "owned entirely by KaijuParts.PartStateSystem.ApplyM3Chain (story-009 out-of-scope note)");
         }
 
-        // ── AC-4: M4 Tier-3 splits into 6 children at 200 BU each ─────────────────
+        // ── AC-4: M4 Tier-3 splits into 6 children at 2 BU each ───────────────────
 
         [Test]
         public void test_m4_tier3_cluster_split_emits_six_child_hits()
@@ -175,8 +175,9 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
 
             Assert.That(fired, Is.True);
             Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(6));
+            // Each child in BU: M4T3ChildDmgPct(0.2) × BuPerD0(10) = 2 BU (6 children = 1.2×D₀).
             foreach (var hit in bus.Events<MissileHit>())
-                Assert.That(hit.BreakDeltaBase, Is.EqualTo(200f).Within(1e-3f));
+                Assert.That(hit.BreakDeltaBase, Is.EqualTo(2f).Within(1e-3f));
         }
 
         [Test]
@@ -188,7 +189,7 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             m4.TryFire(new List<int> { 1 }, kaijuId: 0);
 
             var hit = bus.Events<MissileHit>()[0];
-            Assert.That(hit.BreakDeltaBase, Is.EqualTo(2000f).Within(1e-3f),
+            Assert.That(hit.BreakDeltaBase, Is.EqualTo(20f).Within(1e-3f), // N=1: 2×D₀ × BuPerD0
                 "Tier < 3 must keep using the N=1 AoE formula, not the Tier-3 child split");
         }
     }
