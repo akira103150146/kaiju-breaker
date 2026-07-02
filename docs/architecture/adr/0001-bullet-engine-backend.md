@@ -45,6 +45,18 @@
 
 **若未達 1,000**：依處置順序 (1) 降 D4 密度乘數 → (2) 收緊同屏上限 → (3) 最後才視覺；**絕不犧牲可讀性換數量**。若 DOTS 整合成本被證明過高，執行「純 Mono 退路」（見 Alternatives），撰寫資產與事件契約不動。
 
+### Spike 進度紀錄（非閘門判定 — 桌面煙霧測試）
+
+> spike 程式碼：`Assets/_Project/Scripts/BulletSim/PerfSpike/`（獨立 asmdef，判定後整包刪）。
+
+**2026-07-02 — 桌面 Editor 煙霧測試（Unity MCP 驅動，Unity 6000.3.0f1）：PASS（功能面）**
+- ✅ 編譯乾淨（僅 1 個無害 `CS0162 unreachable` 警告）。
+- ✅ 進 Play 後 `BulletSpawnSystem` 一次生成 **1,000 個 `BulletVelocity` entity**（Default World，實測 `CalculateEntityCount()==1000`）。
+- ✅ `BulletMoveSystem`（Burst `IJobEntity`）每幀推進：bullet[0] 位置跨幀變動並於邊界環繞（x=4.72→−0.28）。
+- ⓘ Editor FPS 僅供參考（非代表值）；GC/frame 由 Burst `IJobEntity`（零 managed 配置）結構性保證為 0。
+
+**仍待閘門判定（director，需真機 — 上方 checkbox 未打）**：純模擬版**未渲染**子彈，未涵蓋「含碰撞+繪製」與真機 sustain FPS/GC。權威數字須 Development Build 到中階手機（Autoconnect Profiler）量測：sustain FPS≥60、GC=0/frame，並把 `Count` 推到 2000/4000 記錄天花板。達標後才 `/architecture-decision` 轉 Accepted。
+
 ---
 
 ## Alternatives Considered（替代方案）
