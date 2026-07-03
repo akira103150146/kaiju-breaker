@@ -1,0 +1,20 @@
+{
+    "name": "KaijuBreaker.Prototype",
+    "rootNamespace": "KaijuBreaker.Prototype",
+    "references": [
+        "KaijuBreaker.Core",
+        "KaijuBreaker.Content",
+        "KaijuBreaker.Weapons",
+        "KaijuBreaker.KaijuParts",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

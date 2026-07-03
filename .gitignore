@@ -146,3 +146,7 @@ $RECYCLE.BIN/
 # Headless test run artifacts
 test-results.xml
 unity-test.log
+
+# Prototype MCP screenshots (throwaway)
+Assets/Screenshots/
+Assets/Screenshots.meta
