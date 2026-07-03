@@ -339,6 +339,8 @@ namespace KaijuBreaker.KaijuParts
 
             if (part.PartType == PartType.BossCore)
                 _bus.Publish(new BossCoreBroke(part.KaijuId, part.WorldPosition));
+            else if (part.PartType == PartType.MidCore)
+                _bus.Publish(new MidCoreBroke(part.KaijuId, part.WorldPosition));
         }
 
         // ── M3 Tier-3 adjacency chain (Story 005) ────────────────────────────────
@@ -399,6 +401,23 @@ namespace KaijuBreaker.KaijuParts
             foreach (var part in _parts.Values)
             {
                 if (part.BreakState != BreakState.Alive) continue;
+                if (part.HCurrent > bestHeat || (part.HCurrent == bestHeat && part.Id < bestId))
+                {
+                    bestHeat = part.HCurrent;
+                    bestId = part.Id;
+                }
+            }
+            return bestId;
+        }
+
+        /// <summary>Highest-heat ALIVE + SOFTENED part id (M2 Tier-3 saturation callout); −1 if none softened. Ties → lowest id.</summary>
+        public int GetHottestSoftenedPartId()
+        {
+            int bestId = -1;
+            float bestHeat = float.NegativeInfinity;
+            foreach (var part in _parts.Values)
+            {
+                if (part.BreakState != BreakState.Alive || part.HeatState != HeatState.Softened) continue;
                 if (part.HCurrent > bestHeat || (part.HCurrent == bestHeat && part.Id < bestId))
                 {
                     bestHeat = part.HCurrent;

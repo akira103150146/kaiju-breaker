@@ -90,6 +90,12 @@ namespace KaijuBreaker.Content
         [Tooltip("Break-fill multiplier while a part is STAGGERED. Safe range [1.2, 2.0].")]
         [SerializeField] private float _staggerBreakMult = 1.5f;
 
+        [Header("Equal-Power Verification (feedback point 3)")]
+        [Tooltip("± band the H.1/H.2 equal-power tests allow around D₀ (0.10 = ±10%). Externalised per " +
+                 "the no-hardcoded-balance rule so the gate itself is tunable. Safe range [0.05, 0.20]. " +
+                 "weapon-tiering-and-equal-power.md.")]
+        [SerializeField] private float _equalPowerBandTolerance = 0.10f;
+
         // ── Public read-only properties ──────────────────────────────────────────
 
         /// <summary>Global D₀ power budget reference (PU/s). weapon-system.md G.1.</summary>
@@ -148,6 +154,9 @@ namespace KaijuBreaker.Content
 
         /// <summary>Break-fill multiplier while STAGGERED. weapon-system.md G.1.</summary>
         public float StaggerBreakMult => _staggerBreakMult;
+
+        /// <summary>± tolerance band for the equal-power (H.1/H.2) tests (0.10 = ±10%). weapon-tiering-and-equal-power.md.</summary>
+        public float EqualPowerBandTolerance => _equalPowerBandTolerance;
 
         /// <summary>Fresh-save default primary (laser) weapon. weapon-system.md F.3.</summary>
         public WeaponId DefaultPrimary => _defaultPrimary;

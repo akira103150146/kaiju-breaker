@@ -133,4 +133,17 @@ namespace KaijuBreaker.Core
         public readonly Vector2 WorldPosition;
         public BossCoreBroke(int kaijuId, Vector2 worldPosition) { KaijuId = kaijuId; WorldPosition = worldPosition; }
     }
+
+    /// <summary>
+    /// on_mid_core_break — a MID-tier encounter core broke (<see cref="PartType.MidCore"/>).
+    /// Emitted in the same frame immediately AFTER the core's PartBroke (same fixed-order rule as
+    /// <see cref="BossCoreBroke"/>). Ends only that mid encounter — Stage listens for this to advance
+    /// the encounter, NOT the run-victory sequence (enemy-tier-system.md).
+    /// </summary>
+    public readonly struct MidCoreBroke : IGameEvent
+    {
+        public readonly int KaijuId;
+        public readonly Vector2 WorldPosition;
+        public MidCoreBroke(int kaijuId, Vector2 worldPosition) { KaijuId = kaijuId; WorldPosition = worldPosition; }
+    }
 }

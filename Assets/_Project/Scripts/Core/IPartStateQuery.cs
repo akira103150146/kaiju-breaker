@@ -36,6 +36,13 @@ namespace KaijuBreaker.Core
         /// part — weapon-system.md G.3). O(n) scan; called at most once per M1 T3 shot.
         /// </summary>
         int GetHottestAlivePartId();
+
+        /// <summary>
+        /// Runtime id of the ALIVE, currently-SOFTENED part with the highest heat, or −1 if none is
+        /// softened. Ties break to the lowest part id. Sibling of <see cref="GetHottestAlivePartId"/>
+        /// used by M2 Tier-3 "飽和點名" to prioritise already-softened parts (weapon-tiering-and-equal-power.md).
+        /// </summary>
+        int GetHottestSoftenedPartId();
     }
 
     /// <summary>

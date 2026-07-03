@@ -78,5 +78,22 @@ namespace KaijuBreaker.Tests.EditMode.Helpers
             }
             return bestId;
         }
+
+        public int GetHottestSoftenedPartId()
+        {
+            int bestId = -1;
+            float bestHeat = float.NegativeInfinity;
+            foreach (var kvp in _parts)
+            {
+                var r = kvp.Value;
+                if (!r.Alive || r.Heat != HeatState.Softened) continue;
+                if (r.CurrentHeat > bestHeat || (r.CurrentHeat == bestHeat && kvp.Key < bestId))
+                {
+                    bestHeat = r.CurrentHeat;
+                    bestId = kvp.Key;
+                }
+            }
+            return bestId;
+        }
     }
 }

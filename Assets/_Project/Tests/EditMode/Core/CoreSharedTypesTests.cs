@@ -33,10 +33,12 @@ namespace KaijuBreaker.Tests.EditMode.Core
         [Test]
         public void PartType_MatchesGddContract()
         {
-            Assert.AreEqual(3, Enum.GetValues(typeof(PartType)).Length);
+            // Normal/Armored/BossCore + MidCore (mid-encounter core, feedback point 7).
+            Assert.AreEqual(4, Enum.GetValues(typeof(PartType)).Length);
             Assert.IsTrue(Enum.IsDefined(typeof(PartType), PartType.Normal));
             Assert.IsTrue(Enum.IsDefined(typeof(PartType), PartType.Armored));
             Assert.IsTrue(Enum.IsDefined(typeof(PartType), PartType.BossCore));
+            Assert.IsTrue(Enum.IsDefined(typeof(PartType), PartType.MidCore));
         }
 
         [Test]

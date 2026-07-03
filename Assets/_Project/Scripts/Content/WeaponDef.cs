@@ -192,6 +192,37 @@ namespace KaijuBreaker.Content
         [Tooltip("T3 each child bomb's break output (fraction of D0). Safe range [0.15, 0.30]. weapon-system.md G.3.")]
         [SerializeField] private float _m4T3ChildDmgPct = 0.20f;
 
+        // ── Tiering & equal-power (feedback point 3) ─────────────────────────
+        // Data-driven knobs for the equal-power retune + per-tier growth. All placeholder
+        // defaults (re-tunable) — see design/gdd/weapon-tiering-and-equal-power.md.
+
+        [Header("Equal-Power / Tiering (feedback point 3)")]
+        [Tooltip("Per-weapon hit-rate correction applied to sustained output in the H.1/H.2 model. " +
+                 "1.0 = perfect uptime; lower for hard-to-land weapons (L2≈0.65, M3≈0.80). Safe range (0, 1].")]
+        [SerializeField] private float _effectiveHitRate = 1.0f;
+
+        [Tooltip("L1 spread base beam count at Tier 0. Beams = base + tier → 2/3/4/5 at Tier 0-3. " +
+                 "Per-beam heat = L1HRateFull / beamCount so total heat stays constant. Safe range [1, 4].")]
+        [SerializeField] private int _l1BaseBeamCount = 2;
+
+        [Tooltip("Seconds between M1 homing shots (Mag_Duration = shots × interval). Placeholder path-A. Safe range [0.08, 0.40].")]
+        [SerializeField] private float _m1ShotInterval = 0.10f;
+
+        [Tooltip("Seconds between M3 torpedo shots. Formalises GDD D.1's implied ~1s. Safe range [0.8, 1.5].")]
+        [SerializeField] private float _m3ShotInterval = 1.0f;
+
+        [Tooltip("Seconds between M4 cluster drops. Placeholder path-A. Safe range [0.15, 0.50].")]
+        [SerializeField] private float _m4ShotInterval = 0.20f;
+
+        [Tooltip("M2 'Chain Hive' salvos per magazine cycle (Option B — many small missiles). Safe range [1, 4].")]
+        [SerializeField] private int _m2SalvoCount = 3;
+
+        [Tooltip("M2 break value per micro-missile (× D₀; ×BuPerD0 → BU). Default D₀/8. Safe range [0.05, 0.60].")]
+        [SerializeField] private float _m2DmgPerMissileMult = 0.125f;
+
+        [Tooltip("Seconds between M2 salvos in a Chain Hive burst. Safe range [0.5, 1.5].")]
+        [SerializeField] private float _m2InterSalvoInterval = 0.8f;
+
         // ── Public read-only properties ──────────────────────────────────────
 
         /// <summary>Stable identifier for this weapon. Used as ContentRegistry key.</summary>
@@ -301,6 +332,24 @@ namespace KaijuBreaker.Content
         public int M4T3ChildCount => _m4T3ChildCount;
         /// <summary>M4 T3 each child's output (fraction of D0). weapon-system.md G.3.</summary>
         public float M4T3ChildDmgPct => _m4T3ChildDmgPct;
+
+        // Tiering & equal-power (feedback point 3)
+        /// <summary>Per-weapon hit-rate correction for the equal-power model (0,1]. weapon-tiering-and-equal-power.md.</summary>
+        public float EffectiveHitRate => _effectiveHitRate;
+        /// <summary>L1 base beam count at Tier 0; beams = base + tier (2→3→4→5).</summary>
+        public int L1BaseBeamCount => _l1BaseBeamCount;
+        /// <summary>Seconds between M1 shots.</summary>
+        public float M1ShotInterval => _m1ShotInterval;
+        /// <summary>Seconds between M3 torpedo shots.</summary>
+        public float M3ShotInterval => _m3ShotInterval;
+        /// <summary>Seconds between M4 drops.</summary>
+        public float M4ShotInterval => _m4ShotInterval;
+        /// <summary>M2 Chain Hive salvos per cycle.</summary>
+        public int M2SalvoCount => _m2SalvoCount;
+        /// <summary>M2 break value per micro-missile (×D₀).</summary>
+        public float M2DmgPerMissileMult => _m2DmgPerMissileMult;
+        /// <summary>Seconds between M2 salvos.</summary>
+        public float M2InterSalvoInterval => _m2InterSalvoInterval;
 
 #if UNITY_EDITOR
         private void OnValidate()
