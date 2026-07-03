@@ -88,58 +88,65 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(2), "third missile is skipped when no part is alive to lock");
         }
 
-        // ── AC-2: M2 Tier-3 fires two 6-bursts, 1s apart, cooldown ignores TryFire ─
+        // ── AC-2: M2 Tier-3 "飽和點名" — same 3×8 numbers, redirect onto hottest softened part ─
 
         [Test]
-        public void test_m2_tier3_fires_first_burst_of_six_immediately()
+        public void test_m2_tier3_saturation_redirects_salvo_onto_hottest_softened_part()
         {
             var bus = new RecordingEventBus();
+            var parts = new StubPartStateQuery();
+            parts.Configure(1, heat: HeatState.Intact, currentHeat: 10f);          // the passed target
+            parts.Configure(2, heat: HeatState.Softened, currentHeat: 90f);        // hottest softened
+            parts.Configure(3, heat: HeatState.Softened, currentHeat: 50f);
             var tier = new StubWeaponTierQuery().SetTier(WeaponId.M2, 3);
-            var m2 = new M2SwarmLauncher(bus, tier, new StubPartStateQuery(), Balance(), M2Def());
-            var hits = new List<int> { 1, 1, 1, 1, 1, 1 };
+            var m2 = new M2SwarmLauncher(bus, tier, parts, Balance(), M2Def());
 
-            bool fired = m2.TryFire(hits, kaijuId: 0);
+            // Scene shell resolved the salvo onto part 1, but saturation callout redirects to part 2.
+            bool fired = m2.TryFire(new List<int> { 1, 1, 1, 1, 1, 1, 1, 1 }, kaijuId: 0);
 
             Assert.That(fired, Is.True);
-            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(6));
-            Assert.That(m2.Ammo, Is.EqualTo(6), "half of the 12-round Tier-3 magazine remains for burst B");
-            Assert.That(m2.IsBurstCoolingDown, Is.True);
+            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(8), "same salvo size — Tier-3 changes targeting, not numbers");
+            foreach (var hit in bus.Events<MissileHit>())
+            {
+                Assert.That(hit.PartId, Is.EqualTo(2), "all micros saturate the hottest softened part");
+                Assert.That(hit.BreakDeltaBase, Is.EqualTo(1.25f).Within(1e-3f), "per-missile break identical to base tier");
+            }
         }
 
         [Test]
-        public void test_m2_tier3_second_burst_fires_automatically_after_cooldown()
+        public void test_m2_tier3_falls_back_to_passed_targets_when_nothing_softened()
         {
             var bus = new RecordingEventBus();
+            var parts = new StubPartStateQuery();
+            parts.Configure(1, heat: HeatState.Intact, currentHeat: 10f); // nothing softened
             var tier = new StubWeaponTierQuery().SetTier(WeaponId.M2, 3);
-            var m2 = new M2SwarmLauncher(bus, tier, new StubPartStateQuery(), Balance(), M2Def());
-            m2.TryFire(new List<int> { 1, 1, 1, 1, 1, 1 }, kaijuId: 0);
+            var m2 = new M2SwarmLauncher(bus, tier, parts, Balance(), M2Def());
 
-            m2.Tick(1.0f);
+            m2.TryFire(new List<int> { 1, 1, 1, 1, 1, 1, 1, 1 }, kaijuId: 0);
 
-            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(12));
-            Assert.That(m2.IsBurstCoolingDown, Is.False);
-            Assert.That(m2.IsReloading, Is.True, "magazine empty after both bursts, reload begins");
+            foreach (var hit in bus.Events<MissileHit>())
+                Assert.That(hit.PartId, Is.EqualTo(1), "no softened part → use the shell-resolved targets");
+        }
+
+        // Chain Hive mag (salvoCount×microCount = 24) and per-missile break are identical at Tier 0
+        // and Tier 3 → Sustained_Output is tier-invariant by construction (equal power / H.7).
+        private static int DrainFullBurstHitCount(int tier)
+        {
+            var bus = new RecordingEventBus();
+            var tierQuery = new StubWeaponTierQuery().SetTier(WeaponId.M2, tier);
+            var m2 = new M2SwarmLauncher(bus, tierQuery, new StubPartStateQuery(), Balance(), M2Def());
+            m2.TryFire(new List<int> { 9, 9, 9, 9, 9, 9, 9, 9 }, kaijuId: 0);
+            m2.Tick(0.8f);
+            m2.Tick(0.8f);
+            return bus.CountOf<MissileHit>();
         }
 
         [Test]
-        public void test_m2_tier3_tryfire_during_burst_cooldown_is_ignored()
+        public void test_m2_tier3_fires_same_missile_count_as_tier0_equal_power()
         {
-            var bus = new RecordingEventBus();
-            var tier = new StubWeaponTierQuery().SetTier(WeaponId.M2, 3);
-            var m2 = new M2SwarmLauncher(bus, tier, new StubPartStateQuery(), Balance(), M2Def());
-            m2.TryFire(new List<int> { 1, 1, 1, 1, 1, 1 }, kaijuId: 0);
-
-            bool secondCallDuringCooldown = m2.TryFire(new List<int> { 2, 2, 2, 2, 2, 2 }, kaijuId: 0);
-
-            Assert.That(secondCallDuringCooldown, Is.False, "TryFire during the inter-burst cooldown is a no-op");
-            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(6), "the ignored call must not add hits or interrupt the pending burst");
-
-            m2.Tick(1.0f);
-
-            var allHits = bus.Events<MissileHit>();
-            Assert.That(allHits.Count, Is.EqualTo(12));
-            for (int i = 6; i < 12; i++)
-                Assert.That(allHits[i].PartId, Is.EqualTo(1), "burst B replays the ORIGINAL cached hit list, not the ignored call's");
+            Assert.That(DrainFullBurstHitCount(0), Is.EqualTo(24));
+            Assert.That(DrainFullBurstHitCount(3), Is.EqualTo(24),
+                "Tier-3 saturation changes targeting only — same missile count = equal power");
         }
 
         // ── AC-3: M3 negative assertion — no chaining in Weapons (owned by KaijuParts) ─

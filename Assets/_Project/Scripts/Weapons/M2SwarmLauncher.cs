@@ -5,105 +5,104 @@ using KaijuBreaker.Core;
 namespace KaijuBreaker.Weapons
 {
     /// <summary>
-    /// M2 蜂群飛彈 (Swarm Launcher) — secondary-pool weapon. One <see cref="TryFire"/> call launches
-    /// the whole magazine as a single salvo: <see cref="WeaponDef.M2MicroCount"/> (8) micro-missiles
-    /// at Tier 0–2, each depositing <c>(D0 / M2MicroCount) × buPerD0</c> BU. At
-    /// <see cref="WeaponBehaviourBase.CurrentTier"/> == 3 the magazine grows to
-    /// <see cref="WeaponDef.M2T3MagCount"/> (12) and the salvo auto-splits into two half-mag bursts
-    /// separated by <see cref="WeaponDef.M2T3BurstMicroCd"/> (1s): the first burst fires
-    /// synchronously inside <see cref="TryFire"/>, the second fires automatically once the
-    /// inter-burst cooldown elapses in <see cref="Tick"/>. A <see cref="TryFire"/> call issued while
-    /// the cooldown is pending is a no-op — it does not interrupt or reset the pending burst.
+    /// M2 蜂群飛彈 (Swarm Launcher) — secondary-pool "Chain Hive" (feedback point 3, Option B). Keeps
+    /// the "many small missiles" identity: one <see cref="TryFire"/> launches a burst of
+    /// <see cref="WeaponDef.M2SalvoCount"/> salvos (default 3), each <see cref="WeaponDef.M2MicroCount"/>
+    /// (8) micro-missiles depositing <c>M2DmgPerMissileMult × buPerD0</c> BU. The first salvo fires
+    /// synchronously inside <see cref="TryFire"/>; the rest auto-fire once <see cref="Tick"/> clears
+    /// each <see cref="WeaponDef.M2InterSalvoInterval"/>. The magazine (salvoCount × microCount) and
+    /// per-missile output are IDENTICAL at every tier, so Sustained_Output is tier-invariant by
+    /// construction (trivially satisfies H.7).
     ///
-    /// Pure C#: the scene shell resolves which part each micro-missile actually lands on (via
-    /// Physics2D.OverlapCircleNonAlloc / a raycast fan) and passes the resolved id list in; missed
-    /// missiles are simply absent from the list — no <see cref="MissileHit"/> is published for them.
+    /// Tier-3 "飽和點名 (saturation callout)" changes only TARGET SELECTION, not numbers: while a part
+    /// is SOFTENED, every micro-missile of the salvo is redirected onto the hottest softened part
+    /// (<see cref="IPartStateQuery.GetHottestSoftenedPartId"/>) to saturate it — same hit count, same
+    /// per-missile break, so equal-power is preserved.
     ///
-    /// design/gdd/weapon-system.md C.5 M2, G.3 · production/epics/weapons/story-006 (base fire),
-    /// story-009 AC-2 (Tier-3 burst split).
+    /// Pure C#: the scene shell resolves which part each micro-missile lands on and passes the id list
+    /// in; misses are simply absent. A <see cref="TryFire"/> issued mid-burst is a no-op.
+    ///
+    /// design/gdd/weapon-tiering-and-equal-power.md (Chain Hive) · weapon-system.md C.5 M2.
     /// </summary>
     public sealed class M2SwarmLauncher : MissileWeaponBase
     {
-        private float _burstCooldownRemaining;
-        private IReadOnlyList<int> _pendingBurstBTargets;
-        private int _pendingBurstBKaijuId;
+        private int _salvosRemaining;         // salvos left in the current burst (after the first)
+        private float _interSalvoRemaining;   // time to the next salvo
+        private IReadOnlyList<int> _pendingTargets;
+        private int _pendingKaijuId;
 
         /// <inheritdoc cref="WeaponBehaviourBase(IEventBus, IWeaponTierQuery, IPartStateQuery, WeaponBalanceConfig, WeaponDef)"/>
         public M2SwarmLauncher(IEventBus bus, IWeaponTierQuery tierQuery, IPartStateQuery partQuery,
             WeaponBalanceConfig balance, WeaponDef def) : base(bus, tierQuery, partQuery, balance, def) { }
 
-        /// <summary>8 at Tier 0–2, 12 at Tier-3 (weapon-system.md G.3 m2_micro_count / m2_t3_mag_count).</summary>
-        protected override int MagCapacity => CurrentTier == 3 ? Def.M2T3MagCount : Def.M2MicroCount;
+        /// <summary>Whole burst = salvoCount × microCount, identical at every tier (Chain Hive).</summary>
+        protected override int MagCapacity => Def.M2SalvoCount * Def.M2MicroCount;
 
-        /// <summary>Reload duration (s) — unchanged at Tier-3. weapon-system.md G.3 m2_reload_time.</summary>
+        /// <summary>Reload duration (s). weapon-system.md G.3 m2_reload_time.</summary>
         protected override float ReloadTime => Def.M2ReloadTime;
 
-        /// <summary>True while the Tier-3 inter-burst cooldown is running (the second half of the salvo is pending).</summary>
-        public bool IsBurstCoolingDown => _burstCooldownRemaining > 0f;
+        /// <summary>True while later salvos of the current Chain Hive burst are still pending.</summary>
+        public bool IsBurstInProgress => _salvosRemaining > 0;
 
-        private int BurstSize => Def.M2T3MagCount / 2;
-
-        private float PerMicroBreakDelta => Balance.BuPerD0 / Def.M2MicroCount;
+        private float PerMicroBreakDelta => Def.M2DmgPerMissileMult * Balance.BuPerD0;
 
         /// <summary>
-        /// Fire one salvo. <paramref name="hitPartIds"/> is the scene shell's already-resolved list
-        /// of parts each landed micro-missile struck (may be shorter than the fired count — misses
-        /// are simply absent). At Tier 0–2 this consumes the full 8-round magazine and emits one
-        /// <see cref="MissileHit"/> per entry immediately. At Tier-3 it consumes and emits only the
-        /// first 6-round burst; <paramref name="hitPartIds"/> is cached and replayed for the second
-        /// burst once <see cref="Tick"/> clears the inter-burst cooldown. Returns false (no state
-        /// change) while reloading, with insufficient ammo, or while a Tier-3 inter-burst cooldown
-        /// is pending.
+        /// Begin a Chain Hive burst: fire the first salvo now and schedule the rest.
+        /// <paramref name="hitPartIds"/> is the shell's resolved landed-hit list for a salvo (misses
+        /// absent). Returns false (no state change) while reloading, mid-burst, or with insufficient
+        /// ammo for a salvo.
         /// </summary>
         public bool TryFire(IReadOnlyList<int> hitPartIds, int kaijuId)
         {
-            if (IsBurstCoolingDown) return false;
+            if (IsBurstInProgress) return false;
+            if (!TryConsumeShot(Def.M2MicroCount)) return false;
 
-            bool tier3 = CurrentTier == 3;
-            int burstCount = tier3 ? BurstSize : Def.M2MicroCount;
-            if (!TryConsumeShot(burstCount)) return false;
+            EmitSalvo(hitPartIds, kaijuId);
 
-            EmitHits(hitPartIds, kaijuId);
-
-            if (tier3 && Ammo > 0)
+            _salvosRemaining = Def.M2SalvoCount - 1;
+            if (_salvosRemaining > 0)
             {
-                _burstCooldownRemaining = Def.M2T3BurstMicroCd;
-                _pendingBurstBTargets = hitPartIds;
-                _pendingBurstBKaijuId = kaijuId;
+                _interSalvoRemaining = Def.M2InterSalvoInterval;
+                _pendingTargets = hitPartIds;
+                _pendingKaijuId = kaijuId;
             }
-
             return true;
         }
 
         /// <summary>
-        /// Advances both the shared reload timer (<see cref="MissileWeaponBase.Tick"/>, called
-        /// first) and the Tier-3 inter-burst cooldown, auto-firing the pending second burst once the
-        /// cooldown elapses. Overrides the virtual base <c>Tick</c>, so the burst advances even when
-        /// the weapon is held/ticked as a <see cref="MissileWeaponBase"/>.
+        /// Advance the reload timer (base) and the inter-salvo timer, auto-firing the next salvo when
+        /// it elapses. Overrides the virtual base <c>Tick</c> so the burst advances even when held as
+        /// a <see cref="MissileWeaponBase"/>.
         /// </summary>
         public override void Tick(float deltaTime)
         {
             base.Tick(deltaTime);
 
-            if (_burstCooldownRemaining <= 0f) return;
-            _burstCooldownRemaining -= deltaTime;
-            if (_burstCooldownRemaining > 0f) return;
+            if (_salvosRemaining <= 0) return;
+            _interSalvoRemaining -= deltaTime;
+            if (_interSalvoRemaining > 0f) return;
 
-            _burstCooldownRemaining = 0f;
-            IReadOnlyList<int> targets = _pendingBurstBTargets;
-            int kaijuId = _pendingBurstBKaijuId;
-            _pendingBurstBTargets = null;
+            TryConsumeShot(Def.M2MicroCount); // consume this salvo's rounds from the burst magazine
+            EmitSalvo(_pendingTargets, _pendingKaijuId);
+            _salvosRemaining--;
 
-            TryConsumeShot(BurstSize);
-            EmitHits(targets, kaijuId);
+            if (_salvosRemaining > 0)
+                _interSalvoRemaining = Def.M2InterSalvoInterval;
+            else
+                _pendingTargets = null;
         }
 
-        private void EmitHits(IReadOnlyList<int> hitPartIds, int kaijuId)
+        private void EmitSalvo(IReadOnlyList<int> hitPartIds, int kaijuId)
         {
             if (hitPartIds == null) return;
+            // Tier-3 saturation callout: redirect the whole salvo onto the hottest softened part.
+            int redirect = CurrentTier == 3 ? PartQuery.GetHottestSoftenedPartId() : -1;
             float perMicro = PerMicroBreakDelta;
             for (int i = 0; i < hitPartIds.Count; i++)
-                EmitMissileHit(hitPartIds[i], kaijuId, perMicro);
+            {
+                int target = redirect >= 0 ? redirect : hitPartIds[i];
+                EmitMissileHit(target, kaijuId, perMicro);
+            }
         }
     }
 }

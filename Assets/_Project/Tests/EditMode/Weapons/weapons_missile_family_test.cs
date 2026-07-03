@@ -82,22 +82,44 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             Assert.That(canTrack, Is.True);
         }
 
-        // ── AC-2: M2 salvo emits 8 MissileHits at D0/8 x buPerD0 each ────────────
+        // ── AC-2: M2 Chain Hive — first salvo of 8 now, full 3×8 over the burst ───
 
         [Test]
-        public void test_m2_tryfire_emits_eight_missile_hits_with_correct_delta()
+        public void test_m2_chain_hive_first_salvo_emits_eight_then_completes_over_salvos()
         {
             var bus = new RecordingEventBus();
             var m2 = new M2SwarmLauncher(bus, new StubWeaponTierQuery(), new StubPartStateQuery(), Balance(), M2Def());
             var hits = new List<int> { 1, 1, 1, 1, 1, 1, 1, 1 };
 
+            // First salvo fires immediately.
             bool fired = m2.TryFire(hits, kaijuId: 0);
-
             Assert.That(fired, Is.True);
-            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(8));
-            // D₀/8 per micro-missile in BU: BuPerD0(10) / M2MicroCount(8) = 1.25 BU (8 micros = 1×D₀).
+            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(8), "first of 3 salvos fires now");
+            Assert.That(m2.IsBurstInProgress, Is.True);
+            // Per micro in BU: M2DmgPerMissileMult(0.125) × BuPerD0(10) = 1.25 BU (8 micros = 1×D₀/salvo).
             foreach (var hit in bus.Events<MissileHit>())
                 Assert.That(hit.BreakDeltaBase, Is.EqualTo(1.25f).Within(1e-3f));
+
+            // Remaining salvos auto-fire each inter-salvo interval (0.8s).
+            m2.Tick(0.8f);
+            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(16), "salvo 2");
+            m2.Tick(0.8f);
+            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(24), "salvo 3 — full 3×8 Chain Hive burst");
+            Assert.That(m2.IsBurstInProgress, Is.False);
+            Assert.That(m2.IsReloading, Is.True, "24-round burst magazine empty → reload");
+        }
+
+        [Test]
+        public void test_m2_tryfire_mid_burst_is_ignored()
+        {
+            var bus = new RecordingEventBus();
+            var m2 = new M2SwarmLauncher(bus, new StubWeaponTierQuery(), new StubPartStateQuery(), Balance(), M2Def());
+            m2.TryFire(new List<int> { 1, 1, 1, 1, 1, 1, 1, 1 }, kaijuId: 0);
+
+            bool second = m2.TryFire(new List<int> { 2, 2, 2, 2, 2, 2, 2, 2 }, kaijuId: 0);
+
+            Assert.That(second, Is.False, "a TryFire mid-burst is a no-op");
+            Assert.That(bus.CountOf<MissileHit>(), Is.EqualTo(8), "ignored call adds no hits");
         }
 
         [Test]
@@ -118,15 +140,19 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             var bus = new RecordingEventBus();
             var m2 = new M2SwarmLauncher(bus, new StubWeaponTierQuery(), new StubPartStateQuery(), Balance(), M2Def());
 
+            // A salvo always consumes M2MicroCount (8) rounds regardless of how many actually land.
             m2.TryFire(new List<int> { 1 }, kaijuId: 0);
+            Assert.That(m2.Ammo, Is.EqualTo(16), "first salvo consumed 8 of the 24-round Chain Hive magazine");
+            Assert.That(m2.IsReloading, Is.False, "burst still in progress, not reloading yet");
 
-            Assert.That(m2.Ammo, Is.EqualTo(0), "one salvo = the whole 8-round magazine");
-            Assert.That(m2.IsReloading, Is.True);
-            Assert.That(m2.TryFire(new List<int> { 1 }, kaijuId: 0), Is.False);
+            m2.Tick(0.8f); // salvo 2 → 8 left
+            m2.Tick(0.8f); // salvo 3 → 0 left → reload
+            Assert.That(m2.Ammo, Is.EqualTo(0));
+            Assert.That(m2.IsReloading, Is.True, "24-round burst spent → reload");
 
             m2.Tick(5.0f);
             Assert.That(m2.IsReloading, Is.False);
-            Assert.That(m2.Ammo, Is.EqualTo(8));
+            Assert.That(m2.Ammo, Is.EqualTo(24));
         }
 
         // ── AC-3: M4 AoE piecewise output — N=1 -> 2xD0, N=2 -> D0/2 each ────────
