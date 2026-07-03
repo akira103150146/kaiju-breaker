@@ -14,7 +14,8 @@
 // Controls:
 //   LOADOUT : 1-4 primary, 5-8 secondary, Q/E difficulty, Z/X/C boss target, Enter/click start
 //   STAGE/BOSS : mouse/touch drag = move (auto-fires primary) - click/tap/Space = secondary
-//                Z hold+release = L3 charge shockwave - 1-4/5-8 hot-swap weapon - R = abort to loadout
+//                Z hold+release = L3 charge shockwave - R = abort to loadout
+//                (1-4/5-8 mid-run hot-swap is DEBUG-only — _debugFreeWeaponSwap; real weapons change via the POD)
 //   RESULTS : R = retry, M = back to loadout
 using System.Collections.Generic;
 using System.Reflection;
@@ -37,6 +38,11 @@ namespace KaijuBreaker.Prototype
 
         private enum Phase { Loadout, Stage, Boss, Results }
         private Phase _phase = Phase.Loadout;
+
+        // TEST/DEBUG ONLY. In the real game a run's weapons are fixed at LOADOUT and only change via
+        // the in-run weapon POD pickup (design) — free mid-run hot-swap would make upgrades pointless.
+        // Toggle in the Inspector to cheat-swap (1-4/5-8) while playtesting. Default OFF.
+        [SerializeField] private bool _debugFreeWeaponSwap = false;
 
         // ── Weapon data tables (mirrors HTML PRIMARIES / SECONDARIES / DIFFICULTIES) ──
         private struct PrimaryDef { public WeaponId Id; public string Name; public string Niche; public float HeatDelta; public float FireRate; }
@@ -356,7 +362,7 @@ namespace KaijuBreaker.Prototype
 
             var kb = Keyboard.current;
             if (kb != null && kb.rKey.wasPressedThisFrame) { GoToLoadout(); return; }
-            HandleHotSwapKeys();
+            if (_debugFreeWeaponSwap) HandleHotSwapKeys(); // real game: weapons change only via the POD pickup
 
             float dt = fxDt * _slowMo;
             if (_freeze > 0f) { _freeze -= fxDt * 1000f; dt = 0f; }

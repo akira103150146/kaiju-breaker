@@ -66,6 +66,22 @@ namespace KaijuBreaker.Tests.EditMode.KaijuParts
         }
 
         [Test]
+        public void ArmoredPart_HeatSoftened_IsBreakableByAnyWeapon()
+        {
+            // Feedback fix (2026-07-03): EVERY weapon can break armor. Heating an ARMORED part to
+            // SOFTENED opens it (mult 1.0) even without the L3 Wave Cannon stripping the armor —
+            // this removes the old L3-exclusive gate that soft-locked non-L3 loadouts.
+            var sys = Build(out _, ("armored", PartType.Armored), ("core", PartType.BossCore));
+            var a = sys.Parts[sys.GetPartId("armored")];
+
+            a.ArmorState = ArmorState.Intact; a.HeatState = HeatState.Intact;
+            Assert.AreEqual(0f, sys.LookupStateMult(a), 1e-5f, "cold armored still deflects (must open it first)");
+
+            a.HeatState = HeatState.Softened; // any laser can heat it here
+            Assert.AreEqual(1.0f, sys.LookupStateMult(a), 1e-5f, "heat-softened armored breaks with any weapon");
+        }
+
+        [Test]
         public void BFill_ComputedAndClamped_TriggersBreakAtThreshold()
         {
             var sys = Build(out var bus, ("normal", PartType.Normal), ("core", PartType.BossCore));

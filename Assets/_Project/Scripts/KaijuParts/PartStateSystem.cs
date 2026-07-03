@@ -296,7 +296,13 @@ namespace KaijuBreaker.KaijuParts
         /// </summary>
         public float LookupStateMult(BreakablePart part)
         {
-            if (part.PartType == PartType.Armored && part.ArmorState == ArmorState.Intact)
+            // Armor gate: an ARMORED part deflects break fill ONLY while its armor is intact AND it
+            // has not been heat-softened yet. EVERY weapon can break armor — any laser can heat an
+            // armored part to SOFTENED to open it; the L3 Wave Cannon is just the fast path (its
+            // WaveHit strips armor + opens the stagger window instantly). This removes the old
+            // L3-exclusive gate that soft-locked non-L3 loadouts against armored bosses.
+            if (part.PartType == PartType.Armored && part.ArmorState == ArmorState.Intact
+                && part.HeatState != HeatState.Softened)
                 return 0f;
             if (part.StaggerTimer > 0f)
                 return _balance.StaggerBreakMult;
