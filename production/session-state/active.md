@@ -1,8 +1,16 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-02 (session 3 — perf-spike desktop verify + weapons epic)*
+*Last updated: 2026-07-03 (session 4 — weapons epic complete, 7-point design specs, playable prototype)*
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
-*Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — back up upcoming design/handoff artifacts there.*
+*Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full done/todo in `進度結算-2026-07-03.md`.*
+
+## Session 4 结算 (2026-07-03) — all committed & PUSHED to origin/main (HEAD 7452d74)
+**DONE**: Unity MCP live (144/144 EditMode GREEN). ADR-0001 desktop smoke verified (status still Proposed — phone gate parked, PC-first). **Weapons epic logic COMPLETE**: stories 003–010 + Story 002 balance suite H.1/H.2/H.3/H.7; fixed 100× missile break-unit bug; point-3 mechanics (MidCore, GetHottestSoftenedPartId, data-driven knobs, M2 Chain Hive, L1 beam ladder 2→3→4→5). **7 feedback points**: all design specs authored (`design/gdd/{weapon-tiering-and-equal-power,enemy-tier-system,hit-feel-tiering,bullet-pattern-diversity}.md`, `design/art/scrolling-background-parallax.md`, `design/narrative/story-and-zone-structure.md`, `design/quick-specs/player-firing-direction-vertical.md`) + director decisions (`design/decisions/2026-07-03-director-decisions.md`). **Design fixes**: armor breakable by ANY weapon (heat-soften opens it; code+GDD+tests); no free mid-run weapon swap. **Playable prototype** (`Assets/_Project/Prototype/`, throwaway): full LOADOUT→道中(waves+elite+drops+pod)→BOSS(3 bosses)→RESULTS, uses real PartStateSystem, MCP-verified. Scenes MainMenu + Stage01Prototype.
+
+**TODO (see Obsidian `進度結算-2026-07-03.md` for detail)**:
+- Director/Editor: AI-art API key (fal.ai/OpenRouter) for real sprites; Story 001 config `.asset` authoring; ADR-0001 phone perf gate.
+- Pure C# (unblocked): economy, difficulty, stage, meta-save, game-feel, input, hud-ui, kaiju-roster (NEXT-STEPS order); WeaponDef SO default→spec sync (cosmetic).
+- Blocked/confirm: 7-point IMPLEMENTATIONS mostly gated on ADR-0001 (bullets) or Editor (art/VFX); point-5 story → /brainstorm→/team-narrative (protagonist GENESIS/珍, heavy narrative, biological-alien kaiju); fold new GDDs into systems-index.
 
 ## Session 3 progress (2026-07-02, Unity MCP live)
 - **User directives this session**: (1) dev/test **PC-first** — cannot freely connect a phone remotely, so phone-gated spikes (ADR-0001 phone FPS, touch-feel) are parked, not blocking pure-logic work. (2) After weapons testing is roughly done, integrate the 7 gameplay-feedback points (`design/feedback/2026-07-02-*`). (3) Back up upcoming artifacts to the Obsidian vault above.
