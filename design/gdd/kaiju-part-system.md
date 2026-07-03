@@ -2,7 +2,7 @@
 ## 殲獸戰機 / KAIJU BREAKER
 
 *文件路徑: design/gdd/kaiju-part-system.md*
-*最後更新: 2026-07-01*
+*最後更新: 2026-07-03*
 *狀態: Draft*
 *相依概念文件: design/gdd/game-concept.md*
 *呼叫端文件: design/gdd/weapon-system.md（LOCKED）*
@@ -30,7 +30,7 @@
 
 **「核心就是靶心，但我想要全部」** — Boss 核心部位（Boss Core）始終是唯一的致勝目標；選擇性部位是額外的素材來源與技巧挑戰。每場戰鬥都有一個靜默的微決策：「我可以只打核心結束，或者多花時間把那兩個強化部位也破了。值得嗎？」這是「頭目是靈魂」支柱的核心張力。
 
-**「護甲不是牆，是門」** — 強化部位的弱點被護甲遮蔽；玩家必須以波動砲（L3）震盪硬直（Stagger）強制剝甲，才能在 2 秒窗口命中弱點。讀懂這個「開門-射入」時機，是區分熟練玩家與一般玩家的技術門檻，呼應「以智取勝」的核心幻想。
+**「護甲不是牆，是門」** — 強化部位的弱點被護甲遮蔽，但這扇門不是只有一把鑰匙：玩家可以用任何雷射把部位燒到軟化，讓護甲從內部裂開縫隙、飛彈得以正常穿透；也可以用波動砲（L3）蓄力震波瞬間敲開整扇門，強制剝甲並換來 2 秒的震盪硬直高效窗口。讀懂「軟化開門」與「L3 破門」這兩種節奏的取捨，是區分熟練玩家與一般玩家的技術門檻，呼應「以智取勝」的核心幻想。
 
 ---
 
@@ -107,9 +107,12 @@ ARMOR_STRIPPED → ARMOR_INTACT:   stagger_timer 倒計至 0
                                     armor_state = ARMOR_INTACT
 ```
 
-- 除 L3 Wave Cannon 蓄力震波外，無任何路徑可觸發 ARMOR_STRIPPED
-- BU 在 ARMOR_INTACT 期間**鎖定（飛彈偏轉，填充 = 0）**，ARMOR_STRIPPED 期間正常累積
-- BU 在 stagger_timer 歸零後、護甲恢復時**保留不清零**（見 C.4）
+- `armor_state` 這個欄位本身，只有 L3 Wave Cannon 蓄力震波能將其從 ARMOR_INTACT 切換為 ARMOR_STRIPPED——這是 L3 的**專屬快速通道**，額外附帶 2 秒 STAGGERED 疊加層與 stagger_break_mult（1.5）的最高填充效率
+- BU 在 stagger_timer 歸零後、armor_state 恢復 ARMOR_INTACT 時**保留不清零**（見 C.4）
+
+**護甲的軟化貫穿規則（Heat-Softened Bypass，2026-07-03 導演決議新增）**：
+`armor_state` 停留在 ARMOR_INTACT 不代表 BU 一定鎖死。只要部位的**熱量狀態**（見上方「熱量狀態轉換」）達到 SOFTENED（任一雷射武器皆可使其達到 theta_S），飛彈命中即視為能穿透因熱軟化出現的護甲縫隙：M_state_mult 依 D.3 查表取正常值 1.0（而非 0），弱點判定框也比照 ARMOR_STRIPPED 規則露出、允許玩家瞄準。此判定**每次命中即時重新計算，不記憶**——若部位冷卻退回 INTACT（H_current < theta_S_exit）且 armor_state 仍是 ARMOR_INTACT，BU 填充會立即重新鎖定為 0，直到再次軟化或被 L3 剝甲（見 E.10）。
+此規則確保**任何雷射＋飛彈組合都能破除 ARMORED 部位護甲**；L3 是最快的專門手段，而非破甲的必要條件。
 
 #### BROKEN 狀態（終態）
 
@@ -140,6 +143,8 @@ BROKEN 後的任何命中事件：本系統立即 return，播放空白音效，
 ARMORED 部位額外層：
   ARMOR_INTACT ──[L3 震波]──→ ARMOR_STRIPPED
   ARMOR_STRIPPED ──[timer=0]──→ ARMOR_INTACT
+  （BU 填充另有「軟化貫穿」旁路：heat_state=SOFTENED 時即使 armor_state 仍為
+   ARMOR_INTACT 也以 ×1.0 填充，見上方軟化貫穿規則；此旁路不改變 armor_state 本身）
 ```
 
 ---
@@ -149,7 +154,7 @@ ARMORED 部位額外層：
 | 類型 | H_max（全域旋鈕） | B_max（全域旋鈕） | required_break_threshold | 弱點可見性 | 破壞結果 |
 |------|--------------------|-------------------|--------------------------|------------|----------|
 | **NORMAL（普通部位）** | `H_max_normal` = 100 HU | `B_max_normal` = 100 BU | `required_break_threshold_normal` = 100 BU | 永遠可見 | 素材掉落；碰撞體移除 |
-| **ARMORED（強化部位）** | `H_max_armored` = 150 HU | `B_max_armored` = 150 BU | `required_break_threshold_armored` = 150 BU | 弱點隱藏（ARMOR_INTACT 期間判定框不可命中）；L3 震波剝甲後露出 | 高階素材掉落；碰撞體移除 |
+| **ARMORED（強化部位）** | `H_max_armored` = 150 HU | `B_max_armored` = 150 BU | `required_break_threshold_armored` = 150 BU | 弱點隱藏（ARMOR_INTACT 且未軟化時判定框不可命中）；達 SOFTENED 或 L3 震波剝甲後皆會露出弱點框 | 高階素材掉落；碰撞體移除 |
 | **BOSS_CORE（核心部位）** | `H_max_boss_core` = 200 HU | `B_max_boss_core` = 200 BU | `required_break_threshold_boss_core` = 200 BU | 永遠可見（明顯標記，視覺優先） | **觸發勝利條件**（`on_boss_core_break`）；素材掉落 |
 
 **TTB（Time-To-Break）設計目標（繼承自 weapon-system.md D.4）**：
@@ -157,7 +162,7 @@ ARMORED 部位額外層：
 | 部位類型 | TTB 目標 | 備注 |
 |----------|----------|------|
 | NORMAL | 15–25 秒 | 主要戰鬥節拍 |
-| ARMORED | 30–45 秒（跨多輪震盪窗口） | 需要 L3 配合；TTB 含等待 stagger 窗口的時間 |
+| ARMORED | 30–45 秒（軟化貫穿路徑，任一 loadout 皆可行）／可更短（L3 快速路徑，跨多輪震盪窗口） | 不強制要求 L3；L3 配合可加速，TTB 含等待 stagger 窗口的時間 |
 | BOSS_CORE | 50–80 秒 | 多階段高潮；核心狩獵張力 |
 
 **可選擇性原則**：NORMAL 與 ARMORED 部位不是勝利必要條件。玩家可選擇只打 BOSS_CORE 結束戰鬥，或多花時間破光全部位換取高階素材。兩條策略都合法——這是「頭目是靈魂」支柱的靈魂張力。
@@ -168,17 +173,20 @@ ARMORED 部位額外層：
 
 ### C.4 強化部位護甲機制 (Armored Part Mechanics)
 
-強化部位的護甲層是一個**進入閘門（Access Gate）**，而非數值縮放。它控制飛彈是否能到達破甲槽，而非使 BU 容量更大。
+強化部位的護甲層是一個**進入閘門（Access Gate）**，而非數值縮放。它控制飛彈是否能到達破甲槽，而非使 BU 容量更大。護甲有**兩條獨立的開啟路徑**：任一雷射把部位燒到 SOFTENED（標準路徑，所有 loadout 皆可行），或 L3 Wave Cannon 蓄力震波瞬間剝甲（快速專門路徑，額外附帶最高效率窗口）。
 
-| 護甲狀態 | 雷射命中效果（HU） | 飛彈命中效果（BU） |
-|----------|------------------|--------------------|
-| `ARMOR_INTACT` | 正常積累熱量（H_current 上升）| 彈頭偏轉，BU 增加量 = 0（M_state_mult = 0）|
-| `ARMOR_STRIPPED` | 正常積累熱量 | 正常套用 M_state_mult（× `stagger_break_mult` = 1.5）|
+| 護甲狀態 | 熱量狀態 | 雷射命中效果（HU） | 飛彈命中效果（BU） |
+|----------|----------|--------------------|--------------------|
+| `ARMOR_INTACT` | `INTACT`（未軟化） | 正常積累熱量（H_current 上升）| 彈頭偏轉，BU 增加量 = 0（M_state_mult = 0）|
+| `ARMOR_INTACT` | `SOFTENED`（任一雷射達 theta_S） | 正常積累熱量 | 護甲因熱軟化出現縫隙，正常套用 M_state_mult（× 1.0）——**任何飛彈皆可穿透** |
+| `ARMOR_STRIPPED`（L3 剝除） | 任意 | 正常積累熱量 | 正常套用 M_state_mult（× `stagger_break_mult` = 1.5）|
 
 **核心設計點**：
 - 雷射**不受護甲阻擋**：玩家可在等待 L3 冷卻時預先蓄熱，讓部位進入 SOFTENED
-- 理想序列：①以雷射使部位達 SOFTENED（H_current ≥ theta_S）→ ②L3 震波剝甲（ARMOR_STRIPPED + STAGGERED）→ ③在 2 秒窗口內以飛彈填充 BU（at × 1.5）
-- **BU 跨窗口保留**：每次 stagger 窗口結束後護甲恢復，但已累積的 BU 不清零。第二輪、第三輪 stagger 繼續在已有基礎上積累，直至 B_current ≥ required_break_threshold_armored
+- **標準路徑（任何 loadout 皆可行）**：①以雷射使部位達 SOFTENED（H_current ≥ theta_S）→ ②護甲即視為對飛彈開啟，飛彈以正常效率（× 1.0）持續填充 BU，直到 B_current ≥ required_break_threshold_armored；若中途冷卻退回 INTACT，飛彈填充暫停直到再次軟化（見 E.10）
+- **快速路徑（L3 專屬）**：①（可選）先以雷射蓄熱加速後續 → ②L3 蓄力震波瞬間剝甲（ARMOR_STRIPPED + STAGGERED）→ ③在 2 秒窗口內以飛彈填充 BU（× 1.5，效率高於標準路徑的 × 1.0）
+- **設計意圖**：確保沒有任何雷射+飛彈組合會被 ARMORED 部位硬性卡關（例如 L2 集束雷射 × 任意飛彈，即使玩家從未使用 L3，也能靠標準路徑穩定破甲）；L3 保留其「快速專門手段」的身份，是效率最高、最節省時間的選擇，而非唯一合法路徑
+- **BU 跨窗口保留**：無論透過哪條路徑填充，B_current 一律保留不清零。L3 每次 stagger 窗口結束後護甲恢復（ARMOR_STRIPPED → ARMOR_INTACT），但已累積的 BU 不清零；若此時部位仍為 SOFTENED，飛彈仍可依標準路徑（× 1.0）繼續填充，不會因為 armor_state 恢復而中斷
 
 ---
 
@@ -475,7 +483,7 @@ else:
     B_current ← B(new)
 ```
 
-**M_state_mult 完整查表**（繼承並擴展自 weapon-system.md D.3，加入 ARMORED 護甲狀態）：
+**M_state_mult 完整查表**（繼承並擴展自 weapon-system.md D.3，加入 ARMORED 護甲狀態；2026-07-03 導演決議新增「軟化貫穿」規則，見下方 ARMORED 列）：
 
 | 部位類型 | 熱量狀態 | 護甲狀態 | M_state_mult | 說明 |
 |----------|----------|----------|-------------|------|
@@ -483,8 +491,11 @@ else:
 | NORMAL / BOSS_CORE | SOFTENED | N/A | 1.0 | 軟化後全效率 |
 | NORMAL / BOSS_CORE | 任意 | N/A（stagger_timer > 0） | `stagger_break_mult`（1.5） | 震盪窗口最高效率 |
 | NORMAL / BOSS_CORE | SOFTENED | N/A（stagger_timer > 0） | `stagger_break_mult`（1.5） | SOFTENED + STAGGERED 不疊乘 |
-| ARMORED | 任意 | ARMOR_INTACT | **0**（彈頭偏轉） | 護甲完整時飛彈無效 |
-| ARMORED | 任意 | ARMOR_STRIPPED（stagger_timer > 0） | `stagger_break_mult`（1.5） | 剝甲窗口，含 SOFTENED 時仍為 1.5 |
+| ARMORED | **INTACT**（未軟化） | ARMOR_INTACT | **0**（彈頭偏轉） | 護甲完整且未軟化：飛彈無效 |
+| ARMORED | **SOFTENED**（任一雷射達 theta_S） | ARMOR_INTACT | **1.0** | **軟化貫穿**：護甲因熱軟化出現縫隙，任何飛彈正常填充；armor_state 本身未被剝離 |
+| ARMORED | 任意 | ARMOR_STRIPPED（stagger_timer > 0） | `stagger_break_mult`（1.5） | L3 剝甲窗口：最高效率，含 SOFTENED 時仍為 1.5（不疊乘）|
+
+> **查表優先順序**：`armor_state == ARMOR_STRIPPED`（即 stagger_timer > 0）優先於 heat_state 判定，一律取 `stagger_break_mult`；否則 ARMORED 部位以 `heat_state` 決定 M_state_mult（SOFTENED → 1.0，INTACT → 0）。此邏輯對應程式 `PartStateSystem.LookupStateMult`，已由測試 `ArmoredPart_HeatSoftened_IsBreakableByAnyWeapon` 鎖定（125/125 綠）。
 
 **變數表**：
 
@@ -508,6 +519,20 @@ break_delta_base = m3_heat_shock_fill_mult × m3_dmg_unsoftened_mult × D₀ × 
 M_state_mult     = 1.0（SOFTENED，NORMAL 部位）
 B_fill           = 60 × 1.0 = 60 BU
 B(new)           = clamp(40 + 60, 0, 100) = 100 BU  → 觸發 PART_BREAK
+```
+
+**運算範例二（ARMORED 部位，全程未使用 L3，僅靠雷射軟化開甲）**：
+```
+情境：ARMORED 部位，B_max = 150 BU，H_current 已達 SOFTENED（≥ theta_S 100 HU）；
+      armor_state 仍為 ARMOR_INTACT（玩家從未觸發 on_l3_wave_hit）
+
+M1 追蹤飛彈命中：break_delta_base = m1_dmg_per_missile_mult × D₀ × 10 = 0.5 × 1 × 10 = 5 BU
+M_state_mult     = 1.0（heat_state=SOFTENED，ARMORED 部位查表取 1.0，非 0）
+B_fill           = 5 × 1.0 = 5 BU
+B(new)           = clamp(0 + 5, 0, 150) = 5 BU
+
+→ 持續此標準路徑（維持 SOFTENED + M1 命中）約需 30 次命中即可累積滿 150 BU 觸發 PART_BREAK，
+  全程不需要 L3；只是效率（×1.0）低於 L3 剝甲窗口的 ×1.5。
 ```
 
 ---
@@ -713,6 +738,16 @@ target B: mult = 0（ARMORED, ARMOR_INTACT）
 **情況**：L3 Tier-3 升級在蓄力震波命中時向部位注入 `l3_t3_heat_inject_pct × H_max` HU（weapon-system.md G.2 = 50%）。此熱量注入是否由本系統處理？
 
 **處理**：L3 Tier-3 熱量注入由武器系統計算後包入 `on_laser_hit` 事件（heat_delta = l3_t3_heat_inject_pct × H_max）發送給本系統，本系統以 D.1 公式正常處理。若注入後 H_current ≥ theta_S，D.2 立即切換 SOFTENED 並發出事件。此設計維持本系統的接口一致性：所有熱量來源都經由 `on_laser_hit` 事件傳入。
+
+---
+
+### E.10 ARMORED 部位僅靠熱軟化破甲（無 L3）— 軟化貫穿的即時性與重新鎖定
+
+**情況**：玩家全程未使用 L3 Wave Cannon，僅以其他雷射+飛彈組合攻擊 ARMORED 部位。部位靠雷射蓄熱進入 SOFTENED，飛彈開始以 × 1.0 填充 BU；隨後玩家因閃避彈幕暫停射擊雷射，H_current 冷卻至 theta_S_exit（80 HU）以下，heat_state 退回 INTACT。
+
+**處理**：`lookup_state_mult` 每次 `on_missile_hit` 事件都即時依當前 heat_state 重新查表，不記憶前一刻的軟化貫穿狀態。heat_state 一旦退回 INTACT、且 armor_state 仍為 ARMOR_INTACT（未被 L3 剝離），M_state_mult 立即回到 0，飛彈重新被護甲偏轉，直到部位再次被雷射軟化或被 L3 剝甲。B_current 已累積的量不清零（與 C.4「BU 跨窗口保留」原則一致），只是暫停累積。
+
+**設計意圖**：確保軟化貫穿路徑仍要求玩家維持軟化狀態（持續蓄熱），而非「軟化一次、永久開門」；ARMORED 部位的挑戰性（維持雙軌節奏）在無 L3 的情況下依然成立，只是效率（× 1.0）低於 L3 專屬窗口（× 1.5）——這是 L3「快速專門手段」定位的數值體現。
 
 ---
 
