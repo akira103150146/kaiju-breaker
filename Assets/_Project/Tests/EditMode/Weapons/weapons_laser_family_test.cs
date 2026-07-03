@@ -50,6 +50,46 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             new L4PierceBeam(bus, new StubWeaponTierQuery(), new StubPartStateQuery(), Balance(),
                 L4Def(fireInterval, hRate), new ResidualHeatTracker(bus));
 
+        // ── Feedback point 3: L1 spread beam ladder 2→3→4→5 by tier ──────────────
+
+        [Test]
+        public void test_l1_expected_beam_count_grows_with_tier()
+        {
+            var bus = new RecordingEventBus();
+            var tier = new StubWeaponTierQuery();
+            var l1 = new L1SpreadLaser(bus, tier, new StubPartStateQuery(), Balance(), L1Def(),
+                new ResidualHeatTracker(bus));
+
+            tier.SetTier(WeaponId.L1, 0);
+            Assert.That(l1.ExpectedBeamCount, Is.EqualTo(2), "Tier 0 = 2 beams");
+            tier.SetTier(WeaponId.L1, 1);
+            Assert.That(l1.ExpectedBeamCount, Is.EqualTo(3));
+            tier.SetTier(WeaponId.L1, 2);
+            Assert.That(l1.ExpectedBeamCount, Is.EqualTo(4));
+            tier.SetTier(WeaponId.L1, 3);
+            Assert.That(l1.ExpectedBeamCount, Is.EqualTo(5), "Tier 3 = 5 beams");
+        }
+
+        [Test]
+        public void test_l1_total_heat_is_constant_regardless_of_beam_count()
+        {
+            // 2 beams (tier 0) vs 5 beams (tier 3), all landing the same part → identical total heat.
+            float TotalHeat(int beamCount)
+            {
+                var bus = new RecordingEventBus();
+                var l1 = MakeL1(bus);
+                var beams = new int[beamCount];
+                for (int i = 0; i < beamCount; i++) beams[i] = 1;
+                l1.FireFrame(0.016f, kaijuId: 0, beamHitPartIds: beams);
+                float sum = 0f;
+                foreach (var h in bus.Events<LaserHit>()) sum += h.HeatDelta;
+                return sum;
+            }
+
+            Assert.That(TotalHeat(2), Is.EqualTo(25f * 0.016f).Within(1e-3f));
+            Assert.That(TotalHeat(5), Is.EqualTo(25f * 0.016f).Within(1e-3f), "total heat = full rate at any beam count");
+        }
+
         // ── AC-1: L1 三束全中 heat_delta 正確 ─────────────────────────────────────
 
         [Test]

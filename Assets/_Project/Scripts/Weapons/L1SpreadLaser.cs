@@ -34,6 +34,13 @@ namespace KaijuBreaker.Weapons
         /// <summary>Beam index convention: slot 0 of the caller-supplied array is always the center beam.</summary>
         public const int CenterBeamIndex = 0;
 
+        /// <summary>
+        /// Beam count for the current upgrade tier: <see cref="WeaponDef.L1BaseBeamCount"/> + tier,
+        /// i.e. 2 / 3 / 4 / 5 beams at Tier 0 / 1 / 2 / 3 (feedback point 3 散彈階梯). The scene shell
+        /// fires this many raycasts; per-beam heat = L1HRateFull / beamCount keeps total heat constant.
+        /// </summary>
+        public int ExpectedBeamCount => Def.L1BaseBeamCount + CurrentTier;
+
         private readonly ResidualHeatTracker _residualTracker;
 
         /// <param name="residualTracker">
