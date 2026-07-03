@@ -156,6 +156,7 @@ namespace KaijuBreaker.Prototype
         // ── Scene ──────────────────────────────────────────────────────────────
         private Camera _cam;
         private Sprite _sprite;
+        private Sprite _circle;
         private Transform _worldRoot;
         private Transform _playerT;
         private SpriteRenderer _playerSr;
@@ -246,6 +247,7 @@ namespace KaijuBreaker.Prototype
         {
             SetupCamera();
             _sprite = MakeSprite();
+            _circle = MakeCircle();
             _guiBgTex = new Texture2D(1, 1); _guiBgTex.SetPixel(0, 0, new Color(0.03f, 0.035f, 0.07f, 1f)); _guiBgTex.Apply();
 
             _worldRoot = new GameObject("WorldRoot").transform;
@@ -1429,14 +1431,47 @@ namespace KaijuBreaker.Prototype
         {
             var go = new GameObject(name);
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = _sprite; sr.color = color; sr.sortingOrder = sortOrder;
+            // Bullets / projectiles / sparks / stars read far better as soft round dots than squares.
+            bool round = name == "PBullet" || name == "EBullet" || name == "Missile" || name == "Torpedo"
+                         || name == "Cluster" || name == "Spark" || name == "Star" || name == "Mat";
+            sr.sprite = (round && _circle != null) ? _circle : _sprite;
+            sr.color = color; sr.sortingOrder = sortOrder;
             return go;
         }
 
+        // Soft rounded-rect ("squircle") with a feathered edge — makes every entity read as a soft
+        // neon shape instead of a hard box. pixelsPerUnit = size so the sprite is 1 world unit.
         private static Sprite MakeSprite()
         {
-            var tex = new Texture2D(1, 1); tex.SetPixel(0, 0, Color.white); tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+            const int S = 64; var tex = new Texture2D(S, S, TextureFormat.RGBA32, false);
+            float half = (S - 1) * 0.5f, r = S * 0.30f;
+            for (int y = 0; y < S; y++)
+                for (int x = 0; x < S; x++)
+                {
+                    float dx = Mathf.Abs(x - half), dy = Mathf.Abs(y - half);
+                    float qx = dx - (half - r), qy = dy - (half - r);
+                    float dist = (qx > 0f && qy > 0f) ? Mathf.Sqrt(qx * qx + qy * qy) - r : Mathf.Max(qx, qy) - r;
+                    float a = Mathf.Clamp01(-dist / 2.5f + 1f);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            tex.Apply(); tex.filterMode = FilterMode.Bilinear;
+            return Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0.5f), S);
+        }
+
+        // Soft-edged filled circle for bullets/sparks.
+        private static Sprite MakeCircle()
+        {
+            const int S = 48; var tex = new Texture2D(S, S, TextureFormat.RGBA32, false);
+            float c = (S - 1) * 0.5f, rad = S * 0.46f;
+            for (int y = 0; y < S; y++)
+                for (int x = 0; x < S; x++)
+                {
+                    float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c));
+                    float a = Mathf.Clamp01((rad - d) / 2f);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            tex.Apply(); tex.filterMode = FilterMode.Bilinear;
+            return Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0.5f), S);
         }
 
         private KaijuDef BuildKaijuDef(BossDef bd)
