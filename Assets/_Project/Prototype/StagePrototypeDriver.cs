@@ -157,6 +157,8 @@ namespace KaijuBreaker.Prototype
         private Camera _cam;
         private Sprite _sprite;
         private Sprite _circle;
+        private Sprite _diamondSprite; // basic mob tier silhouette
+        private Sprite _hexSprite;     // elite mob tier silhouette
         private Transform _worldRoot;
         private Transform _playerT;
         private SpriteRenderer _playerSr;
@@ -180,10 +182,11 @@ namespace KaijuBreaker.Prototype
         private int _score, _kills, _matCount, _partsBrokenCount, _totalNonCoreParts;
 
         // stage sub-state
-        private enum StageSub { Wave1, Wave2, PodWindow }
+        private enum StageSub { Wave1, Wave2, Elite, PodWindow }
         private StageSub _stageSub;
         private float _stageT;
         private bool _wave2Spawned; private float _wave2DelayT = -1f;
+        private bool _eliteSpawned; private float _eliteDelayT = -1f;
         private bool _podSpawned; private float _podT; private bool _podCollectedOrTimeout;
         private bool _bossEnterTriggered; private float _bossEnterDelayT = -1f;
         private float _bossEnterAnim;
@@ -204,6 +207,7 @@ namespace KaijuBreaker.Prototype
         private sealed class Enemy
         {
             public float X, Y, Vx, Vy, W = 18, H = 14, Hp = 45, Max = 45, FireT; public bool Alive = true;
+            public bool IsElite; public float HitFlash; public Color BaseColor = Color.white;
             public GameObject Go; public SpriteRenderer Sr;
         }
         private readonly List<Enemy> _enemies = new List<Enemy>(8);
@@ -248,6 +252,8 @@ namespace KaijuBreaker.Prototype
             SetupCamera();
             _sprite = MakeSprite();
             _circle = MakeCircle();
+            _diamondSprite = MakeDiamond();
+            _hexSprite = MakeHexagon();
             _guiBgTex = new Texture2D(1, 1); _guiBgTex.SetPixel(0, 0, new Color(0.03f, 0.035f, 0.07f, 1f)); _guiBgTex.Apply();
 
             _worldRoot = new GameObject("WorldRoot").transform;
@@ -339,6 +345,7 @@ namespace KaijuBreaker.Prototype
 
             _stageT = 0f; _stageSub = StageSub.Wave1;
             _wave2Spawned = false; _wave2DelayT = -1f;
+            _eliteSpawned = false; _eliteDelayT = -1f;
             _podSpawned = false; _podT = 0f; _podCollectedOrTimeout = false;
             _bossEnterTriggered = false; _bossEnterDelayT = -1f; _bossEnterAnim = 0f;
 
@@ -567,21 +574,50 @@ namespace KaijuBreaker.Prototype
 
         private void SpawnWave(int wave)
         {
-            _stageSub = wave == 1 ? StageSub.Wave1 : StageSub.Wave2;
+            _stageSub = wave == 1 ? StageSub.Wave1 : wave == 2 ? StageSub.Wave2 : StageSub.Elite;
             foreach (var e in _enemies) if (e.Go != null) Destroy(e.Go);
             _enemies.Clear();
-            int count = wave == 1 ? 3 : 5;
-            for (int i = 0; i < count; i++)
+
+            if (wave <= 2)
             {
-                float x = 36 + i * 54 + Random.value * 18;
-                float y = -28 - i * 30;
-                var e = new Enemy { X = x, Y = y, Vx = (Random.value - 0.5f) * 30f, Vy = 70f + Random.value * 30f, FireT = 1.8f + Random.value * 2.0f };
-                e.Go = NewQuad("Enemy", new Color(0.75f, 0.38f, 0.16f), 2);
-                e.Go.transform.SetParent(_worldRoot, false);
-                e.Go.transform.localScale = ToWorldSize(e.W, e.H);
-                e.Sr = e.Go.GetComponent<SpriteRenderer>();
-                e.Go.transform.position = ToWorld(e.X, e.Y);
-                _enemies.Add(e);
+                int count = wave == 1 ? 3 : 5;
+                Color baseColor = new Color(0.75f, 0.38f, 0.16f);
+                for (int i = 0; i < count; i++)
+                {
+                    float x = 36 + i * 54 + Random.value * 18;
+                    float y = -28 - i * 30;
+                    var e = new Enemy { X = x, Y = y, Vx = (Random.value - 0.5f) * 30f, Vy = 70f + Random.value * 30f, FireT = 1.8f + Random.value * 2.0f, BaseColor = baseColor };
+                    e.Go = NewQuad("Enemy", baseColor, 2);
+                    e.Go.transform.SetParent(_worldRoot, false);
+                    e.Go.transform.localScale = ToWorldSize(e.W, e.H);
+                    e.Sr = e.Go.GetComponent<SpriteRenderer>();
+                    e.Sr.sprite = _diamondSprite; // basic-tier silhouette
+                    e.Go.transform.position = ToWorld(e.X, e.Y);
+                    _enemies.Add(e);
+                }
+            }
+            else // Elite wave — fewer, tougher, distinct hex silhouette + denser aimed fire + rich drops
+            {
+                int count = Random.value < 0.5f ? 1 : 2;
+                Color baseColor = new Color(0.85f, 0.15f, 0.55f);
+                for (int i = 0; i < count; i++)
+                {
+                    float x = 90 + i * 120 + Random.value * 20;
+                    float y = -40 - i * 55;
+                    var e = new Enemy
+                    {
+                        X = x, Y = y, W = 34, H = 30, Hp = 45f * 5f, Max = 45f * 5f,
+                        Vx = (Random.value - 0.5f) * 20f, Vy = 46f + Random.value * 16f,
+                        FireT = 1.2f + Random.value * 0.8f, IsElite = true, BaseColor = baseColor
+                    };
+                    e.Go = NewQuad("Enemy", baseColor, 2);
+                    e.Go.transform.SetParent(_worldRoot, false);
+                    e.Go.transform.localScale = ToWorldSize(e.W, e.H);
+                    e.Sr = e.Go.GetComponent<SpriteRenderer>();
+                    e.Sr.sprite = _hexSprite; // elite-tier silhouette
+                    e.Go.transform.position = ToWorld(e.X, e.Y);
+                    _enemies.Add(e);
+                }
             }
         }
 
@@ -595,19 +631,37 @@ namespace KaijuBreaker.Prototype
                 e.X += e.Vx * dt; e.Y += e.Vy * dt;
                 if (e.X < 12f || e.X > IW - 12f) e.Vx = -e.Vx;
                 e.Go.transform.position = ToWorld(e.X, e.Y);
+                if (e.HitFlash > 0f) // per-hit white flash so a landed hit is unmistakable
+                {
+                    e.HitFlash -= dt;
+                    e.Sr.color = e.HitFlash > 0f ? Color.white : e.BaseColor;
+                }
                 if (e.Y > IH + 30f) { e.Alive = false; e.Go.SetActive(false); continue; } // escaped — no score
                 if (!_over)
                 {
                     e.FireT -= dt;
                     if (e.FireT <= 0f)
                     {
-                        e.FireT = 1.8f + Random.value * 1.4f;
                         float ang = Mathf.Atan2(_py - e.Y, _px - e.X);
-                        int n = Mathf.Max(1, Mathf.RoundToInt(_diffMult));
-                        for (int k = 0; k < n; k++)
+                        if (e.IsElite)
                         {
-                            float a = ang + (k - (n - 1) * 0.5f) * 0.28f;
-                            SpawnEBullet(e.X, e.Y + e.H * 0.5f, Mathf.Cos(a) * 68f, Mathf.Sin(a) * 68f, 2.5f, new Color(1f, 0.35f, 0.24f));
+                            e.FireT = (1.0f + Random.value * 0.6f) / Mathf.Sqrt(_diffMult);
+                            int n = Mathf.Max(3, Mathf.RoundToInt(_diffMult * 2.5f));
+                            for (int k = 0; k < n; k++)
+                            {
+                                float a = ang + (k - (n - 1) * 0.5f) * 0.16f;
+                                SpawnEBullet(e.X, e.Y + e.H * 0.5f, Mathf.Cos(a) * 96f, Mathf.Sin(a) * 96f, 3f, new Color(1f, 0.15f, 0.55f));
+                            }
+                        }
+                        else
+                        {
+                            e.FireT = 1.8f + Random.value * 1.4f;
+                            int n = Mathf.Max(1, Mathf.RoundToInt(_diffMult));
+                            for (int k = 0; k < n; k++)
+                            {
+                                float a = ang + (k - (n - 1) * 0.5f) * 0.28f;
+                                SpawnEBullet(e.X, e.Y + e.H * 0.5f, Mathf.Cos(a) * 68f, Mathf.Sin(a) * 68f, 2.5f, new Color(1f, 0.35f, 0.24f));
+                            }
                         }
                     }
                 }
@@ -615,6 +669,7 @@ namespace KaijuBreaker.Prototype
 
             _stageT += dt;
 
+            // Wave1 -> Wave2
             if (_stageSub == StageSub.Wave1 && !_wave2Spawned)
             {
                 if ((alive == 0 && _stageT > 1f) || _stageT > 11f) { _wave2Spawned = true; _wave2DelayT = 0.6f; }
@@ -625,25 +680,37 @@ namespace KaijuBreaker.Prototype
                 if (_wave2DelayT <= 0f) { _wave2DelayT = -1f; SpawnWave(2); }
             }
 
-            if (_stageSub == StageSub.Wave2 && !_podSpawned)
+            // Wave2 -> Elite
+            if (_stageSub == StageSub.Wave2 && !_eliteSpawned)
             {
-                if ((alive == 0 && _stageT > 3f) || _stageT > 22f)
+                if ((alive == 0 && _stageT > 14f) || _stageT > 22f) { _eliteSpawned = true; _eliteDelayT = 0.7f; }
+            }
+            if (_eliteDelayT >= 0f)
+            {
+                _eliteDelayT -= dt;
+                if (_eliteDelayT <= 0f)
                 {
-                    _podSpawned = true; _podT = 0f; _stageSub = StageSub.PodWindow;
-                    bool isPrimary = Random.value < 0.5f;
-                    int idx;
-                    if (isPrimary) { do { idx = Random.Range(0, 4); } while (idx == _pidx); }
-                    else { do { idx = Random.Range(0, 4); } while (idx == _sidx); }
-                    _pod = new WeaponPod { X = 80 + Random.value * 160, Y = -24, IsPrimary = isPrimary, Idx = idx };
-                    _pod.Go = NewQuad("Pod", isPrimary ? new Color(0.22f, 0.9f, 1f) : new Color(1f, 0.56f, 0.25f), 2);
-                    _pod.Go.transform.SetParent(_worldRoot, false);
-                    _pod.Go.transform.localScale = ToWorldSize(20, 16);
+                    _eliteDelayT = -1f;
+                    SpawnWave(3);
+                    PushFloat(160, 210, "菁英出現！", new Color(1f, 0.2f, 0.55f), true);
+                    ShakeAdd(8f); FlashAdd(0.3f);
                 }
             }
 
+            // Elite -> guaranteed weapon POD dwell (Elite may also drop a bonus pod on death — see KillEnemy)
+            if (_stageSub == StageSub.Elite && !_podSpawned)
+            {
+                if (alive == 0 || _stageT > 40f)
+                {
+                    _podSpawned = true; _podT = 0f;
+                    SpawnGuaranteedPod(80 + Random.value * 160, -24);
+                }
+            }
+            if (_podSpawned && _stageSub == StageSub.Elite) _stageSub = StageSub.PodWindow;
+
             if (_podSpawned && !_bossEnterTriggered) _podT += dt;
             bool podDone = _podCollectedOrTimeout || (_podSpawned && (_pod == null || _podT > 7f));
-            if (!_bossEnterTriggered && ((_podSpawned && podDone) || _stageT > 30f))
+            if (!_bossEnterTriggered && ((_podSpawned && podDone) || _stageT > 48f))
             {
                 _bossEnterTriggered = true; _podCollectedOrTimeout = true;
                 if (_pod != null) { Destroy(_pod.Go); _pod = null; }
@@ -661,9 +728,24 @@ namespace KaijuBreaker.Prototype
                     _bossEnterDelayT = -1f;
                     _phase = Phase.Boss;
                     _bossEnterAnim = 1.0f;
-                    foreach (var pr in _partsVis.Values) pr.Cy = pr.Def.By - 180f;
+                    // Fix #1: boss part visuals are hidden throughout STAGE — reveal them only now, as the boss enters.
+                    foreach (var pr in _partsVis.Values) { pr.Go.SetActive(true); pr.Cy = pr.Def.By - 180f; }
                 }
             }
+        }
+
+        // Guaranteed weapon POD spawn — shared by the scheduled Elite->PodWindow dwell and the
+        // occasional bonus drop from an Elite kill (see KillEnemy).
+        private void SpawnGuaranteedPod(float x, float y)
+        {
+            bool isPrimary = Random.value < 0.5f;
+            int idx;
+            if (isPrimary) { do { idx = Random.Range(0, 4); } while (idx == _pidx); }
+            else { do { idx = Random.Range(0, 4); } while (idx == _sidx); }
+            _pod = new WeaponPod { X = x, Y = y, IsPrimary = isPrimary, Idx = idx };
+            _pod.Go = NewQuad("Pod", isPrimary ? new Color(0.22f, 0.9f, 1f) : new Color(1f, 0.56f, 0.25f), 2);
+            _pod.Go.transform.SetParent(_worldRoot, false);
+            _pod.Go.transform.localScale = ToWorldSize(20, 16);
         }
 
         private void UpdatePod(float dt)
@@ -828,7 +910,8 @@ namespace KaijuBreaker.Prototype
                         {
                             if (b.Pierce) b.HitEnemies.Add(e);
                             e.Hp -= b.Dmg * 2f;
-                            SpawnSparks(b.X, b.Y, new Color(1f, 0.5f, 0.25f), 2);
+                            e.HitFlash = 0.08f;
+                            SpawnSparks(b.X, b.Y, new Color(1f, 0.5f, 0.25f), 3);
                             if (e.Hp <= 0f) KillEnemy(e);
                             if (!b.Pierce) { consumed = true; break; }
                         }
@@ -879,7 +962,7 @@ namespace KaijuBreaker.Prototype
                     {
                         if (!e.Alive) continue;
                         if (Vector2.Distance(new Vector2(e.X, e.Y), new Vector2(m.X, m.Y)) < e.W * 0.5f + 5f)
-                        { e.Hp -= 90f; SpawnSparks(m.X, m.Y, new Color(1f, 0.56f, 0.25f), 4); if (e.Hp <= 0f) KillEnemy(e); hit = true; break; }
+                        { e.Hp -= 90f; e.HitFlash = 0.08f; SpawnSparks(m.X, m.Y, new Color(1f, 0.56f, 0.25f), 4); if (e.Hp <= 0f) KillEnemy(e); hit = true; break; }
                     }
                 }
                 if (hit) { Destroy(m.Go); _missiles.RemoveAt(i); }
@@ -911,7 +994,7 @@ namespace KaijuBreaker.Prototype
                     {
                         if (!e.Alive) continue;
                         if (Overlaps(t.X, t.Y, e.X, e.Y, e.W + t.R * 2f, e.H + t.R * 2f))
-                        { e.Hp -= 200f; ShakeAdd(5f); if (e.Hp <= 0f) KillEnemy(e); hit = true; break; }
+                        { e.Hp -= 200f; e.HitFlash = 0.08f; ShakeAdd(5f); if (e.Hp <= 0f) KillEnemy(e); hit = true; break; }
                     }
                 }
                 if (hit) { SpawnSparks(t.X, t.Y, new Color(1f, 0.75f, 0.25f), 12); Destroy(t.Go); _torpedoes.RemoveAt(i); }
@@ -948,7 +1031,7 @@ namespace KaijuBreaker.Prototype
                         {
                             if (!e.Alive) continue;
                             float d = Vector2.Distance(new Vector2(e.X, e.Y), new Vector2(c.X, c.Y));
-                            if (d < R) { e.Hp -= 80f; if (e.Hp <= 0f) KillEnemy(e); }
+                            if (d < R) { e.Hp -= 80f; e.HitFlash = 0.08f; if (e.Hp <= 0f) KillEnemy(e); }
                         }
                     }
                     SpawnSparks(c.X, c.Y, new Color(1f, 0.5f, 0.13f), 16);
@@ -1082,12 +1165,26 @@ namespace KaijuBreaker.Prototype
         private void KillEnemy(Enemy e)
         {
             e.Alive = false; e.Go.SetActive(false);
-            _score += 100; _kills++;
-            ShakeAdd(3f); FlashAdd(0.2f);
-            for (int i = 0; i < 10; i++)
+            _score += e.IsElite ? 400 : 100; _kills++;
+            ShakeAdd(e.IsElite ? 8f : 3f); FlashAdd(e.IsElite ? 0.4f : 0.2f);
+            int debrisN = e.IsElite ? 22 : 10;
+            for (int i = 0; i < debrisN; i++)
             {
                 float a = Random.value * Mathf.PI * 2f, sp = 40f + Random.value * 80f;
                 SpawnParticle(e.X, e.Y, Mathf.Cos(a) * sp, Mathf.Sin(a) * sp - 20f, 0.3f + Random.value * 0.3f, Random.value < 0.5f ? new Color(0.75f, 0.38f, 0.16f) : new Color(1f, 0.5f, 0.25f), 0.09f, 120f);
+            }
+
+            // Fix #2: mob kills drop collectible material shards too, not just boss part breaks —
+            // elites drop a much richer haul and can bonus-drop a weapon pod.
+            int mc = e.IsElite ? 3 + Random.Range(0, 3) : 1 + Random.Range(0, 2);
+            for (int i = 0; i < mc; i++) SpawnMatShard(e.X, e.Y);
+            PushFloat(e.X, e.Y - 10, "＋素材 ×" + mc, new Color(0.38f, 0.94f, 0.85f), e.IsElite);
+
+            if (e.IsElite && !_podSpawned && Random.value < 0.6f)
+            {
+                _podSpawned = true; _podT = 0f;
+                SpawnGuaranteedPod(e.X, e.Y);
+                PushFloat(e.X, e.Y - 24, "武器莢艙掉落！", new Color(1f, 0.85f, 0.3f), true);
             }
         }
 
@@ -1155,7 +1252,7 @@ namespace KaijuBreaker.Prototype
                     float dx = CounterAnchorCanvas.x - m.X, dy = CounterAnchorCanvas.y - m.Y;
                     float d = Mathf.Max(0.001f, Mathf.Sqrt(dx * dx + dy * dy));
                     m.X += dx / d * 350f * dt; m.Y += dy / d * 350f * dt;
-                    if (d < 6f) { _matCount++; Destroy(m.Go); _mats.RemoveAt(i); continue; }
+                    if (d < 6f) { _matCount++; PushFloat(m.X, m.Y - 4, "＋素材", new Color(0.38f, 0.94f, 0.85f), false); Destroy(m.Go); _mats.RemoveAt(i); continue; }
                 }
                 m.Go.transform.position = ToWorld(m.X, m.Y);
             }
@@ -1306,6 +1403,11 @@ namespace KaijuBreaker.Prototype
                 var pr = new PartRuntime { Id = id, Def = def, Cx = def.Bx, Cy = def.By, Go = go, Body = sr, HeatBar = heatBar, BreakBar = breakBar };
                 _partsVis[id] = pr;
             }
+
+            // Fix #1: parts exist (real PartStateSystem is live) from the moment the run starts, but
+            // they must stay invisible through the whole STAGE (mob-wave) phase — they are only
+            // revealed by the boss-entrance transition in UpdateStagePhase (SetActive(true) there).
+            foreach (var pr in _partsVis.Values) pr.Go.SetActive(false);
         }
 
         private Transform MakeBar(Transform parent, Vector3 lp, Color c)
@@ -1472,6 +1574,68 @@ namespace KaijuBreaker.Prototype
                 }
             tex.Apply(); tex.filterMode = FilterMode.Bilinear;
             return Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0.5f), S);
+        }
+
+        // Fix #3: distinct-silhouette shape sprites so enemy tiers read apart at a glance.
+        // Same soft-edge / pixelsPerUnit=size approach as MakeSprite/MakeCircle, but the inside
+        // test is a signed-distance-to-polygon (Inigo Quilez's sdPolygon) instead of a squircle SDF.
+        private static float SdPolygon(Vector2 p, Vector2[] v)
+        {
+            int n = v.Length;
+            float d = Vector2.Dot(p - v[0], p - v[0]);
+            float s = 1f;
+            for (int i = 0, j = n - 1; i < n; j = i, i++)
+            {
+                Vector2 e = v[j] - v[i];
+                Vector2 w = p - v[i];
+                Vector2 b = w - e * Mathf.Clamp01(Vector2.Dot(w, e) / Vector2.Dot(e, e));
+                d = Mathf.Min(d, Vector2.Dot(b, b));
+                bool c1 = p.y >= v[i].y, c2 = p.y < v[j].y, c3 = e.x * w.y > e.y * w.x;
+                if ((c1 && c2 && c3) || (!c1 && !c2 && !c3)) s = -s;
+            }
+            return s * Mathf.Sqrt(d);
+        }
+
+        private static Sprite MakeShapeSprite(int size, Vector2[] pts)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float dist = SdPolygon(new Vector2(x, y), pts);
+                    float a = Mathf.Clamp01(-dist / 2.5f + 1f);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            tex.Apply(); tex.filterMode = FilterMode.Bilinear;
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        }
+
+        // Basic mob tier — small diamond.
+        private static Sprite MakeDiamond()
+        {
+            const int S = 64;
+            var pts = new[]
+            {
+                new Vector2(S * 0.5f, S * 0.04f),
+                new Vector2(S * 0.92f, S * 0.5f),
+                new Vector2(S * 0.5f, S * 0.96f),
+                new Vector2(S * 0.08f, S * 0.5f),
+            };
+            return MakeShapeSprite(S, pts);
+        }
+
+        // Elite mob tier — larger hexagon, distinct from basic diamonds and boss squircles.
+        private static Sprite MakeHexagon()
+        {
+            const int S = 64;
+            var pts = new Vector2[6];
+            float c = (S - 1) * 0.5f, r = S * 0.46f;
+            for (int i = 0; i < 6; i++)
+            {
+                float a = -Mathf.PI / 2f + i * (Mathf.PI * 2f / 6f);
+                pts[i] = new Vector2(c + Mathf.Cos(a) * r, c + Mathf.Sin(a) * r);
+            }
+            return MakeShapeSprite(S, pts);
         }
 
         private KaijuDef BuildKaijuDef(BossDef bd)
