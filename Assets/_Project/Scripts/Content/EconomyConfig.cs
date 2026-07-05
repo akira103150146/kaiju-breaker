@@ -98,6 +98,16 @@ namespace KaijuBreaker.Content
         [Tooltip("Kaiju Essence cost for Tier 2 → 3. material-economy.md §C.4: 1 (safe range [1, 2]).")]
         [SerializeField] private int _upgradeEssenceCostT2ToT3 = 1;
 
+        [Header("Anti-Dominant Guard Thresholds (G.3, D.4)")]
+        [Tooltip("Max allowed TTB improvement from Tier 0 → 3 for any weapon on any part type. " +
+                 "material-economy.md §G.3 max_ttb_improvement_pct default: 0.15 (safe range [0.10, 0.20]). " +
+                 "Consumed by the Story 005 anti-dominant-loadout CI guard — NOT runtime.")]
+        [SerializeField] private float _maxTtbImprovementPct = 0.15f;
+
+        [Tooltip("Max allowed CUMULATIVE TTB improvement from Tier 0 → 2 (Tier 1 + Tier 2 quality tweaks). " +
+                 "material-economy.md §C.3: 0.10. The intermediate cap the guard checks below the Tier-3 cap.")]
+        [SerializeField] private float _tier0To2CapPct = 0.10f;
+
         // ── Public read-only properties ───────────────────────────────────────────
 
         /// <summary>
@@ -222,6 +232,19 @@ namespace KaijuBreaker.Content
         }
 
         /// <summary>
+        /// Max allowed TTB improvement (fraction) from Tier 0 → 3 for any weapon/part type
+        /// (material-economy.md §G.3, §D.4). The anti-dominant guard (Story 005) asserts
+        /// <c>TTB_tier3 &gt;= TTB_tier0 × (1 − MaxTtbImprovementPct)</c>. Default 0.15.
+        /// </summary>
+        public float MaxTtbImprovementPct => _maxTtbImprovementPct;
+
+        /// <summary>
+        /// Max allowed cumulative TTB improvement (fraction) from Tier 0 → 2 (material-economy.md §C.3).
+        /// The intermediate cap the guard checks below <see cref="MaxTtbImprovementPct"/>. Default 0.10.
+        /// </summary>
+        public float Tier0To2CapPct => _tier0To2CapPct;
+
+        /// <summary>
         /// The core material a weapon consumes for its Tier 1→2 and 2→3 upgrades (material-economy.md §C.1
         /// identity binding): L1/M2/M4 → Carapace, L2/L4/M1 → Limb, L3/M3 → Energy. The weapon→theme grouping
         /// is a fixed design identity; the actual core material stays data-driven via <see cref="GetCoreForTheme"/>.
@@ -298,6 +321,16 @@ namespace KaijuBreaker.Content
                 Debug.LogError(
                     $"[EconomyConfig] '{name}': upgrade cost fields must be >= 0. " +
                     "material-economy.md §C.4 costs are non-negative.", this);
+
+            if (_maxTtbImprovementPct < 0.10f || _maxTtbImprovementPct > 0.20f)
+                Debug.LogError(
+                    $"[EconomyConfig] '{name}': MaxTtbImprovementPct must be in [0.10, 0.20]. " +
+                    $"Current: {_maxTtbImprovementPct}. (material-economy.md §G.3.)", this);
+
+            if (_tier0To2CapPct < 0f || _tier0To2CapPct > _maxTtbImprovementPct)
+                Debug.LogError(
+                    $"[EconomyConfig] '{name}': Tier0To2CapPct ({_tier0To2CapPct}) must be in " +
+                    $"[0, MaxTtbImprovementPct ({_maxTtbImprovementPct})]. (material-economy.md §C.3.)", this);
 
             // Warn (not error) for zero costs — indicates values are pending GDD confirmation.
             if (_weaponUpgradeCostT0ToT1 == 0)
