@@ -46,6 +46,15 @@ namespace KaijuBreaker.Content
                  "material-economy.md §E.3 elite_shard_bonus default: 3.")]
         [SerializeField] private int _eliteShardBonus = 3;
 
+        [Header("Full-Clear Settlement Knobs (G.1)")]
+        [Tooltip("Kaiju Essence awarded at hunt settlement when ALL breakable parts were destroyed. " +
+                 "material-economy.md §G.1 essence_per_full_clear default: 1 (safe range [1, 2]). Must be >= 1.")]
+        [SerializeField] private int _essencePerFullClear = 1;
+
+        [Tooltip("Extra Common Shards awarded at hunt settlement on a full clear (on top of per-break shards). " +
+                 "material-economy.md §G.1 shard_completeness_bonus default: 5 (safe range [3, 10]). Must be >= 0.")]
+        [SerializeField] private int _shardCompletenessBonus = 5;
+
         [Header("Core Yield Knobs (G.1)")]
         [Tooltip("Kaiju-theme core count awarded when the Boss Core part is broken (Standard / Precision quality). " +
                  "Perfect quality triggers double-drop via core_perfect_double_drop flag (Economy system). " +
@@ -101,6 +110,18 @@ namespace KaijuBreaker.Content
         /// Per-enemy EnemyDef.EliteShardBonus may override this in the Economy system.
         /// </summary>
         public int EliteShardBonus => _eliteShardBonus;
+
+        /// <summary>
+        /// Kaiju Essence awarded at hunt settlement on a full clear (all parts broken).
+        /// material-economy.md §G.1 essence_per_full_clear (default 1, safe range [1, 2]).
+        /// </summary>
+        public int EssencePerFullClear => _essencePerFullClear;
+
+        /// <summary>
+        /// Extra Common Shards awarded at hunt settlement on a full clear, on top of per-break shards.
+        /// material-economy.md §G.1 shard_completeness_bonus (default 5, safe range [3, 10]).
+        /// </summary>
+        public int ShardCompletenessBonus => _shardCompletenessBonus;
 
         /// <summary>
         /// Kaiju-theme core yield when the Boss Core part is destroyed
@@ -183,6 +204,16 @@ namespace KaijuBreaker.Content
                     $"[EconomyConfig] '{name}': ShardYieldSoftenedStaggeredMult ({_shardYieldSoftenedStaggeredMult}) " +
                     $"must not be less than ShardYieldSoftenedMult ({_shardYieldSoftenedMult}). " +
                     $"Stacked quality multiplier cannot be lower than the base quality multiplier.", this);
+
+            if (_essencePerFullClear < 1)
+                Debug.LogError(
+                    $"[EconomyConfig] '{name}': EssencePerFullClear must be >= 1. " +
+                    $"Current: {_essencePerFullClear}. (material-economy.md §G.1 safe range [1, 2].)", this);
+
+            if (_shardCompletenessBonus < 0)
+                Debug.LogError(
+                    $"[EconomyConfig] '{name}': ShardCompletenessBonus must be >= 0. " +
+                    $"Current: {_shardCompletenessBonus}. (material-economy.md §G.1 safe range [3, 10].)", this);
 
             // Warn (not error) for zero costs — indicates values are pending GDD confirmation.
             if (_weaponUpgradeCostT1ToT2 == 0)

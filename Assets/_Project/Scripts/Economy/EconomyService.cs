@@ -46,6 +46,7 @@ namespace KaijuBreaker.Economy
             _themeQuery = themeQuery ?? throw new ArgumentNullException(nameof(themeQuery));
 
             _bus.Subscribe<PartBroke>(OnPartBroke);
+            _bus.Subscribe<HuntEnded>(OnHuntEnded);
             _subscribed = true;
         }
 
@@ -73,11 +74,26 @@ namespace KaijuBreaker.Economy
             _saveService.CreditMaterials(coreType, coreYield);
         }
 
+        /// <summary>
+        /// Award the full-clear settlement bonus (material-economy.md §C.2, §D.1). Essence and the
+        /// completeness shard bonus are granted ONLY when every breakable part was destroyed; a
+        /// non-full-clear hunt yields nothing here (the per-break shards/cores from <see cref="OnPartBroke"/>
+        /// are already banked and unaffected). Essence has no other source — it never drops per-break.
+        /// </summary>
+        private void OnHuntEnded(HuntEnded evt)
+        {
+            if (!evt.IsAllPartsBroken) return;
+
+            _saveService.CreditMaterials(MaterialId.EssenceKaiju, _config.EssencePerFullClear);
+            _saveService.CreditMaterials(MaterialId.ShardCommon, _config.ShardCompletenessBonus);
+        }
+
         /// <summary>Unsubscribe from the bus. Idempotent.</summary>
         public void Dispose()
         {
             if (!_subscribed) return;
             _bus.Unsubscribe<PartBroke>(OnPartBroke);
+            _bus.Unsubscribe<HuntEnded>(OnHuntEnded);
             _subscribed = false;
         }
     }
