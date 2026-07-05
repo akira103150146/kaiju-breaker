@@ -132,8 +132,8 @@ namespace KaijuBreaker.Prototype
                     Parts = new[]
                     {
                         new PartVisDef{ Key="core", Name="胸口核心", Type=PartType.BossCore, Bx=160,By=96,W=44,H=40, Hue=Hex("#ffd23f"), Art="kaiju_carapex_chest_core_intact", ArtScale=1.2f },
-                        new PartVisDef{ Key="mL",   Name="左大顎",   Type=PartType.Normal,   Bx=84, By=120,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", ArtScale=1.5f, Rot=50f },
-                        new PartVisDef{ Key="mR",   Name="右大顎",   Type=PartType.Normal,   Bx=236,By=120,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", FlipX=true, ArtScale=1.5f, Rot=50f },
+                        new PartVisDef{ Key="mL",   Name="左大顎",   Type=PartType.Normal,   Bx=84, By=120,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", ArtScale=1.5f, Rot=-80f },
+                        new PartVisDef{ Key="mR",   Name="右大顎",   Type=PartType.Normal,   Bx=236,By=120,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", FlipX=true, ArtScale=1.5f, Rot=-80f },
                         new PartVisDef{ Key="dc",   Name="背甲炮",   Type=PartType.Armored,  Bx=160,By=150,W=38,H=26, Hue=Hex("#3f6080"), Art="kaiju_carapex_dorsal_cannon_intact", ArtStripped="kaiju_carapex_dorsal_cannon_stripped", ArtScale=1.3f },
                     }
                 };
@@ -232,7 +232,7 @@ namespace KaijuBreaker.Prototype
             public float Cx, Cy;
             public GameObject Go; public SpriteRenderer Body; public Transform HeatBar, BreakBar;
             public float FireT = 1f; public float FlashT; public float StaggerRemaining;
-            public Sprite Intact, Stripped; public bool HasArt; public float ArtBaseScale = 1f;
+            public Sprite Intact, Stripped, White; public bool HasArt; public float ArtBaseScale = 1f;
         }
         private readonly Dictionary<int, PartRuntime> _partsVis = new Dictionary<int, PartRuntime>(8);
 
@@ -1493,6 +1493,7 @@ namespace KaijuBreaker.Prototype
 
                 Sprite intact = string.IsNullOrEmpty(def.Art) ? null : LoadArt(ArtPath(def.Art));
                 Sprite stripped = string.IsNullOrEmpty(def.ArtStripped) ? null : LoadArt(ArtPath(def.ArtStripped));
+                Sprite white = string.IsNullOrEmpty(def.Art) ? null : LoadArt(ArtPath(def.Art + "_white"));   // pure-white silhouette for hit-flash
 
                 Transform heatBar = null, breakBar = null;
                 float baseScale = 1f;
@@ -1516,7 +1517,7 @@ namespace KaijuBreaker.Prototype
                 }
 
                 var pr = new PartRuntime { Id = id, Def = def, Cx = def.Bx, Cy = def.By, Go = go, Body = sr,
-                    HeatBar = heatBar, BreakBar = breakBar, Intact = intact, Stripped = stripped, HasArt = intact != null, ArtBaseScale = baseScale };
+                    HeatBar = heatBar, BreakBar = breakBar, Intact = intact, Stripped = stripped, White = white, HasArt = intact != null, ArtBaseScale = baseScale };
                 _partsVis[id] = pr;
             }
 
@@ -1548,14 +1549,22 @@ namespace KaijuBreaker.Prototype
                 // ── Real-art parts: swap intact↔stripped on armor state, tint subtly for heat/core ──
                 if (pr.HasArt)
                 {
-                    // Weak point is open when armor is L3-stripped OR the part is heat-softened by ANY laser
-                    // (kaiju-part-system §113 Heat-Softened Bypass). Show the exposed/stripped sprite either
-                    // way so the player ALWAYS sees when an armored part became hittable — no weapon gating.
+                    // Hit-flash: swap to the pure-white silhouette so the WHOLE struck part flashes solid white.
+                    // (A white tint only MULTIPLIES and leaves colored art unchanged — the silhouette is real white.)
+                    if (pr.FlashT > 0f && pr.White != null)
+                    {
+                        pr.Body.sprite = pr.White;
+                        pr.Body.color = Color.white;
+                        continue;
+                    }
+                    // Weak point open when armor is L3-stripped OR heat-softened by ANY laser (§113 bypass) — show
+                    // the exposed sprite either way so the player always sees when it became hittable (no weapon gate).
                     if (armored && pr.Stripped != null)
                     {
                         bool weakpointOpen = part.ArmorState != ArmorState.Intact || part.HeatState == HeatState.Softened;
                         pr.Body.sprite = weakpointOpen ? pr.Stripped : pr.Intact;
                     }
+                    else pr.Body.sprite = pr.Intact;
                     Color artTint = Color.white;
                     if (part.PartType == PartType.BossCore)
                     {
@@ -1564,9 +1573,7 @@ namespace KaijuBreaker.Prototype
                     }
                     else if (part.HeatState == HeatState.Softened) artTint = new Color(1f, 0.6f, 0.4f);   // warm = heated/softened
                     else if (pr.StaggerRemaining > 0f) artTint = new Color(0.75f, 0.9f, 1f);              // cool flash on stagger
-                    // Overbright (>1) on hit — a plain white tint MULTIPLIES and leaves colored art unchanged;
-                    // ×2.6 pushes highlights past 1.0 so the struck part visibly flashes white ("I'm hitting HERE").
-                    pr.Body.color = pr.FlashT > 0f ? new Color(2.6f, 2.6f, 2.6f, 1f) : artTint;
+                    pr.Body.color = artTint;
                     continue;
                 }
 
@@ -1673,7 +1680,7 @@ namespace KaijuBreaker.Prototype
             sr.color = _playerNormalColor; sr.sortingOrder = 4;
             // Visual size only — the player hitbox is a fixed small point (see MoveEnemyBullets), so a bigger
             // sprite does NOT change difficulty. Real ship art reads much better at this size.
-            go.transform.localScale = ToWorldSize(_shipSprite != null ? 30 : 16, _shipSprite != null ? 30 : 18);
+            go.transform.localScale = ToWorldSize(_shipSprite != null ? 50 : 16, _shipSprite != null ? 50 : 18);
             _playerT = go.transform; _playerSr = sr;
             _playerT.gameObject.SetActive(false);
         }
