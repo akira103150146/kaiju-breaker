@@ -1,6 +1,6 @@
 # NEXT STEPS — KAIJU BREAKER (ordered TODO)
 
-*Last updated: 2026-07-02. Pair with `active.md`. Backlog detail: `production/epics/index.md` + each `production/epics/<slug>/story-*.md`.*
+*Last updated: 2026-07-05. Pair with `active.md`. Backlog detail: `production/epics/index.md` + each `production/epics/<slug>/story-*.md`.*
 
 Legend: ⬜ todo · 🔒 blocked · 👤 director-only (needs Unity editor / GitHub / device)
 
@@ -9,11 +9,11 @@ Legend: ⬜ todo · 🔒 blocked · 👤 director-only (needs Unity editor / Git
 ## A. Implement Core systems (unblocked — pure C#, EditMode-testable, no DOTS)
 Do in this order (dependency-safe). Pattern per system: implement in `Assets/_Project/Scripts/<Module>` (namespace `KaijuBreaker.<Module>`, asmdef references Core+Content), constructor-inject `IEventBus` + needed query interfaces, read all tuning from the injected SO (no hardcoded values), + EditMode tests in `Assets/_Project/Tests/EditMode/<Module>` using `ContentTestFactory` fixtures and a fake `IEventBus`/query for isolation. After each: director runs EditMode tests → if green, commit (+ push).
 
-1. ✅ **kaiju-parts** (epic `kaiju-parts`, 6 stories) — **001–005 DONE (2026-07-02), 56/56 EditMode tests GREEN** (headless run); 006 = director Visual/Feel.
+1. ✅ **kaiju-parts** (epic `kaiju-parts`, 6 stories) — **001–005 DONE (2026-07-02), verified GREEN via Unity MCP (now part of the 178-case EditMode suite)**; 006 = director Visual/Feel.
    `Assets/_Project/Scripts/KaijuParts/{BreakablePart,PartStateSystem}.cs` + EditMode tests in `Assets/_Project/Tests/EditMode/KaijuParts/`. Covers heat SM (INTACT↔SOFTENED hysteresis+decay), armor/stagger (`WaveHit`→strip+timer), break→`PartBroke`+`BossCoreBroke` (fixed order), adjacency graph + M3 Tier-3 chain (non-recursive via `IsChainBreak`). Implements `IPartStateQuery`. Committed & pushed to origin/main (a9e2453) — see `active.md` for the 3 reconciliations to review.
    Story **006** (readability VFX + 5-tester recognition study) still needs the Editor + a playtest (director). `.meta` files generate on next Editor import.
-2. ⬜ **weapons** (epic `weapons`, 10 stories) — Weapon SO → D₀ output, dual-track firing (lasers emit `LaserHit` heat / missiles emit `MissileHit` break + mag/reload), L3 charge→`WaveHit`, M3 heat-shock gate, Tier 0→3 knob application, loadout (1 primary+1 secondary). Injects `IPartStateQuery` (M1 targeting) + `IWeaponTierQuery`.
-3. ⬜ **economy** (epic `economy`, 5 stories) — on `PartBroke`: compute yield from `break_quality` (MUST read, never recompute), kaiju-theme→core map (all parts → theme core), full-clear essence, inventory (hand off to Meta), Tier 0→3 upgrade transaction, anti-dominant-loadout guard (H.2/H.3 tests).
+2. ✅ **weapons** (epic `weapons`, 10 stories) — **DONE (Session 4, 2026-07-03)**. Weapon SO → D₀ output, dual-track firing (lasers emit `LaserHit` heat / missiles emit `MissileHit` break + mag/reload), L3 charge→`WaveHit`, M3 heat-shock gate, Tier 0→3 knob application, loadout (1 primary+1 secondary). Injects `IPartStateQuery` + `IWeaponTierQuery`. Story 001 SO **.asset** authoring still 👤 (director/Editor). Equal-power retune (H.1/H.2/H.7) folded into feedback-point-3 balance pass — see `active.md`.
+3. 🟡 **economy** (epic `economy`, 5 stories) — **story 001 DONE (2026-07-05, 178/178 GREEN)**: `EconomyService` computes shard + theme-core yield from `PartBroke` (reads `break_quality`, never recomputes; `IKaijuThemeQuery` for kaijuId→theme; theme→core map + double-drop in `EconomyConfig`). Remaining: **002** full-clear essence (`on_hunt_end`), **003** inventory persistence handoff to Meta, **004** Tier 0→3 upgrade transaction, **005** anti-dominant-loadout TTB-matrix guard (H.2/H.3). ← **resume here: story 002**.
 4. ⬜ **difficulty** (epic `difficulty`, 4 stories) — DifficultyConfig-driven multipliers, `IDifficultyProvider`, + the two BLOCKING invariance test suites (TTB/output + materials/content identical across tiers).
 5. ⬜ **stage** (epic `stage`, 7 stories) — run state machine (LOADOUT→STAGE→BOSS→RESULTS), SO-driven prefab spawning, segment recombination (Fisher-Yates + no-repeat), elite+guaranteed pod, **cycling weapon-pod (descend→dwell→cycle→pickup)**, boss entrance, onboarding. Note: stories 002/004 note enemy-firing integration awaits ADR-0001 (bullet-sim) — the spawn/movement/pod logic is doable now.
 
@@ -41,4 +41,4 @@ Do in this order (dependency-safe). Pattern per system: implement in `Assets/_Pr
 - `tr-registry.yaml` formalized (95 reqs) — keep it updated as stories change; `BossKaijuId` in StageDef kept as string (could become a typed KaijuDef ref later).
 
 ## Quick status: 97 stories / 13 epics
-Done ✅: core-foundation (6), content-config (9). Implemented (tests unrun) 🟡: kaiju-parts 001–005. Next after kaiju-parts test-verify: **weapons** (epic `weapons`, 10). Blocked 🔒: bullet-sim impl (8) + kaiju encounters (3) on ADR-0001.
+Done ✅: core-foundation (6), content-config (9), kaiju-parts 001–005, weapons (10). In progress 🟡: economy (1/5 done — story 001). EditMode suite: **178/178 GREEN** (Unity MCP). Next: **economy story 002** (full-clear essence). Blocked 🔒: bullet-sim impl (8) + kaiju encounters (3) on ADR-0001.
