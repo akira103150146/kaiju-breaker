@@ -181,6 +181,9 @@ namespace KaijuBreaker.Prototype
         private Sprite _circle;
         private Sprite _diamondSprite; // basic mob tier silhouette
         private Sprite _hexSprite;     // elite mob tier silhouette
+        // Kenney Pixel Shmup (CC0) real sprites — used when present, else the procedural shapes above (plan B).
+        private Sprite _shipSprite, _mobSprite, _eliteSprite;
+        private Color _playerNormalColor = new Color(0.22f, 0.9f, 1f); // cyan tint for the procedural ship; white when a real sprite loads
         private Transform _worldRoot;
         private Transform _playerT;
         private SpriteRenderer _playerSr;
@@ -276,6 +279,13 @@ namespace KaijuBreaker.Prototype
             _circle = MakeCircle();
             _diamondSprite = MakeDiamond();
             _hexSprite = MakeHexagon();
+
+            // Kenney Pixel Shmup (CC0): blue ship = player (cold), red = mob (warm/enemy), heavy grey = elite.
+            // LoadArt returns null outside the editor or if missing → procedural fallback keeps the demo working.
+            _shipSprite  = LoadArt("Assets/_Project/Art/Kenny/Ships/ship_0000.png");
+            _mobSprite   = LoadArt("Assets/_Project/Art/Kenny/Ships/ship_0001.png");
+            _eliteSprite = LoadArt("Assets/_Project/Art/Kenny/Ships/ship_0012.png");
+            if (_shipSprite != null) _playerNormalColor = Color.white;
             _guiBgTex = new Texture2D(1, 1); _guiBgTex.SetPixel(0, 0, UiBgDeep); _guiBgTex.Apply();
 
             _worldRoot = new GameObject("WorldRoot").transform;
@@ -475,7 +485,7 @@ namespace KaijuBreaker.Prototype
             if (_pHurtFlash > 0f) _pHurtFlash -= dt;
             _playerT.position = ToWorld(_px, _py);
             bool blink = _pInv > 0f && Mathf.Repeat(_t, 0.2f) < 0.1f;
-            _playerSr.color = blink ? new Color(1f, 1f, 1f, 0.35f) : (_pHurtFlash > 0f ? new Color(1f, 0.2f, 0.2f) : new Color(0.22f, 0.9f, 1f));
+            _playerSr.color = blink ? new Color(1f, 1f, 1f, 0.35f) : (_pHurtFlash > 0f ? new Color(1f, 0.2f, 0.2f) : _playerNormalColor);
         }
 
         private void HandleL3Charge(float dt)
@@ -603,7 +613,8 @@ namespace KaijuBreaker.Prototype
             if (wave <= 2)
             {
                 int count = wave == 1 ? 3 : 5;
-                Color baseColor = new Color(0.75f, 0.38f, 0.16f);
+                // Light tint when using a real sprite so the white hit-flash still reads; warm tint for procedural.
+                Color baseColor = _mobSprite != null ? new Color(0.85f, 0.85f, 0.85f) : new Color(0.75f, 0.38f, 0.16f);
                 for (int i = 0; i < count; i++)
                 {
                     float x = 36 + i * 54 + Random.value * 18;
@@ -613,7 +624,8 @@ namespace KaijuBreaker.Prototype
                     e.Go.transform.SetParent(_worldRoot, false);
                     e.Go.transform.localScale = ToWorldSize(e.W, e.H);
                     e.Sr = e.Go.GetComponent<SpriteRenderer>();
-                    e.Sr.sprite = _diamondSprite; // basic-tier silhouette
+                    e.Sr.sprite = _mobSprite != null ? _mobSprite : _diamondSprite;
+                    if (_mobSprite != null) e.Go.transform.rotation = Quaternion.Euler(0f, 0f, 180f); // Kenney planes point up — face them down at the player
                     e.Go.transform.position = ToWorld(e.X, e.Y);
                     _enemies.Add(e);
                 }
@@ -621,7 +633,7 @@ namespace KaijuBreaker.Prototype
             else // Elite wave — fewer, tougher, distinct hex silhouette + denser aimed fire + rich drops
             {
                 int count = Random.value < 0.5f ? 1 : 2;
-                Color baseColor = new Color(0.85f, 0.15f, 0.55f);
+                Color baseColor = _eliteSprite != null ? new Color(0.92f, 0.9f, 0.98f) : new Color(0.85f, 0.15f, 0.55f);
                 for (int i = 0; i < count; i++)
                 {
                     float x = 90 + i * 120 + Random.value * 20;
@@ -636,7 +648,8 @@ namespace KaijuBreaker.Prototype
                     e.Go.transform.SetParent(_worldRoot, false);
                     e.Go.transform.localScale = ToWorldSize(e.W, e.H);
                     e.Sr = e.Go.GetComponent<SpriteRenderer>();
-                    e.Sr.sprite = _hexSprite; // elite-tier silhouette
+                    e.Sr.sprite = _eliteSprite != null ? _eliteSprite : _hexSprite;
+                    if (_eliteSprite != null) e.Go.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
                     e.Go.transform.position = ToWorld(e.X, e.Y);
                     _enemies.Add(e);
                 }
@@ -1545,10 +1558,22 @@ namespace KaijuBreaker.Prototype
         {
             var go = new GameObject("Player");
             go.transform.SetParent(_worldRoot, false);
-            var sr = go.AddComponent<SpriteRenderer>(); sr.sprite = _sprite; sr.color = new Color(0.22f, 0.9f, 1f); sr.sortingOrder = 4;
-            go.transform.localScale = ToWorldSize(14, 18);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = _shipSprite != null ? _shipSprite : _sprite;
+            sr.color = _playerNormalColor; sr.sortingOrder = 4;
+            go.transform.localScale = ToWorldSize(16, 18);
             _playerT = go.transform; _playerSr = sr;
             _playerT.gameObject.SetActive(false);
+        }
+
+        // Load a project sprite by path (editor play-mode only; null in a build → procedural fallback).
+        private static Sprite LoadArt(string assetPath)
+        {
+#if UNITY_EDITOR
+            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+#else
+            return null;
+#endif
         }
 
         private GameObject NewQuad(string name, Color color, int sortOrder)
