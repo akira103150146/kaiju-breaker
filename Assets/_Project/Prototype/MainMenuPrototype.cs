@@ -36,6 +36,10 @@ namespace KaijuBreaker.Prototype
 
         private GUIStyle Style(int size, Color color, FontStyle fs = FontStyle.Normal)
         {
+            // Ark Pixel 16px is crisp ONLY at integer multiples (16/32/48). Snap the requested size to
+            // the nearest multiple so the pixel font never renders blurry (hud-ui-assets §1.2). Applied
+            // only when the pixel font is assigned; the built-in fallback keeps the original ad-hoc sizes.
+            if (_pixelFont != null) size = Mathf.Max(16, Mathf.RoundToInt(size / 16f) * 16);
             var s = new GUIStyle(GUI.skin.label)
             { fontSize = size, alignment = TextAnchor.MiddleCenter, fontStyle = fs, wordWrap = false };
             if (_pixelFont != null) s.font = _pixelFont;      // art-bible §7.2 pixel font

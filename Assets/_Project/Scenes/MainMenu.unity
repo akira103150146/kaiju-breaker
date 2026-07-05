@@ -149,6 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.Prototype::KaijuBreaker.Prototype.MainMenuPrototype
   _stageScene: Stage01Prototype
+  _pixelFont: {fileID: 12800000, guid: 6221f8879498494ea089843d2f4b4011, type: 3}
 --- !u!4 &1596745561
 Transform:
   m_ObjectHideFlags: 0
