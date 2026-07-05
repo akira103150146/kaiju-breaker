@@ -36,7 +36,7 @@ namespace KaijuBreaker.Tests.EditMode.Economy
         {
             var bus = new TypedEventBus();
             var rec = new RecordingSaveService();
-            var _ = new EconomyService(config, bus, rec, MakeThemeQuery());
+            var _ = new EconomyService(config, bus, rec, MakeThemeQuery(), rec);
             return (bus, rec);
         }
 

@@ -28,6 +28,7 @@ namespace KaijuBreaker.Economy
         private readonly IEventBus _bus;
         private readonly ISaveService _saveService;
         private readonly IKaijuThemeQuery _themeQuery;
+        private readonly IWeaponTierQuery _tierQuery;
 
         private bool _subscribed;
 
@@ -36,14 +37,17 @@ namespace KaijuBreaker.Economy
         /// </summary>
         /// <param name="config">Economy tuning (shard base/multipliers, theme→core map, double-drop flag). Required.</param>
         /// <param name="bus">The application event bus. Required.</param>
-        /// <param name="saveService">Persistence sink; Economy banks materials here. Required.</param>
+        /// <param name="saveService">Persistence sink; Economy banks/spends materials + writes tiers here. Required.</param>
         /// <param name="themeQuery">Resolves the incoming runtime kaiju id → <see cref="KaijuTheme"/>. Required.</param>
-        public EconomyService(EconomyConfig config, IEventBus bus, ISaveService saveService, IKaijuThemeQuery themeQuery)
+        /// <param name="tierQuery">Reads a weapon's current tier for the upgrade affordability/from-tier check. Required.</param>
+        public EconomyService(EconomyConfig config, IEventBus bus, ISaveService saveService,
+                              IKaijuThemeQuery themeQuery, IWeaponTierQuery tierQuery)
         {
             _config = config != null ? config : throw new ArgumentNullException(nameof(config));
             _bus = bus ?? throw new ArgumentNullException(nameof(bus));
             _saveService = saveService ?? throw new ArgumentNullException(nameof(saveService));
             _themeQuery = themeQuery ?? throw new ArgumentNullException(nameof(themeQuery));
+            _tierQuery = tierQuery ?? throw new ArgumentNullException(nameof(tierQuery));
 
             _bus.Subscribe<PartBroke>(OnPartBroke);
             _bus.Subscribe<HuntEnded>(OnHuntEnded);
@@ -86,6 +90,37 @@ namespace KaijuBreaker.Economy
 
             _saveService.CreditMaterials(MaterialId.EssenceKaiju, _config.EssencePerFullClear);
             _saveService.CreditMaterials(MaterialId.ShardCommon, _config.ShardCompletenessBonus);
+        }
+
+        /// <summary>
+        /// Attempt a permanent weapon upgrade (material-economy.md §C.3, §C.4, §D.2). ATOMIC and one-way:
+        /// succeeds only when the weapon is exactly at the transition's from-tier AND the player can afford
+        /// every cost (shards + weapon-theme core + essence); on success it deducts all three and advances
+        /// the tier by one (immediately visible via <see cref="IWeaponTierQuery.GetTier"/>). On any failed
+        /// check NOTHING is deducted and the tier is unchanged. All costs come from <see cref="EconomyConfig"/>.
+        /// </summary>
+        /// <returns>True if the upgrade was applied; false if the from-tier mismatched or a cost was unmet.</returns>
+        public bool TryUpgrade(WeaponId weapon, TierTransition transition)
+        {
+            // Sequential/one-way gate — must be exactly at the from-tier (no skipping, no re-upgrade).
+            if (_tierQuery.GetTier(weapon) != transition.FromTier())
+                return false;
+
+            int shardCost = _config.UpgradeShardCost(transition);
+            int coreCost = _config.UpgradeCoreCost(transition);
+            int essenceCost = _config.UpgradeEssenceCost(transition);
+            MaterialId coreType = _config.GetCoreForWeapon(weapon);
+
+            // Affordability — check all BEFORE spending anything (atomic all-or-nothing).
+            if (_saveService.GetMaterialCount(MaterialId.ShardCommon) < shardCost) return false;
+            if (_saveService.GetMaterialCount(coreType) < coreCost) return false;
+            if (_saveService.GetMaterialCount(MaterialId.EssenceKaiju) < essenceCost) return false;
+
+            _saveService.SpendMaterials(MaterialId.ShardCommon, shardCost);
+            _saveService.SpendMaterials(coreType, coreCost);
+            _saveService.SpendMaterials(MaterialId.EssenceKaiju, essenceCost);
+            _saveService.SetWeaponTier(weapon, transition.ToTier());
+            return true;
         }
 
         /// <summary>Unsubscribe from the bus. Idempotent.</summary>

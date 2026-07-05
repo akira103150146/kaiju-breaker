@@ -76,7 +76,11 @@ namespace KaijuBreaker.Content
         [Tooltip("Core material dropped by every part of an Energy-theme kaiju (VOLTWYRM). Default: CoreEnergy.")]
         [SerializeField] private MaterialId _coreForEnergy = MaterialId.CoreEnergy;
 
-        [Header("Upgrade Cost Skeleton (G.2)")]
+        [Header("Upgrade Cost Table (G.2, C.4)")]
+        [Tooltip("Common Shard cost to upgrade a weapon from Tier 0 to Tier 1. " +
+                 "material-economy.md §C.4: 8 shards (safe range [4, 15]). No core / essence at this tier.")]
+        [SerializeField] private int _weaponUpgradeCostT0ToT1 = 8;
+
         [Tooltip("Common Shard cost to upgrade a weapon from Tier 1 to Tier 2. " +
                  "material-economy.md §C.4: 12 shards. Set to 0 to emit a LogWarning (pending confirmation).")]
         [SerializeField] private int _weaponUpgradeCostT1ToT2 = 12;
@@ -84,6 +88,15 @@ namespace KaijuBreaker.Content
         [Tooltip("Common Shard cost to upgrade a weapon from Tier 2 to Tier 3. " +
                  "material-economy.md §C.4: 25 shards. Set to 0 to emit a LogWarning (pending confirmation).")]
         [SerializeField] private int _weaponUpgradeCostT2ToT3 = 25;
+
+        [Tooltip("Weapon-theme core cost for Tier 1 → 2. material-economy.md §C.4: 5 (safe range [3, 10]).")]
+        [SerializeField] private int _upgradeCoreCostT1ToT2 = 5;
+
+        [Tooltip("Weapon-theme core cost for Tier 2 → 3. material-economy.md §C.4: 8 (safe range [5, 15]).")]
+        [SerializeField] private int _upgradeCoreCostT2ToT3 = 8;
+
+        [Tooltip("Kaiju Essence cost for Tier 2 → 3. material-economy.md §C.4: 1 (safe range [1, 2]).")]
+        [SerializeField] private int _upgradeEssenceCostT2ToT3 = 1;
 
         // ── Public read-only properties ───────────────────────────────────────────
 
@@ -174,6 +187,71 @@ namespace KaijuBreaker.Content
         }
 
         /// <summary>
+        /// The Common-Shard cost of an upgrade step (material-economy.md §C.4): T0→1 = 8, T1→2 = 12, T2→3 = 25
+        /// (all data-driven — the fields above).
+        /// </summary>
+        public int UpgradeShardCost(TierTransition transition)
+        {
+            switch (transition)
+            {
+                case TierTransition.Tier0To1: return _weaponUpgradeCostT0ToT1;
+                case TierTransition.Tier1To2: return _weaponUpgradeCostT1ToT2;
+                case TierTransition.Tier2To3: return _weaponUpgradeCostT2ToT3;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(transition), transition, "Unhandled TierTransition.");
+            }
+        }
+
+        /// <summary>The weapon-theme core cost of an upgrade step: T0→1 = 0, T1→2 = 5, T2→3 = 8 (§C.4).</summary>
+        public int UpgradeCoreCost(TierTransition transition)
+        {
+            switch (transition)
+            {
+                case TierTransition.Tier0To1: return 0;
+                case TierTransition.Tier1To2: return _upgradeCoreCostT1ToT2;
+                case TierTransition.Tier2To3: return _upgradeCoreCostT2ToT3;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(transition), transition, "Unhandled TierTransition.");
+            }
+        }
+
+        /// <summary>The Kaiju-Essence cost of an upgrade step: only T2→3 costs essence (1); others 0 (§C.4).</summary>
+        public int UpgradeEssenceCost(TierTransition transition)
+        {
+            return transition == TierTransition.Tier2To3 ? _upgradeEssenceCostT2ToT3 : 0;
+        }
+
+        /// <summary>
+        /// The core material a weapon consumes for its Tier 1→2 and 2→3 upgrades (material-economy.md §C.1
+        /// identity binding): L1/M2/M4 → Carapace, L2/L4/M1 → Limb, L3/M3 → Energy. The weapon→theme grouping
+        /// is a fixed design identity; the actual core material stays data-driven via <see cref="GetCoreForTheme"/>.
+        /// </summary>
+        public MaterialId GetCoreForWeapon(WeaponId weapon)
+        {
+            return GetCoreForTheme(ThemeForWeapon(weapon));
+        }
+
+        private static KaijuTheme ThemeForWeapon(WeaponId weapon)
+        {
+            switch (weapon)
+            {
+                case WeaponId.L1:
+                case WeaponId.M2:
+                case WeaponId.M4:
+                    return KaijuTheme.Carapace;
+                case WeaponId.L2:
+                case WeaponId.L4:
+                case WeaponId.M1:
+                    return KaijuTheme.Limb;
+                case WeaponId.L3:
+                case WeaponId.M3:
+                    return KaijuTheme.Energy;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(weapon), weapon, "Unhandled WeaponId in ThemeForWeapon.");
+            }
+        }
+
+        /// <summary>
         /// Common Shard cost component for Tier 1 → Tier 2 weapon upgrade.
         /// material-economy.md §C.4 value: 12. Kaiju-core cost (5) is Economy-system data.
         /// </summary>
@@ -215,7 +293,18 @@ namespace KaijuBreaker.Content
                     $"[EconomyConfig] '{name}': ShardCompletenessBonus must be >= 0. " +
                     $"Current: {_shardCompletenessBonus}. (material-economy.md §G.1 safe range [3, 10].)", this);
 
+            if (_weaponUpgradeCostT0ToT1 < 0 || _upgradeCoreCostT1ToT2 < 0 ||
+                _upgradeCoreCostT2ToT3 < 0 || _upgradeEssenceCostT2ToT3 < 0)
+                Debug.LogError(
+                    $"[EconomyConfig] '{name}': upgrade cost fields must be >= 0. " +
+                    "material-economy.md §C.4 costs are non-negative.", this);
+
             // Warn (not error) for zero costs — indicates values are pending GDD confirmation.
+            if (_weaponUpgradeCostT0ToT1 == 0)
+                Debug.LogWarning(
+                    $"[EconomyConfig] '{name}': WeaponUpgradeCostT0ToT1 is 0 — " +
+                    $"pending confirmation from material-economy.md §C.4. Expected value: 8.", this);
+
             if (_weaponUpgradeCostT1ToT2 == 0)
                 Debug.LogWarning(
                     $"[EconomyConfig] '{name}': WeaponUpgradeCostT1ToT2 is 0 — " +

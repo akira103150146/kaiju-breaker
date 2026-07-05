@@ -58,7 +58,8 @@ namespace KaijuBreaker.Tests.EditMode.Economy
             var bus = new TypedEventBus();
             var rec = new RecordingSaveService();
             // Service subscribes in its ctor; the bus keeps it alive via the subscription delegate.
-            var _ = new EconomyService(config, bus, rec, themeQuery);
+            // rec doubles as the IWeaponTierQuery (unused by the break path).
+            var _ = new EconomyService(config, bus, rec, themeQuery, rec);
 
             var evt = new PartBroke(
                 partId: 1, kaijuId: kaijuId, type: partType, worldPosition: Vector2.zero,
@@ -165,7 +166,7 @@ namespace KaijuBreaker.Tests.EditMode.Economy
             var themeQuery = MakeThemeQuery();
             var bus = new TypedEventBus();
             var rec = new RecordingSaveService();
-            var _ = new EconomyService(config, bus, rec, themeQuery);
+            var _ = new EconomyService(config, bus, rec, themeQuery, rec);
 
             var evt = new PartBroke(
                 partId: 1, kaijuId: 999 /* unregistered */, type: PartType.Normal, worldPosition: Vector2.zero,

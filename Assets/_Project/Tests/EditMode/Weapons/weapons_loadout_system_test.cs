@@ -20,6 +20,9 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             public int EnqueueCalls;
             public StubSaveService((WeaponId, WeaponId)? loadout) { _loadout = loadout; }
             public void CreditMaterials(MaterialId id, int amount) { }
+            public int GetMaterialCount(MaterialId id) => 0;
+            public void SpendMaterials(MaterialId id, int amount) { }
+            public void SetWeaponTier(WeaponId weapon, int tier) { }
             public void EnqueueAutosave() => EnqueueCalls++;
             public void FlushSync() { }
             public (WeaponId Primary, WeaponId Secondary)? GetInitialLoadout() => _loadout;

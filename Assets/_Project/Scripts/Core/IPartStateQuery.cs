@@ -70,6 +70,27 @@ namespace KaijuBreaker.Core
         /// </summary>
         void CreditMaterials(MaterialId id, int amount);
 
+        /// <summary>
+        /// The player's current persisted count of a material (0 if never credited). Read by the upgrade
+        /// transaction (Economy Story 004) and UI; NOT read by the per-break yield path (Economy is a
+        /// push-only producer there). Backed by in-memory state, not a synchronous file read.
+        /// </summary>
+        int GetMaterialCount(MaterialId id);
+
+        /// <summary>
+        /// Deduct <paramref name="amount"/> of a material as part of an upgrade purchase (material-economy.md
+        /// §C.4). The caller (Economy) MUST have already verified affordability — Meta subtracts unconditionally
+        /// and enqueues an autosave. <paramref name="amount"/> is expected non-negative.
+        /// </summary>
+        void SpendMaterials(MaterialId id, int amount);
+
+        /// <summary>
+        /// Persist a weapon's new permanent upgrade tier (0..3). The matching <see cref="IWeaponTierQuery.GetTier"/>
+        /// MUST reflect the new value in the SAME frame (in-memory update; background save is separate) so
+        /// Weapons applies the correct tuning immediately (material-economy.md §C.3; control-manifest §4.3).
+        /// </summary>
+        void SetWeaponTier(WeaponId weapon, int tier);
+
         /// <summary>Request an asynchronous autosave (e.g. after banking a part-break reward).</summary>
         void EnqueueAutosave();
 
