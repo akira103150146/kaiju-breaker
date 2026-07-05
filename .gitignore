@@ -150,3 +150,6 @@ unity-test.log
 # Prototype MCP screenshots (throwaway)
 Assets/Screenshots/
 Assets/Screenshots.meta
+
+# AI-gen source images (working area; imported sprites live in Assets/_Project/Art/Kaiju)
+design/assets/gemini-generation/
