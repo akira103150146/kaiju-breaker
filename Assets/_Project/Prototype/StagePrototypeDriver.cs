@@ -829,7 +829,7 @@ namespace KaijuBreaker.Prototype
             float breath = Mathf.Sin(_t * 1.3f);
             float driftY = breath * 3.5f;
             float driftX;
-            if (_bossDef.PatternType == "carapex")      driftX = Mathf.Sin(_t * 0.7f) * 10f;                                  // gentle horizontal sway — small enough that parts stay aimable
+            if (_bossDef.PatternType == "carapex")      driftX = Mathf.Sin(_t * 0.8f) * 20f;                                  // slow horizontal sweep (GDD §3) — boss is meant to move
             else if (_bossDef.PatternType == "voltwyrm") driftX = Mathf.Sin(_t * 0.7f) * 13f + Mathf.Sin(_t * 1.7f + 1f) * 6f; // S-curve slither
             else                                         driftX = Mathf.Sin(_t * 0.6f) * 7f;                                   // lacera gentle sway
 
@@ -1973,6 +1973,10 @@ namespace KaijuBreaker.Prototype
                     GUI.Label(new Rect(bx - 16f, by - 18f, bw + 32f, 14f),
                         armorOpen ? "弱點露出！可破" : "護甲鎖定（雷射燒軟）",
                         Style(10, FontStyle.Bold, TextAnchor.MiddleCenter, armorOpen ? UiAmber : UiTextDim));
+                // TEMP DEBUG — real values above every part (remove after diagnosis)
+                GUI.Label(new Rect(bx - 45f, by - 33f, bw + 90f, 14f),
+                    "H" + part.HCurrent.ToString("F0") + "/" + part.HMax.ToString("F0") + " " + part.HeatState + " B" + part.BCurrent.ToString("F0") + "/" + part.BMax.ToString("F0") + " " + part.ArmorState,
+                    Style(9, FontStyle.Normal, TextAnchor.MiddleCenter, new Color(0.5f, 1f, 0.6f)));
             }
         }
 
