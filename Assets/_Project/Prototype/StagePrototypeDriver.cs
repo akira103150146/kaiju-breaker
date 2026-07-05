@@ -560,7 +560,7 @@ namespace KaijuBreaker.Prototype
                 if (kv.Value.BreakState == BreakState.Broken) continue;
                 _bus.Publish(new WaveHit(kv.Key, KaijuId));
                 _bus.Publish(new LaserHit(kv.Key, KaijuId, 52f));
-                if (_partsVis.TryGetValue(kv.Key, out var pr)) { pr.FlashT = 0.45f; SpawnSparks(pr.Cx, pr.Cy, new Color(0.6f, 0.92f, 1f), 9); }
+                if (_partsVis.TryGetValue(kv.Key, out var pr)) { pr.FlashT = 0.10f; SpawnSparks(pr.Cx, pr.Cy, new Color(0.6f, 0.92f, 1f), 9); }
             }
             PushFloat(160, 200, "波動砲！", new Color(0.6f, 0.92f, 1f), true);
         }
@@ -812,6 +812,10 @@ namespace KaijuBreaker.Prototype
 
         private void UpdateBossPhase(float dt)
         {
+            // BUG FIX: drive heat accumulation + stagger every frame. Without this, LaserHit deltas queue in
+            // _pendingHeatDeltas but are NEVER applied to HCurrent, so parts never soften and ARMORED parts
+            // can never be broken (missiles deflect forever). This was the "can't break armor" root cause.
+            _parts.Tick(dt);
             if (_bossEnterAnim > 0f)
             {
                 _bossEnterAnim = Mathf.Max(0f, _bossEnterAnim - dt * 1.4f);
@@ -968,7 +972,7 @@ namespace KaijuBreaker.Prototype
                         if (Overlaps(b.X, b.Y, pr.Cx, pr.Cy, pr.Def.W, pr.Def.H))
                         {
                             if (b.Pierce) b.HitParts.Add(pr.Id);
-                            pr.FlashT = 0.14f;
+                            pr.FlashT = 0.045f;   // shorter than the laser fire interval so each hit flashes once, no smear
                             if (pr.Def.Type != PartType.BossCore) _bus.Publish(new LaserHit(pr.Id, KaijuId, b.HeatDelta));
                             SpawnSparks(b.X, pr.Cy, new Color(0.49f, 0.98f, 1f), 2);
                             if (!b.Pierce) { consumed = true; break; }
@@ -1170,7 +1174,7 @@ namespace KaijuBreaker.Prototype
             }
             _bus.Publish(new MissileHit(pr.Id, KaijuId, baseDmg, weapon));
             bool bonus = _parts.GetHeatState(pr.Id) == HeatState.Softened || pr.StaggerRemaining > 0f;
-            pr.FlashT = 0.16f;
+            pr.FlashT = 0.07f;
             SpawnSparks(pr.Cx, pr.Cy, bonus ? new Color(1f, 0.6f, 0f) : Color.white, bonus ? 7 : 3);
             if (bonus) { ShakeAdd(3f); PushFloat(pr.Cx + (Random.value - 0.5f) * 18f, pr.Cy - 12, "軟化加成！", new Color(1f, 0.53f, 0f), true); }
         }
