@@ -62,6 +62,14 @@ namespace KaijuBreaker.Core
     /// </summary>
     public interface ISaveService
     {
+        /// <summary>
+        /// Bank <paramref name="amount"/> units of a material into the player's persistent inventory
+        /// (material-economy.md §F.5). Called by Economy after it computes a part-break yield; Meta owns
+        /// storage and persistence. <paramref name="amount"/> is expected to be positive — a break always
+        /// yields at least one shard and one core (no zero-drop, §D.1). Meta must accumulate, not overwrite.
+        /// </summary>
+        void CreditMaterials(MaterialId id, int amount);
+
         /// <summary>Request an asynchronous autosave (e.g. after banking a part-break reward).</summary>
         void EnqueueAutosave();
 
@@ -84,5 +92,22 @@ namespace KaijuBreaker.Core
     {
         /// <summary>Current permanent upgrade tier (0 = base … 3 = unique mechanic) for a weapon.</summary>
         int GetTier(WeaponId weapon);
+    }
+
+    /// <summary>
+    /// Read-only lookup from a runtime kaiju id to its material <see cref="KaijuTheme"/>
+    /// (material-economy.md §C.1 層級二). Injected into Economy so it can map an incoming
+    /// <c>PartBroke.KaijuId</c> → theme → core WITHOUT referencing the KaijuParts assembly.
+    /// The runtime int kaiju id is assigned by the composition root when a kaiju is initialised;
+    /// the backing theme lives on <c>KaijuDef</c>. Many kaiju may share a theme.
+    /// </summary>
+    public interface IKaijuThemeQuery
+    {
+        /// <summary>
+        /// The material theme of the kaiju with the given runtime id. MUST throw
+        /// <see cref="System.ArgumentException"/> for an unregistered id — a wrong core must never be
+        /// silently awarded (material-economy.md §H.2/§H.4 "fail loud, fail fast").
+        /// </summary>
+        KaijuTheme GetTheme(int kaijuId);
     }
 }

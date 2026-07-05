@@ -1,3 +1,5 @@
+using System;
+using KaijuBreaker.Core;
 using UnityEngine;
 
 namespace KaijuBreaker.Content
@@ -47,8 +49,23 @@ namespace KaijuBreaker.Content
         [Header("Core Yield Knobs (G.1)")]
         [Tooltip("Kaiju-theme core count awarded when the Boss Core part is broken (Standard / Precision quality). " +
                  "Perfect quality triggers double-drop via core_perfect_double_drop flag (Economy system). " +
-                 "Default: 1.")]
+                 "Default: 1. NOTE: superseded by the theme model — EVERY part now yields 1 theme core " +
+                 "(2 on Perfect), not just the Boss Core. Kept for back-compat; Economy no longer reads it.")]
         [SerializeField] private int _coreYieldBossCore = 1;
+
+        [Tooltip("When TRUE, a Perfect-quality break (SOFTENED + STAGGERED) drops 2 theme cores instead of 1. " +
+                 "material-economy.md §G.1 core_perfect_double_drop default: TRUE. FALSE = always 1 core.")]
+        [SerializeField] private bool _corePerfectDoubleDrop = true;
+
+        [Header("Kaiju Theme -> Core Map (D.1)")]
+        [Tooltip("Core material dropped by every part of a Carapace-theme kaiju (CARAPEX). Default: CoreCarapace.")]
+        [SerializeField] private MaterialId _coreForCarapace = MaterialId.CoreCarapace;
+
+        [Tooltip("Core material dropped by every part of a Limb-theme kaiju (LACERA). Default: CoreLimb.")]
+        [SerializeField] private MaterialId _coreForLimb = MaterialId.CoreLimb;
+
+        [Tooltip("Core material dropped by every part of an Energy-theme kaiju (VOLTWYRM). Default: CoreEnergy.")]
+        [SerializeField] private MaterialId _coreForEnergy = MaterialId.CoreEnergy;
 
         [Header("Upgrade Cost Skeleton (G.2)")]
         [Tooltip("Common Shard cost to upgrade a weapon from Tier 1 to Tier 2. " +
@@ -90,7 +107,50 @@ namespace KaijuBreaker.Content
         /// (Standard and Precision quality). Economy system doubles this on Perfect
         /// quality when core_perfect_double_drop is enabled.
         /// </summary>
+        [Obsolete("Superseded by the theme model: every part yields 1 core (2 on Perfect via CorePerfectDoubleDrop). Economy no longer reads this.")]
         public int CoreYieldBossCore => _coreYieldBossCore;
+
+        /// <summary>
+        /// When true, a Perfect-quality break (SOFTENED + STAGGERED) yields 2 theme cores instead of 1.
+        /// material-economy.md §G.1 core_perfect_double_drop (default TRUE). Standard/Precision always yield 1.
+        /// </summary>
+        public bool CorePerfectDoubleDrop => _corePerfectDoubleDrop;
+
+        /// <summary>
+        /// The Common-Shard yield multiplier for a break quality (material-economy.md §D.1
+        /// quality_shard_mult): Normal = 1.0, Softened = <see cref="ShardYieldSoftenedMult"/>,
+        /// SoftenedStaggered = <see cref="ShardYieldSoftenedStaggeredMult"/>.
+        /// </summary>
+        public float QualityShardMult(BreakQuality quality)
+        {
+            switch (quality)
+            {
+                case BreakQuality.Normal: return 1.0f;
+                case BreakQuality.Softened: return _shardYieldSoftenedMult;
+                case BreakQuality.SoftenedStaggered: return _shardYieldSoftenedStaggeredMult;
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(quality), quality, "Unhandled BreakQuality in QualityShardMult.");
+            }
+        }
+
+        /// <summary>
+        /// The core material dropped by any part of a kaiju with the given theme
+        /// (material-economy.md §D.1 kaiju_theme_to_core_map). Theme→core is the sole
+        /// economy-owned mapping; the kaijuId→theme step is external (IKaijuThemeQuery).
+        /// </summary>
+        public MaterialId GetCoreForTheme(KaijuTheme theme)
+        {
+            switch (theme)
+            {
+                case KaijuTheme.Carapace: return _coreForCarapace;
+                case KaijuTheme.Limb: return _coreForLimb;
+                case KaijuTheme.Energy: return _coreForEnergy;
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(theme), theme, "Unhandled KaijuTheme in GetCoreForTheme.");
+            }
+        }
 
         /// <summary>
         /// Common Shard cost component for Tier 1 → Tier 2 weapon upgrade.

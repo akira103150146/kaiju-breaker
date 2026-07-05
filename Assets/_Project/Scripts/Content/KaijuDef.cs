@@ -96,6 +96,11 @@ namespace KaijuBreaker.Content
                  "kaiju-part-system.md C.6 kaiju_id.")]
         [SerializeField] private string _kaijuId = string.Empty;
 
+        [Tooltip("Material theme: Carapace / Limb / Energy. Determines which core EVERY part of this kaiju " +
+                 "drops (material-economy.md C.1 層級二). The composition root uses this to build the " +
+                 "runtime kaijuId -> KaijuTheme map that Economy queries via IKaijuThemeQuery.")]
+        [SerializeField] private KaijuTheme _theme = KaijuTheme.Carapace;
+
         [Tooltip("All breakable parts for this kaiju. Must contain at least one BossCore part (win condition). " +
                  "Typical range: 2–5 parts (up to 8 for late-game bosses). " +
                  "kaiju-part-system.md C.6 and A (overview).")]
@@ -105,6 +110,12 @@ namespace KaijuBreaker.Content
 
         /// <summary>Stable kaiju identifier. Used as a ContentRegistry and economy lookup key.</summary>
         public string KaijuId => _kaijuId;
+
+        /// <summary>
+        /// Material theme (Carapace / Limb / Energy). Every breakable part of this kaiju drops the
+        /// matching theme core (material-economy.md C.1). Backs the runtime IKaijuThemeQuery.
+        /// </summary>
+        public KaijuTheme Theme => _theme;
 
         /// <summary>
         /// All breakable parts. At least one must have PartType == BossCore.
