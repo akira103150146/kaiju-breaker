@@ -111,6 +111,21 @@ namespace KaijuBreaker.Content
                     $"[DifficultyConfig] BulletDensityMult[0] (D1 baseline) must equal 1.0, " +
                     $"but is {_bulletDensityMult[0]}. D1 is the unscaled reference — do not reduce it.", this);
 
+            // D2–D4 密度乘數安全範圍（difficulty-system.md §G.1）— 越界為警告，不阻斷：
+            // 值仍會載入，但設計師應確認是有意的調整。D1 是上方的硬閘門（LogError）。
+            if (_enemyCountMult != null && _enemyCountMult.Length == 4)
+            {
+                WarnRange("EnemyCountMult[D2]", _enemyCountMult[1], 1.10f, 1.50f);
+                WarnRange("EnemyCountMult[D3]", _enemyCountMult[2], 1.25f, 1.75f);
+                WarnRange("EnemyCountMult[D4]", _enemyCountMult[3], 1.50f, 2.00f);
+            }
+            if (_bulletDensityMult != null && _bulletDensityMult.Length == 4)
+            {
+                WarnRange("BulletDensityMult[D2]", _bulletDensityMult[1], 1.10f, 1.50f);
+                WarnRange("BulletDensityMult[D3]", _bulletDensityMult[2], 1.25f, 1.75f);
+                WarnRange("BulletDensityMult[D4]", _bulletDensityMult[3], 1.75f, 2.50f);
+            }
+
             if (_defaultDifficultyOnFirstLaunch != DifficultyTier.D1)
                 Debug.LogError(
                     "[DifficultyConfig] DefaultDifficultyOnFirstLaunch must be D1 " +
@@ -133,6 +148,19 @@ namespace KaijuBreaker.Content
                 Debug.LogError(
                     $"[DifficultyConfig] {name} must have exactly 4 elements (D1–D4). " +
                     $"Current length: {arr?.Length ?? 0}.", this);
+        }
+
+        /// <summary>
+        /// Editor-time warning when a D2–D4 multiplier falls outside its difficulty-system.md §G.1
+        /// safe band. Non-blocking (LogWarning): the value still loads, but the designer should
+        /// confirm the deviation is intentional. D1 baselines are hard gates (LogError) elsewhere.
+        /// </summary>
+        private void WarnRange(string name, float value, float lo, float hi)
+        {
+            if (value < lo || value > hi)
+                Debug.LogWarning(
+                    $"[DifficultyConfig] {name} = {value} is outside the difficulty-system.md §G.1 " +
+                    $"safe range [{lo}, {hi}]. Confirm this is intentional.", this);
         }
 #endif
     }
