@@ -969,7 +969,7 @@ namespace KaijuBreaker.Prototype
                     {
                         if (!_parts.IsPartAlive(pr.Id)) continue;
                         if (b.Pierce && b.HitParts.Contains(pr.Id)) continue;
-                        if (Overlaps(b.X, b.Y, pr.Cx, pr.Cy, pr.Def.W * 1.5f, pr.Def.H * 1.5f))   // generous laser hit-box — small parts stay easy to heat
+                        if (Overlaps(b.X, b.Y, pr.Cx, pr.Cy, pr.Def.W, pr.Def.H))
                         {
                             if (b.Pierce) b.HitParts.Add(pr.Id);
                             pr.FlashT = 0.045f;   // shorter than the laser fire interval so each hit flashes once, no smear
@@ -1978,10 +1978,6 @@ namespace KaijuBreaker.Prototype
                     GUI.Label(new Rect(bx - 16f, by - 18f, bw + 32f, 14f),
                         armorOpen ? "弱點露出！可破" : "護甲鎖定（雷射燒軟）",
                         Style(10, FontStyle.Bold, TextAnchor.MiddleCenter, armorOpen ? UiAmber : UiTextDim));
-                // TEMP DEBUG — real values above every part (remove after diagnosis)
-                GUI.Label(new Rect(bx - 45f, by - 33f, bw + 90f, 14f),
-                    "H" + part.HCurrent.ToString("F0") + "/" + part.HMax.ToString("F0") + " " + part.HeatState + " B" + part.BCurrent.ToString("F0") + "/" + part.BMax.ToString("F0") + " " + part.ArmorState,
-                    Style(9, FontStyle.Normal, TextAnchor.MiddleCenter, new Color(0.5f, 1f, 0.6f)));
             }
         }
 
