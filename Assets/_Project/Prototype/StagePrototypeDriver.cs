@@ -619,7 +619,7 @@ namespace KaijuBreaker.Prototype
                 {
                     float x = 36 + i * 54 + Random.value * 18;
                     float y = -28 - i * 30;
-                    var e = new Enemy { X = x, Y = y, Vx = (Random.value - 0.5f) * 30f, Vy = 70f + Random.value * 30f, FireT = 1.8f + Random.value * 2.0f, BaseColor = baseColor };
+                    var e = new Enemy { X = x, Y = y, W = 28, H = 26, Vx = (Random.value - 0.5f) * 30f, Vy = 70f + Random.value * 30f, FireT = 1.8f + Random.value * 2.0f, BaseColor = baseColor };
                     e.Go = NewQuad("Enemy", baseColor, 2);
                     e.Go.transform.SetParent(_worldRoot, false);
                     e.Go.transform.localScale = ToWorldSize(e.W, e.H);
@@ -640,7 +640,7 @@ namespace KaijuBreaker.Prototype
                     float y = -40 - i * 55;
                     var e = new Enemy
                     {
-                        X = x, Y = y, W = 34, H = 30, Hp = 45f * 5f, Max = 45f * 5f,
+                        X = x, Y = y, W = 48, H = 44, Hp = 45f * 5f, Max = 45f * 5f,
                         Vx = (Random.value - 0.5f) * 20f, Vy = 46f + Random.value * 16f,
                         FireT = 1.2f + Random.value * 0.8f, IsElite = true, BaseColor = baseColor
                     };
@@ -1561,7 +1561,9 @@ namespace KaijuBreaker.Prototype
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _shipSprite != null ? _shipSprite : _sprite;
             sr.color = _playerNormalColor; sr.sortingOrder = 4;
-            go.transform.localScale = ToWorldSize(16, 18);
+            // Visual size only — the player hitbox is a fixed small point (see MoveEnemyBullets), so a bigger
+            // sprite does NOT change difficulty. Real ship art reads much better at this size.
+            go.transform.localScale = ToWorldSize(_shipSprite != null ? 30 : 16, _shipSprite != null ? 30 : 18);
             _playerT = go.transform; _playerSr = sr;
             _playerT.gameObject.SetActive(false);
         }
