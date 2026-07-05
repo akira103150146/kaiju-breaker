@@ -1165,7 +1165,12 @@ namespace KaijuBreaker.Prototype
         private void MissileDamagePart(PartRuntime pr, float baseDmg, WeaponId weapon)
         {
             if (!_parts.IsPartAlive(pr.Id)) return;
-            bool armorIntact = pr.Def.Type == PartType.Armored && _parts.GetArmorState(pr.Id) == ArmorState.Intact;
+            // Armor deflects missiles ONLY while intact AND not heat-softened. kaiju-part §113: any laser that
+            // softens the part opens a gap missiles pass through — so a softened armored part must NOT deflect.
+            // (This missing HeatState check was the real "softened but still deflects / can't break armor" bug.)
+            bool armorIntact = pr.Def.Type == PartType.Armored
+                && _parts.GetArmorState(pr.Id) == ArmorState.Intact
+                && _parts.GetHeatState(pr.Id) != HeatState.Softened;
             if (armorIntact)
             {
                 PushFloat(pr.Cx, pr.Cy - 4, "裝甲偏轉", new Color(0.44f, 0.56f, 0.66f), false);
