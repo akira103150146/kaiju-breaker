@@ -91,7 +91,7 @@ namespace KaijuBreaker.Prototype
             public float Bx, By, W, H; public Color Hue;
             public bool Sweep; public float SweepAmp, SweepSpd, SweepPhase;
             // Real-art hook: sprite file (no extension) under the boss art folder. null → procedural box + Hue.
-            public string Art, ArtStripped; public bool FlipX; public float ArtScale = 1f;
+            public string Art, ArtStripped; public bool FlipX; public float ArtScale = 1f; public float Rot;  // sprite Z-rotation, degrees
         }
         private sealed class BossDef
         {
@@ -131,10 +131,10 @@ namespace KaijuBreaker.Prototype
                     PatternType = "carapex", ArtFolder = "Carapex", BodyArt = "kaiju_carapex_body_base",
                     Parts = new[]
                     {
-                        new PartVisDef{ Key="core", Name="胸口核心", Type=PartType.BossCore, Bx=160,By=100,W=44,H=40, Hue=Hex("#ffd23f"), Art="kaiju_carapex_chest_core_intact", ArtScale=1.3f },
-                        new PartVisDef{ Key="mL",   Name="左大顎",   Type=PartType.Normal,   Bx=88, By=124,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", ArtScale=1.5f },
-                        new PartVisDef{ Key="mR",   Name="右大顎",   Type=PartType.Normal,   Bx=232,By=124,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", FlipX=true, ArtScale=1.5f },
-                        new PartVisDef{ Key="dc",   Name="背甲炮",   Type=PartType.Armored,  Bx=160,By=52, W=38,H=26, Hue=Hex("#3f6080"), Art="kaiju_carapex_dorsal_cannon_intact", ArtStripped="kaiju_carapex_dorsal_cannon_stripped", ArtScale=1.4f },
+                        new PartVisDef{ Key="core", Name="胸口核心", Type=PartType.BossCore, Bx=160,By=96,W=44,H=40, Hue=Hex("#ffd23f"), Art="kaiju_carapex_chest_core_intact", ArtScale=1.2f },
+                        new PartVisDef{ Key="mL",   Name="左大顎",   Type=PartType.Normal,   Bx=84, By=120,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", ArtScale=1.5f, Rot=50f },
+                        new PartVisDef{ Key="mR",   Name="右大顎",   Type=PartType.Normal,   Bx=236,By=120,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", FlipX=true, ArtScale=1.5f, Rot=50f },
+                        new PartVisDef{ Key="dc",   Name="背甲炮",   Type=PartType.Armored,  Bx=160,By=150,W=38,H=26, Hue=Hex("#3f6080"), Art="kaiju_carapex_dorsal_cannon_intact", ArtStripped="kaiju_carapex_dorsal_cannon_stripped", ArtScale=1.3f },
                     }
                 };
             }
@@ -200,6 +200,7 @@ namespace KaijuBreaker.Prototype
         // ── Active run state ───────────────────────────────────────────────────
         private BossDef _bossDef;
         private GameObject _bossBody;   // real-art body-base backdrop (behind parts); null if the boss has none
+        private float _bodyBaseScale = 1f;   // body-base sprite fit scale, cached for idle breathing
         private float _diffMult = 1f;
         private int _pidx, _sidx;
         private sealed class AmmoState { public int Ammo; public bool Reloading; public float ReloadT; }
@@ -820,20 +821,51 @@ namespace KaijuBreaker.Prototype
                 return;
             }
 
+            // ── Idle "alive" motion — no boss may read as a static decal ──
+            float breath = Mathf.Sin(_t * 1.3f);
+            float driftY = breath * 3.5f;
+            float driftX;
+            if (_bossDef.PatternType == "carapex")      driftX = Mathf.Sin(_t * 0.8f) * 20f;                                  // slow horizontal sweep (GDD §3)
+            else if (_bossDef.PatternType == "voltwyrm") driftX = Mathf.Sin(_t * 0.7f) * 13f + Mathf.Sin(_t * 1.7f + 1f) * 6f; // S-curve slither
+            else                                         driftX = Mathf.Sin(_t * 0.6f) * 7f;                                   // lacera gentle sway
+
+            if (_bossBody != null)
+            {
+                _bossBody.transform.position = ToWorld(160f + driftX, 104f + driftY);
+                float bs = _bodyBaseScale * (1f + breath * 0.015f);
+                _bossBody.transform.localScale = new Vector3(bs, bs, 1f);
+            }
+
+            // LACERA limbs hinge about the body-anchored root (rotate, don't fly around).
             if (_bossDef.PatternType == "lacera")
             {
                 foreach (var pr in _partsVis.Values)
                 {
                     if (!pr.Def.Sweep || !_parts.IsPartAlive(pr.Id)) continue;
-                    float ph = pr.Def.SweepPhase + _t * pr.Def.SweepSpd;
-                    pr.Cx = pr.Def.Bx + Mathf.Sin(ph) * pr.Def.SweepAmp;
-                    pr.Cy = pr.Def.By + Mathf.Cos(ph * 0.5f) * 8f;
+                    float swing = Mathf.Sin(pr.Def.SweepPhase + _t * pr.Def.SweepSpd) * 13f;   // degrees, small
+                    pr.Go.transform.localRotation = Quaternion.Euler(0f, 0f, pr.Def.FlipX ? -swing : swing);
+                }
+            }
+            // VOLTWYRM: spin the core halo + pulse the neck segments — energy is never static.
+            else if (_bossDef.PatternType == "voltwyrm")
+            {
+                foreach (var pr in _partsVis.Values)
+                {
+                    if (!_parts.IsPartAlive(pr.Id)) continue;
+                    if (pr.Def.Type == PartType.BossCore) pr.Go.transform.Rotate(0f, 0f, 55f * dt);
+                    else if (pr.Def.Key[0] == 'n')
+                    {
+                        float p = pr.ArtBaseScale * (1f + Mathf.Sin(_t * 3.2f + pr.Def.By * 0.06f) * 0.07f);
+                        pr.Go.transform.localScale = new Vector3(p, p, 1f);
+                    }
                 }
             }
 
             foreach (var pr in _partsVis.Values)
             {
                 if (!_parts.IsPartAlive(pr.Id)) continue;
+                pr.Cx = pr.Def.Bx + driftX;   // whole boss drifts as one — hit-test, fire origin, and visual all agree
+                pr.Cy = pr.Def.By + driftY;
                 if (pr.FlashT > 0f) pr.FlashT -= dt;
                 if (pr.StaggerRemaining > 0f) pr.StaggerRemaining = Mathf.Max(0f, pr.StaggerRemaining - dt);
                 pr.FireT -= dt;
@@ -936,7 +968,7 @@ namespace KaijuBreaker.Prototype
                         if (Overlaps(b.X, b.Y, pr.Cx, pr.Cy, pr.Def.W, pr.Def.H))
                         {
                             if (b.Pierce) b.HitParts.Add(pr.Id);
-                            pr.FlashT = 0.08f;
+                            pr.FlashT = 0.14f;
                             if (pr.Def.Type != PartType.BossCore) _bus.Publish(new LaserHit(pr.Id, KaijuId, b.HeatDelta));
                             SpawnSparks(b.X, pr.Cy, new Color(0.49f, 0.98f, 1f), 2);
                             if (!b.Pierce) { consumed = true; break; }
@@ -1442,6 +1474,7 @@ namespace KaijuBreaker.Prototype
                     bgo.transform.SetParent(_worldRoot, false);
                     bgo.transform.position = ToWorld(160f, 104f);
                     float s = (150f * WorldScale) / bodySprite.bounds.size.y;
+                    _bodyBaseScale = s;
                     bgo.transform.localScale = new Vector3(s, s, 1f);
                     var bsr = bgo.AddComponent<SpriteRenderer>(); bsr.sprite = bodySprite; bsr.sortingOrder = 1; bsr.color = Color.white;
                     _bossBody = bgo;
@@ -1471,6 +1504,7 @@ namespace KaijuBreaker.Prototype
                     sr.sortingOrder = (def.Type == PartType.BossCore) ? 4 : 3;
                     baseScale = (def.H * WorldScale * 1.7f * def.ArtScale) / intact.bounds.size.y;
                     go.transform.localScale = new Vector3(def.FlipX ? -baseScale : baseScale, baseScale, 1f);
+                    if (def.Rot != 0f) go.transform.localRotation = Quaternion.Euler(0f, 0f, def.FlipX ? -def.Rot : def.Rot);
                     // State shown via tint + sprite swap (RefreshPartVisuals) — skip the crude debug bars.
                 }
                 else
@@ -1514,8 +1548,14 @@ namespace KaijuBreaker.Prototype
                 // ── Real-art parts: swap intact↔stripped on armor state, tint subtly for heat/core ──
                 if (pr.HasArt)
                 {
+                    // Weak point is open when armor is L3-stripped OR the part is heat-softened by ANY laser
+                    // (kaiju-part-system §113 Heat-Softened Bypass). Show the exposed/stripped sprite either
+                    // way so the player ALWAYS sees when an armored part became hittable — no weapon gating.
                     if (armored && pr.Stripped != null)
-                        pr.Body.sprite = (part.ArmorState == ArmorState.Intact) ? pr.Intact : pr.Stripped;
+                    {
+                        bool weakpointOpen = part.ArmorState != ArmorState.Intact || part.HeatState == HeatState.Softened;
+                        pr.Body.sprite = weakpointOpen ? pr.Stripped : pr.Intact;
+                    }
                     Color artTint = Color.white;
                     if (part.PartType == PartType.BossCore)
                     {
@@ -1524,7 +1564,9 @@ namespace KaijuBreaker.Prototype
                     }
                     else if (part.HeatState == HeatState.Softened) artTint = new Color(1f, 0.6f, 0.4f);   // warm = heated/softened
                     else if (pr.StaggerRemaining > 0f) artTint = new Color(0.75f, 0.9f, 1f);              // cool flash on stagger
-                    pr.Body.color = pr.FlashT > 0f ? Color.white : artTint;
+                    // Overbright (>1) on hit — a plain white tint MULTIPLIES and leaves colored art unchanged;
+                    // ×2.6 pushes highlights past 1.0 so the struck part visibly flashes white ("I'm hitting HERE").
+                    pr.Body.color = pr.FlashT > 0f ? new Color(2.6f, 2.6f, 2.6f, 1f) : artTint;
                     continue;
                 }
 
@@ -1544,7 +1586,7 @@ namespace KaijuBreaker.Prototype
                 else if (pr.StaggerRemaining > 0f) target = Color.Lerp(pr.Def.Hue, new Color(0.38f, 0.82f, 1f), 0.5f);
                 else target = pr.Def.Hue;
 
-                pr.Body.color = pr.FlashT > 0f ? Color.white : target;
+                pr.Body.color = pr.FlashT > 0f ? new Color(2.6f, 2.6f, 2.6f, 1f) : target;
             }
         }
 
