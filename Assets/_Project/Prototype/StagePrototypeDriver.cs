@@ -90,11 +90,15 @@ namespace KaijuBreaker.Prototype
             public string Key, Name; public PartType Type;
             public float Bx, By, W, H; public Color Hue;
             public bool Sweep; public float SweepAmp, SweepSpd, SweepPhase;
+            // Real-art hook: sprite file (no extension) under the boss art folder. null → procedural box + Hue.
+            public string Art, ArtStripped; public bool FlipX; public float ArtScale = 1f;
         }
         private sealed class BossDef
         {
             public string Id, Name, NameEn, ShineWeapon, CoreName, PatternType;
             public Color BgColor;
+            // Real-art hook: Assets/_Project/Art/Kaiju/<ArtFolder>/; BodyArt = base-body backdrop sprite (null = none).
+            public string ArtFolder, BodyArt;
             public PartVisDef[] Parts;
         }
 
@@ -124,13 +128,13 @@ namespace KaijuBreaker.Prototype
                 {
                     Id = "CARAPEX", Name = "鎧殼獸", NameEn = "CARAPEX",
                     ShineWeapon = "L2×M3 推薦", CoreName = "甲殼核心", BgColor = Hex("#0d0802"),
-                    PatternType = "carapex",
+                    PatternType = "carapex", ArtFolder = "Carapex", BodyArt = "kaiju_carapex_body_base",
                     Parts = new[]
                     {
-                        new PartVisDef{ Key="core", Name="胸口核心", Type=PartType.BossCore, Bx=160,By=100,W=44,H=40, Hue=Hex("#ffd23f") },
-                        new PartVisDef{ Key="mL",   Name="左大顎",   Type=PartType.Normal,   Bx=88, By=124,W=36,H=26, Hue=Hex("#9b6030") },
-                        new PartVisDef{ Key="mR",   Name="右大顎",   Type=PartType.Normal,   Bx=232,By=124,W=36,H=26, Hue=Hex("#9b6030") },
-                        new PartVisDef{ Key="dc",   Name="背甲炮",   Type=PartType.Armored,  Bx=160,By=52, W=38,H=26, Hue=Hex("#3f6080") },
+                        new PartVisDef{ Key="core", Name="胸口核心", Type=PartType.BossCore, Bx=160,By=100,W=44,H=40, Hue=Hex("#ffd23f"), Art="kaiju_carapex_chest_core_intact", ArtScale=1.3f },
+                        new PartVisDef{ Key="mL",   Name="左大顎",   Type=PartType.Normal,   Bx=88, By=124,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", ArtScale=1.5f },
+                        new PartVisDef{ Key="mR",   Name="右大顎",   Type=PartType.Normal,   Bx=232,By=124,W=36,H=26, Hue=Hex("#9b6030"), Art="kaiju_carapex_mandible_intact", FlipX=true, ArtScale=1.5f },
+                        new PartVisDef{ Key="dc",   Name="背甲炮",   Type=PartType.Armored,  Bx=160,By=52, W=38,H=26, Hue=Hex("#3f6080"), Art="kaiju_carapex_dorsal_cannon_intact", ArtStripped="kaiju_carapex_dorsal_cannon_stripped", ArtScale=1.4f },
                     }
                 };
             }
@@ -140,14 +144,14 @@ namespace KaijuBreaker.Prototype
                 {
                     Id = "LACERA", Name = "刃肢獸", NameEn = "LACERA",
                     ShineWeapon = "M1 追蹤推薦", CoreName = "四肢核心", BgColor = Hex("#060a02"),
-                    PatternType = "lacera",
+                    PatternType = "lacera", ArtFolder = "Lacera", BodyArt = "kaiju_lacera_body_base",
                     Parts = new[]
                     {
-                        new PartVisDef{ Key="core", Name="頭部核心", Type=PartType.BossCore, Bx=160,By=78, W=40,H=36, Hue=Hex("#ffd23f") },
-                        new PartVisDef{ Key="fL", Name="左前肢", Type=PartType.Normal, Bx=82, By=112,W=32,H=24, Hue=Hex("#6a9030"), Sweep=true, SweepAmp=50, SweepSpd=1.4f, SweepPhase=0f },
-                        new PartVisDef{ Key="fR", Name="右前肢", Type=PartType.Normal, Bx=238,By=112,W=32,H=24, Hue=Hex("#6a9030"), Sweep=true, SweepAmp=50, SweepSpd=1.4f, SweepPhase=Mathf.PI },
-                        new PartVisDef{ Key="hL", Name="左後肢", Type=PartType.Normal, Bx=62, By=148,W=28,H=22, Hue=Hex("#5a8028"), Sweep=true, SweepAmp=62, SweepSpd=0.85f, SweepPhase=Mathf.PI/2f },
-                        new PartVisDef{ Key="hR", Name="右後肢", Type=PartType.Normal, Bx=258,By=148,W=28,H=22, Hue=Hex("#5a8028"), Sweep=true, SweepAmp=62, SweepSpd=0.85f, SweepPhase=3f*Mathf.PI/2f },
+                        new PartVisDef{ Key="core", Name="頭部核心", Type=PartType.BossCore, Bx=160,By=78, W=40,H=36, Hue=Hex("#ffd23f"), Art="kaiju_lacera_head_core_intact", ArtScale=1.4f },
+                        new PartVisDef{ Key="fL", Name="左前肢", Type=PartType.Normal, Bx=82, By=112,W=32,H=24, Hue=Hex("#6a9030"), Sweep=true, SweepAmp=50, SweepSpd=1.4f, SweepPhase=0f, Art="kaiju_lacera_fore_limb_intact", ArtScale=1.7f },
+                        new PartVisDef{ Key="fR", Name="右前肢", Type=PartType.Normal, Bx=238,By=112,W=32,H=24, Hue=Hex("#6a9030"), Sweep=true, SweepAmp=50, SweepSpd=1.4f, SweepPhase=Mathf.PI, Art="kaiju_lacera_fore_limb_intact", FlipX=true, ArtScale=1.7f },
+                        new PartVisDef{ Key="hL", Name="左後肢", Type=PartType.Normal, Bx=62, By=148,W=28,H=22, Hue=Hex("#5a8028"), Sweep=true, SweepAmp=62, SweepSpd=0.85f, SweepPhase=Mathf.PI/2f, Art="kaiju_lacera_hind_limb_intact", ArtScale=1.9f },
+                        new PartVisDef{ Key="hR", Name="右後肢", Type=PartType.Normal, Bx=258,By=148,W=28,H=22, Hue=Hex("#5a8028"), Sweep=true, SweepAmp=62, SweepSpd=0.85f, SweepPhase=3f*Mathf.PI/2f, Art="kaiju_lacera_hind_limb_intact", FlipX=true, ArtScale=1.9f },
                     }
                 };
             }
@@ -156,15 +160,15 @@ namespace KaijuBreaker.Prototype
             {
                 Id = "VOLTWYRM", Name = "熾蛇", NameEn = "VOLTWYRM",
                 ShineWeapon = "L4 穿透推薦", CoreName = "能量核心", BgColor = Hex("#090806"),
-                PatternType = "voltwyrm",
+                PatternType = "voltwyrm", ArtFolder = "Voltwyrm", BodyArt = null,
                 Parts = new[]
                 {
-                    new PartVisDef{ Key="core", Name="核心節",  Type=PartType.BossCore, Bx=160,By=46, W=38,H=34, Hue=Hex("#ffd23f") },
-                    new PartVisDef{ Key="sL", Name="左能量盾", Type=PartType.Armored, Bx=104,By=48, W=30,H=28, Hue=Hex("#2a2a80") },
-                    new PartVisDef{ Key="sR", Name="右能量盾", Type=PartType.Armored, Bx=216,By=48, W=30,H=28, Hue=Hex("#2a2a80") },
-                    new PartVisDef{ Key="n1", Name="頸段一",   Type=PartType.Normal,  Bx=160,By=90, W=28,H=22, Hue=Hex("#b87020") },
-                    new PartVisDef{ Key="n2", Name="頸段二",   Type=PartType.Normal,  Bx=160,By=116,W=28,H=22, Hue=Hex("#b87020") },
-                    new PartVisDef{ Key="n3", Name="頸段三",   Type=PartType.Normal,  Bx=160,By=142,W=28,H=22, Hue=Hex("#b87020") },
+                    new PartVisDef{ Key="core", Name="核心節",  Type=PartType.BossCore, Bx=160,By=46, W=38,H=34, Hue=Hex("#ffd23f"), Art="kaiju_voltwyrm_core_node", ArtScale=1.5f },
+                    new PartVisDef{ Key="sL", Name="左能量盾", Type=PartType.Armored, Bx=104,By=48, W=30,H=28, Hue=Hex("#2a2a80"), Art="kaiju_voltwyrm_shield_intact", ArtStripped="kaiju_voltwyrm_shield_stripped", ArtScale=1.4f },
+                    new PartVisDef{ Key="sR", Name="右能量盾", Type=PartType.Armored, Bx=216,By=48, W=30,H=28, Hue=Hex("#2a2a80"), Art="kaiju_voltwyrm_shield_intact", ArtStripped="kaiju_voltwyrm_shield_stripped", FlipX=true, ArtScale=1.4f },
+                    new PartVisDef{ Key="n1", Name="頸段一",   Type=PartType.Normal,  Bx=160,By=90, W=28,H=22, Hue=Hex("#b87020"), Art="kaiju_voltwyrm_neck_seg", ArtScale=1.5f },
+                    new PartVisDef{ Key="n2", Name="頸段二",   Type=PartType.Normal,  Bx=160,By=116,W=28,H=22, Hue=Hex("#b87020"), Art="kaiju_voltwyrm_neck_seg", ArtScale=1.5f },
+                    new PartVisDef{ Key="n3", Name="頸段三",   Type=PartType.Normal,  Bx=160,By=142,W=28,H=22, Hue=Hex("#b87020"), Art="kaiju_voltwyrm_neck_seg", ArtScale=1.5f },
                 }
             };
         }
@@ -195,6 +199,7 @@ namespace KaijuBreaker.Prototype
 
         // ── Active run state ───────────────────────────────────────────────────
         private BossDef _bossDef;
+        private GameObject _bossBody;   // real-art body-base backdrop (behind parts); null if the boss has none
         private float _diffMult = 1f;
         private int _pidx, _sidx;
         private sealed class AmmoState { public int Ammo; public bool Reloading; public float ReloadT; }
@@ -226,6 +231,7 @@ namespace KaijuBreaker.Prototype
             public float Cx, Cy;
             public GameObject Go; public SpriteRenderer Body; public Transform HeatBar, BreakBar;
             public float FireT = 1f; public float FlashT; public float StaggerRemaining;
+            public Sprite Intact, Stripped; public bool HasArt; public float ArtBaseScale = 1f;
         }
         private readonly Dictionary<int, PartRuntime> _partsVis = new Dictionary<int, PartRuntime>(8);
 
@@ -765,6 +771,7 @@ namespace KaijuBreaker.Prototype
                     _bossEnterAnim = 1.0f;
                     // Fix #1: boss part visuals are hidden throughout STAGE — reveal them only now, as the boss enters.
                     foreach (var pr in _partsVis.Values) { pr.Go.SetActive(true); pr.Cy = pr.Def.By - 180f; }
+                    if (_bossBody != null) _bossBody.SetActive(true);
                 }
             }
         }
@@ -809,6 +816,7 @@ namespace KaijuBreaker.Prototype
                 _bossEnterAnim = Mathf.Max(0f, _bossEnterAnim - dt * 1.4f);
                 float off = _bossEnterAnim * -180f;
                 foreach (var pr in _partsVis.Values) { pr.Cy = pr.Def.By + off; pr.Go.transform.position = ToWorld(pr.Cx, pr.Cy); }
+                if (_bossBody != null) _bossBody.transform.position = ToWorld(160f, 104f + off);
                 return;
             }
 
@@ -1419,8 +1427,27 @@ namespace KaijuBreaker.Prototype
         // Part visuals
         // ═════════════════════════════════════════════════════════════════════
 
+        private string ArtPath(string name) => "Assets/_Project/Art/Kaiju/" + _bossDef.ArtFolder + "/" + name + ".png";
+
         private void BuildPartVisuals()
         {
+            // Real-art body-base backdrop behind all parts (if the boss ships one). CARAPEX/LACERA have a
+            // torso base; VOLTWYRM's body is its stacked neck segments, so BodyArt is null there.
+            if (!string.IsNullOrEmpty(_bossDef.BodyArt))
+            {
+                var bodySprite = LoadArt(ArtPath(_bossDef.BodyArt));
+                if (bodySprite != null)
+                {
+                    var bgo = new GameObject("BossBody");
+                    bgo.transform.SetParent(_worldRoot, false);
+                    bgo.transform.position = ToWorld(160f, 104f);
+                    float s = (150f * WorldScale) / bodySprite.bounds.size.y;
+                    bgo.transform.localScale = new Vector3(s, s, 1f);
+                    var bsr = bgo.AddComponent<SpriteRenderer>(); bsr.sprite = bodySprite; bsr.sortingOrder = 1; bsr.color = Color.white;
+                    _bossBody = bgo;
+                }
+            }
+
             foreach (var def in _bossDef.Parts)
             {
                 int id = _parts.GetPartId(def.Key);
@@ -1429,13 +1456,33 @@ namespace KaijuBreaker.Prototype
 
                 var go = new GameObject("Part_" + def.Key);
                 go.transform.SetParent(_worldRoot, false);
-                go.transform.localScale = ToWorldSize(def.W, def.H);
-                var sr = go.AddComponent<SpriteRenderer>(); sr.sprite = _sprite; sr.sortingOrder = 2; sr.color = def.Hue;
+                var sr = go.AddComponent<SpriteRenderer>();
 
-                var heatBar = MakeBar(go.transform, new Vector3(0, def.H * 0.5f * WorldScale + 0.1f, 0), new Color(1f, 0.55f, 0.1f));
-                var breakBar = MakeBar(go.transform, new Vector3(0, -(def.H * 0.5f * WorldScale) - 0.1f, 0), new Color(1f, 0.3f, 0.3f));
+                Sprite intact = string.IsNullOrEmpty(def.Art) ? null : LoadArt(ArtPath(def.Art));
+                Sprite stripped = string.IsNullOrEmpty(def.ArtStripped) ? null : LoadArt(ArtPath(def.ArtStripped));
 
-                var pr = new PartRuntime { Id = id, Def = def, Cx = def.Bx, Cy = def.By, Go = go, Body = sr, HeatBar = heatBar, BreakBar = breakBar };
+                Transform heatBar = null, breakBar = null;
+                float baseScale = 1f;
+                if (intact != null)
+                {
+                    // Real art: fit the sprite to the part's design height (aspect preserved via bounds), so
+                    // the source PNG can be any resolution. Core renders above limbs; all above the body base.
+                    sr.sprite = intact; sr.color = Color.white;
+                    sr.sortingOrder = (def.Type == PartType.BossCore) ? 4 : 3;
+                    baseScale = (def.H * WorldScale * 1.7f * def.ArtScale) / intact.bounds.size.y;
+                    go.transform.localScale = new Vector3(def.FlipX ? -baseScale : baseScale, baseScale, 1f);
+                    // State shown via tint + sprite swap (RefreshPartVisuals) — skip the crude debug bars.
+                }
+                else
+                {
+                    go.transform.localScale = ToWorldSize(def.W, def.H);
+                    sr.sprite = _sprite; sr.color = def.Hue; sr.sortingOrder = 2;
+                    heatBar = MakeBar(go.transform, new Vector3(0, def.H * 0.5f * WorldScale + 0.1f, 0), new Color(1f, 0.55f, 0.1f));
+                    breakBar = MakeBar(go.transform, new Vector3(0, -(def.H * 0.5f * WorldScale) - 0.1f, 0), new Color(1f, 0.3f, 0.3f));
+                }
+
+                var pr = new PartRuntime { Id = id, Def = def, Cx = def.Bx, Cy = def.By, Go = go, Body = sr,
+                    HeatBar = heatBar, BreakBar = breakBar, Intact = intact, Stripped = stripped, HasArt = intact != null, ArtBaseScale = baseScale };
                 _partsVis[id] = pr;
             }
 
@@ -1443,6 +1490,7 @@ namespace KaijuBreaker.Prototype
             // they must stay invisible through the whole STAGE (mob-wave) phase — they are only
             // revealed by the boss-entrance transition in UpdateStagePhase (SetActive(true) there).
             foreach (var pr in _partsVis.Values) pr.Go.SetActive(false);
+            if (_bossBody != null) _bossBody.SetActive(false);
         }
 
         private Transform MakeBar(Transform parent, Vector3 lp, Color c)
@@ -1459,13 +1507,32 @@ namespace KaijuBreaker.Prototype
             {
                 if (!_partsVis.TryGetValue(kv.Key, out var pr)) continue;
                 var part = kv.Value;
-                if (part.BreakState == BreakState.Broken) continue;
+                if (part.BreakState == BreakState.Broken) { if (pr.HasArt && pr.Go.activeSelf) pr.Go.SetActive(false); continue; }
 
+                bool armored = part.PartType == PartType.Armored;
+
+                // ── Real-art parts: swap intact↔stripped on armor state, tint subtly for heat/core ──
+                if (pr.HasArt)
+                {
+                    if (armored && pr.Stripped != null)
+                        pr.Body.sprite = (part.ArmorState == ArmorState.Intact) ? pr.Intact : pr.Stripped;
+                    Color artTint = Color.white;
+                    if (part.PartType == PartType.BossCore)
+                    {
+                        float pulse = 0.5f + 0.5f * Mathf.Sin(_t * 6f);
+                        artTint = Color.Lerp(Color.white, new Color(1f, 0.92f, 0.72f), pulse * 0.45f);   // gentle warm core pulse
+                    }
+                    else if (part.HeatState == HeatState.Softened) artTint = new Color(1f, 0.6f, 0.4f);   // warm = heated/softened
+                    else if (pr.StaggerRemaining > 0f) artTint = new Color(0.75f, 0.9f, 1f);              // cool flash on stagger
+                    pr.Body.color = pr.FlashT > 0f ? Color.white : artTint;
+                    continue;
+                }
+
+                // ── Procedural-box parts (fallback when art is missing) ──
                 if (pr.HeatBar != null) pr.HeatBar.localScale = new Vector3(Mathf.Clamp01(part.HCurrent / part.HMax) * 1.7f, 0.05f, 1f);
                 if (pr.BreakBar != null) pr.BreakBar.localScale = new Vector3(Mathf.Clamp01(part.BCurrent / part.BMax) * 1.7f, 0.05f, 1f);
 
                 Color target;
-                bool armored = part.PartType == PartType.Armored;
                 bool armorIntact = armored && part.ArmorState == ArmorState.Intact;
                 if (part.PartType == PartType.BossCore)
                 {
@@ -1525,6 +1592,7 @@ namespace KaijuBreaker.Prototype
             if (_pod != null) { Destroy(_pod.Go); _pod = null; }
             foreach (var pr in _partsVis.Values) if (pr.Go != null) Destroy(pr.Go);
             _partsVis.Clear();
+            if (_bossBody != null) { Destroy(_bossBody); _bossBody = null; }
         }
 
         // ═════════════════════════════════════════════════════════════════════
