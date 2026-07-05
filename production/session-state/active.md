@@ -4,6 +4,15 @@
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
 *Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full done/todo in `進度結算-2026-07-03.md`.*
 
+## Session 5 (2026-07-05) — art / rough-demo pass (on top of the economy epic below)
+- **UI/HUD art pass** (`896b9b1`, pushed): HUD/UI spec `design/assets/specs/hud-ui-assets.md`; prototype IMGUI restyled to art-bible cold palette + a `_pixelFont` hook (one chokepoint). **Font**: default Ark Pixel 16px, then director steered to **more tech-feel** → interactive font-decision **Artifact** published (live HUD mockup + canvas pixel-text + shortlist: Ark Pixel Mono / GNU Unifont / Galmuri), source `design/assets/font-demo.html` (untracked → committing now). Director still to pick + drop a TTF → assign `_pixelFont`.
+- **Master asset manifest** (`dd1645a`): `design/assets/MANIFEST.md` — 56 sprite/VFX + font + UI icons batch worklist, all PENDING.
+- **AI-art pipeline confirmed + tested**: Unity MCP `generate_image` routes to **fal.ai / OpenRouter** (bring-your-own-key, imports straight to Assets as sprites). Director added a fal key → **auth verified through MCP**, BUT fal account balance is **$0 ("exhausted balance")** → needs a **~$5 top-up** at fal.ai/dashboard/billing before generating. Cost: FLUX **schnell $0.003/MP**, **dev $0.025/MP** → whole MVP ≈ $1–12; validated schnell is the cheap workhorse. (`generate_model` = Tripo/Meshy 3D — unused.)
+- **Rough-demo art via FREE CC0 (Kenney Pixel Shmup)** (`7d06e12`, `7d603eb`): pack committed under `Assets/_Project/Art/Kenny/`. Prototype ships wired — **player = blue, mob = red, elite = grey heavy**, enemies rotated 180°; `LoadArt()` editor-loads sprites with **procedural fallback (plan B)** so nothing breaks. Ships enlarged (player ~2×, mob 28×26, elite 48×44; player hitbox is a fixed point so difficulty unchanged). Compiles clean.
+- **Still needs bespoke art (no free/off-the-shelf equivalent)**: the 3 Boss kaiju + breakable parts (SOFTENED/BROKEN states) + material/core icons → AI-gen (needs fal $5) or custom. Kenney terrain tiles deliberately NOT used (top-down grass/dirt doesn't fit the space/kaiju vertical shmup → keep the procedural starfield).
+- **Open art todo**: (a) optional — Kenney enemy-bullet swap / procedural nebula-parallax bg (both free); (b) fal $5 top-up → schnell-generate boss kaiju + icons from the specs; (c) drop the chosen pixel TTF → assign `_pixelFont`. **Director to Play `Stage01Prototype` and confirm ship size / overall feel.**
+- **Code track**: economy epic complete (below); next unblocked = **`difficulty` epic** (4 stories, pure C#, EditMode-testable).
+
 ## Session 5 progress (2026-07-05) — WHOLE economy epic + art specs (committed locally, NOT pushed)
 - **economy epic COMPLETE — all 5 stories, 210/210 EditMode GREEN** (was 144). `EconomyService` in `Scripts/Economy`:
   - 001 (`f384674`) per-break yield · 002 (`c39960e`) full-clear essence · 004 (`acaf442`) Tier 0→3 `TryUpgrade` · 005 (`7caca3b`) anti-dominant TTB guard · 003 (`b96d5a9`) persistence push-side.
