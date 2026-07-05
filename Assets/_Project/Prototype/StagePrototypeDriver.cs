@@ -829,7 +829,7 @@ namespace KaijuBreaker.Prototype
             float breath = Mathf.Sin(_t * 1.3f);
             float driftY = breath * 3.5f;
             float driftX;
-            if (_bossDef.PatternType == "carapex")      driftX = Mathf.Sin(_t * 0.8f) * 20f;                                  // slow horizontal sweep (GDD §3)
+            if (_bossDef.PatternType == "carapex")      driftX = Mathf.Sin(_t * 0.7f) * 10f;                                  // gentle horizontal sway — small enough that parts stay aimable
             else if (_bossDef.PatternType == "voltwyrm") driftX = Mathf.Sin(_t * 0.7f) * 13f + Mathf.Sin(_t * 1.7f + 1f) * 6f; // S-curve slither
             else                                         driftX = Mathf.Sin(_t * 0.6f) * 7f;                                   // lacera gentle sway
 
@@ -969,7 +969,7 @@ namespace KaijuBreaker.Prototype
                     {
                         if (!_parts.IsPartAlive(pr.Id)) continue;
                         if (b.Pierce && b.HitParts.Contains(pr.Id)) continue;
-                        if (Overlaps(b.X, b.Y, pr.Cx, pr.Cy, pr.Def.W, pr.Def.H))
+                        if (Overlaps(b.X, b.Y, pr.Cx, pr.Cy, pr.Def.W * 1.5f, pr.Def.H * 1.5f))   // generous laser hit-box — small parts stay easy to heat
                         {
                             if (b.Pierce) b.HitParts.Add(pr.Id);
                             pr.FlashT = 0.045f;   // shorter than the laser fire interval so each hit flashes once, no smear
@@ -1943,6 +1943,7 @@ namespace KaijuBreaker.Prototype
         // they're heating (orange heat bar), when it softens (bar turns gold + "弱點露出"), and break-fill (red).
         private void DrawPartMeters()
         {
+            var white = Texture2D.whiteTexture;   // must be WHITE — GUI.color multiplies, so a dark tex stays dark
             foreach (var pr in _partsVis.Values)
             {
                 if (pr.Go == null || !pr.Go.activeSelf || !_parts.IsPartAlive(pr.Id)) continue;
@@ -1950,25 +1951,27 @@ namespace KaijuBreaker.Prototype
                 Vector3 wsp = _cam.WorldToScreenPoint(pr.Go.transform.position);
                 if (wsp.z < 0f) continue;
                 float cx = wsp.x, cy = Screen.height - wsp.y;
-                float bw = 48f, bh = 5f, bx = cx - bw * 0.5f, by = cy - 46f;
+                float bw = 52f, bh = 6f, bx = cx - bw * 0.5f, by = cy - 50f;
                 bool soft = part.HeatState == HeatState.Softened;
                 bool armorOpen = part.PartType == PartType.Armored && (part.ArmorState != ArmorState.Intact || soft);
 
+                // Row 1 — HEAT: fills 0→100% as you laser it; turns gold at SOFTENED (weak point opens).
                 float heatFrac = part.HMax > 0f ? Mathf.Clamp01(part.HCurrent / part.HMax) : 0f;
-                GUI.color = new Color(0f, 0f, 0f, 0.55f); GUI.DrawTexture(new Rect(bx - 1, by - 1, bw + 2, bh + 2), _guiBgTex);
-                GUI.color = soft ? new Color(1f, 0.78f, 0.25f) : new Color(1f, 0.45f, 0.12f);
-                GUI.DrawTexture(new Rect(bx, by, bw * heatFrac, bh), _guiBgTex);
+                GUI.color = new Color(0f, 0f, 0f, 0.6f); GUI.DrawTexture(new Rect(bx - 1, by - 1, bw + 2, bh + 2), white);
+                GUI.color = soft ? new Color(1f, 0.82f, 0.2f) : new Color(1f, 0.5f, 0.12f);
+                GUI.DrawTexture(new Rect(bx, by, bw * heatFrac, bh), white);
 
-                float breakFrac = part.BMax > 0f ? Mathf.Clamp01(part.BCurrent / part.BMax) : 0f;
+                // Row 2 — DURABILITY (HP-style): starts full, DRAINS to empty as it breaks. Green→red.
+                float durFrac = part.BMax > 0f ? Mathf.Clamp01(1f - part.BCurrent / part.BMax) : 1f;
                 float by2 = by + bh + 2f;
-                GUI.color = new Color(0f, 0f, 0f, 0.55f); GUI.DrawTexture(new Rect(bx - 1, by2 - 1, bw + 2, bh + 2), _guiBgTex);
-                GUI.color = new Color(1f, 0.32f, 0.32f);
-                GUI.DrawTexture(new Rect(bx, by2, bw * breakFrac, bh), _guiBgTex);
+                GUI.color = new Color(0f, 0f, 0f, 0.6f); GUI.DrawTexture(new Rect(bx - 1, by2 - 1, bw + 2, bh + 2), white);
+                GUI.color = Color.Lerp(new Color(1f, 0.25f, 0.2f), new Color(0.4f, 1f, 0.5f), durFrac);
+                GUI.DrawTexture(new Rect(bx, by2, bw * durFrac, bh), white);
                 GUI.color = Color.white;
 
                 if (part.PartType == PartType.Armored)
-                    GUI.Label(new Rect(bx - 12f, by - 17f, bw + 24f, 14f),
-                        armorOpen ? "弱點露出！" : "護甲：燒軟開甲",
+                    GUI.Label(new Rect(bx - 16f, by - 18f, bw + 32f, 14f),
+                        armorOpen ? "弱點露出！可破" : "護甲鎖定（雷射燒軟）",
                         Style(10, FontStyle.Bold, TextAnchor.MiddleCenter, armorOpen ? UiAmber : UiTextDim));
             }
         }
