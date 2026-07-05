@@ -13,6 +13,14 @@ namespace KaijuBreaker.Prototype
     {
         [SerializeField] private string _stageScene = "Stage01Prototype";
 
+        // Optional pixel bitmap font (art-bible §7.2). Assign the same font asset as the stage HUD.
+        // See design/assets/specs/hud-ui-assets.md for the recommended fonts + import settings.
+        [SerializeField] private Font _pixelFont;
+
+        private Texture2D _bgTex;
+
+        private static Color Hex(string h) { ColorUtility.TryParseHtmlString(h, out var c); return c; }
+
         private void Update()
         {
             bool pressed =
@@ -26,18 +34,25 @@ namespace KaijuBreaker.Prototype
         /// <summary>Load the stage scene (hook a UGUI Button's onClick here too).</summary>
         public void StartGame() => SceneManager.LoadScene(_stageScene);
 
+        private GUIStyle Style(int size, Color color, FontStyle fs = FontStyle.Normal)
+        {
+            var s = new GUIStyle(GUI.skin.label)
+            { fontSize = size, alignment = TextAnchor.MiddleCenter, fontStyle = fs, wordWrap = false };
+            if (_pixelFont != null) s.font = _pixelFont;      // art-bible §7.2 pixel font
+            s.normal.textColor = color;
+            return s;
+        }
+
         private void OnGUI()
         {
-            var titleStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 48, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold
-            };
-            var subStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter };
+            // Deep-blue-black arcade backdrop (art-bible §7.5 Meta background #0A0E1A).
+            if (_bgTex == null) { _bgTex = new Texture2D(1, 1); _bgTex.SetPixel(0, 0, Hex("#0A0E1A")); _bgTex.Apply(); }
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _bgTex);
 
             float w = Screen.width, h = Screen.height;
-            GUI.Label(new Rect(0, h * 0.30f, w, 80), "殲獸戰機 / KAIJU BREAKER", titleStyle);
-            GUI.Label(new Rect(0, h * 0.45f, w, 40), "— prototype —", subStyle);
-            GUI.Label(new Rect(0, h * 0.60f, w, 40), "Press any key / tap to START", subStyle);
+            GUI.Label(new Rect(0, h * 0.30f, w, 80), "殲獸戰機 / KAIJU BREAKER", Style(48, Hex("#40F8FF"), FontStyle.Bold)); // cold-cyan title
+            GUI.Label(new Rect(0, h * 0.45f, w, 40), "— prototype —", Style(22, Hex("#8AA0B0")));
+            GUI.Label(new Rect(0, h * 0.60f, w, 40), "Press any key / tap to START", Style(22, Hex("#00C0E0")));
         }
     }
 }

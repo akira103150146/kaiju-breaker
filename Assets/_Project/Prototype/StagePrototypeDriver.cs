@@ -44,6 +44,12 @@ namespace KaijuBreaker.Prototype
         // Toggle in the Inspector to cheat-swap (1-4/5-8) while playtesting. Default OFF.
         [SerializeField] private bool _debugFreeWeaponSwap = false;
 
+        // Optional pixel bitmap font for the HUD (art-bible §7.2). Drop a pixel TTF/OTF font asset
+        // (e.g. Ark Pixel 16px / Cubic 11) into the project and assign it here — every OnGUI label
+        // picks it up via Style(). Leave null to fall back to the built-in font. See
+        // design/assets/specs/hud-ui-assets.md for the recommended fonts + import settings.
+        [SerializeField] private Font _pixelFont;
+
         // ── Weapon data tables (mirrors HTML PRIMARIES / SECONDARIES / DIFFICULTIES) ──
         private struct PrimaryDef { public WeaponId Id; public string Name; public string Niche; public float HeatDelta; public float FireRate; }
         private struct SecondaryDef { public WeaponId Id; public string Name; public string Niche; public int Mag; public float Reload; public float DmgBase; }
@@ -93,6 +99,22 @@ namespace KaijuBreaker.Prototype
         }
 
         private static Color Hex(string h) { ColorUtility.TryParseHtmlString(h, out var c); return c; }
+
+        // ── UI palette (art-bible §02 master palette + §07 UI/HUD style) ─────────
+        // Cold family = player / tech / UI chrome; warm reserved for kaiju + threat/warning.
+        private static readonly Color UiBgDeep   = Hex("#0A0E1A"); // §7.5 Meta background
+        private static readonly Color UiPanel    = Hex("#1A2030"); // §7.5 card base
+        private static readonly Color UiPanelSel = Hex("#1E4A66"); // selected card — cold cyan-blue
+        private static readonly Color UiPanelSel2= Hex("#1A5250"); // selected secondary — cold teal (primary vs secondary cue)
+        private static readonly Color UiAccent   = Hex("#40F8FF"); // §7.2 cold-cyan emphasis / selection
+        private static readonly Color UiTechBlue = Hex("#00C0E0"); // §02 Tech UI Blue — cold bars/frames
+        private static readonly Color UiButton   = Hex("#2080F0"); // §7.5 primary button
+        private static readonly Color UiDisabled = Hex("#303040"); // §7.5 disabled
+        private static readonly Color UiWarn     = Hex("#CC2200"); // §7.5 warm warning
+        private static readonly Color UiAmber    = Hex("#FFE060"); // §7.4 L3 charge-ready / kaiju threat (warm)
+        private static readonly Color UiKaijuSel = Hex("#5A2A1E"); // boss card selected — warm (kaiju = warm, on-brand)
+        private static readonly Color UiKaijuBg  = Hex("#241512"); // boss card base — deep warm
+        private static readonly Color UiTextDim  = Hex("#8AA0B0"); // secondary label — cold gray
 
         private static BossDef MakeBossDef(string id)
         {
@@ -254,7 +276,7 @@ namespace KaijuBreaker.Prototype
             _circle = MakeCircle();
             _diamondSprite = MakeDiamond();
             _hexSprite = MakeHexagon();
-            _guiBgTex = new Texture2D(1, 1); _guiBgTex.SetPixel(0, 0, new Color(0.03f, 0.035f, 0.07f, 1f)); _guiBgTex.Apply();
+            _guiBgTex = new Texture2D(1, 1); _guiBgTex.SetPixel(0, 0, UiBgDeep); _guiBgTex.Apply();
 
             _worldRoot = new GameObject("WorldRoot").transform;
 
@@ -1679,57 +1701,62 @@ namespace KaijuBreaker.Prototype
             }
         }
 
-        private GUIStyle Style(int size, FontStyle style = FontStyle.Normal, TextAnchor anchor = TextAnchor.UpperLeft)
-            => new GUIStyle(GUI.skin.label) { fontSize = size, fontStyle = style, alignment = anchor, wordWrap = false };
+        private GUIStyle Style(int size, FontStyle style = FontStyle.Normal, TextAnchor anchor = TextAnchor.UpperLeft, Color? color = null)
+        {
+            var s = new GUIStyle(GUI.skin.label) { fontSize = size, fontStyle = style, alignment = anchor, wordWrap = false };
+            if (_pixelFont != null) s.font = _pixelFont;          // art-bible §7.2 pixel font (one-place hook)
+            s.normal.textColor = color ?? Color.white;            // §7.2 primary text = white
+            return s;
+        }
 
         private void DrawLoadout()
         {
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _guiBgTex);
             float W = Screen.width, H = Screen.height;
-            GUI.Label(new Rect(0, H * 0.03f, W, 50), "殲獸戰機  KAIJU BREAKER", Style(30, FontStyle.Bold, TextAnchor.MiddleCenter));
-            GUI.Label(new Rect(0, H * 0.03f + 40, W, 30), "Vision Slice — 完整循環展示", Style(14, FontStyle.Normal, TextAnchor.MiddleCenter));
+            GUI.Label(new Rect(0, H * 0.03f, W, 50), "殲獸戰機  KAIJU BREAKER", Style(30, FontStyle.Bold, TextAnchor.MiddleCenter, UiAccent));
+            GUI.Label(new Rect(0, H * 0.03f + 40, W, 30), "Vision Slice — 完整循環展示", Style(14, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
 
             float colW = W * 0.42f;
             float leftX = W * 0.04f, rightX = W * 0.54f;
             float rowY = H * 0.16f, rowH = 46f;
 
-            GUI.Label(new Rect(leftX, rowY - 26, colW, 24), "主武器 PRIMARY [1-4]", Style(15, FontStyle.Bold));
+            GUI.Label(new Rect(leftX, rowY - 26, colW, 24), "主武器 PRIMARY [1-4]", Style(15, FontStyle.Bold, TextAnchor.UpperLeft, UiTechBlue));
             for (int i = 0; i < Primaries.Length; i++)
             {
                 var r = new Rect(leftX, rowY + i * (rowH + 4), colW, rowH);
                 bool sel = _choicePrimary == i;
-                GUI.backgroundColor = sel ? new Color(0.2f, 0.55f, 0.75f) : new Color(0.2f, 0.2f, 0.24f);
+                GUI.backgroundColor = sel ? UiPanelSel : UiPanel;
                 if (GUI.Button(r, "")) _choicePrimary = i;
-                GUI.Label(new Rect(r.x + 8, r.y + 3, r.width - 16, 20), (sel ? "✓ " : "") + Primaries[i].Name, Style(14, FontStyle.Bold));
-                GUI.Label(new Rect(r.x + 8, r.y + 23, r.width - 16, 20), Primaries[i].Niche, Style(11));
+                GUI.Label(new Rect(r.x + 8, r.y + 3, r.width - 16, 20), (sel ? "✓ " : "") + Primaries[i].Name, Style(14, FontStyle.Bold, TextAnchor.UpperLeft, sel ? UiAccent : Color.white));
+                GUI.Label(new Rect(r.x + 8, r.y + 23, r.width - 16, 20), Primaries[i].Niche, Style(11, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
             }
 
-            GUI.Label(new Rect(rightX, rowY - 26, colW, 24), "副武器 SECONDARY [5-8]", Style(15, FontStyle.Bold));
+            GUI.Label(new Rect(rightX, rowY - 26, colW, 24), "副武器 SECONDARY [5-8]", Style(15, FontStyle.Bold, TextAnchor.UpperLeft, UiTechBlue));
             for (int i = 0; i < Secondaries.Length; i++)
             {
                 var r = new Rect(rightX, rowY + i * (rowH + 4), colW, rowH);
                 bool sel = _choiceSecondary == i;
-                GUI.backgroundColor = sel ? new Color(0.75f, 0.45f, 0.2f) : new Color(0.24f, 0.2f, 0.18f);
+                GUI.backgroundColor = sel ? UiPanelSel2 : UiPanel;
                 if (GUI.Button(r, "")) _choiceSecondary = i;
-                GUI.Label(new Rect(r.x + 8, r.y + 3, r.width - 16, 20), (sel ? "✓ " : "") + Secondaries[i].Name, Style(14, FontStyle.Bold));
-                GUI.Label(new Rect(r.x + 8, r.y + 23, r.width - 16, 20), Secondaries[i].Niche, Style(11));
+                GUI.Label(new Rect(r.x + 8, r.y + 3, r.width - 16, 20), (sel ? "✓ " : "") + Secondaries[i].Name, Style(14, FontStyle.Bold, TextAnchor.UpperLeft, sel ? UiAccent : Color.white));
+                GUI.Label(new Rect(r.x + 8, r.y + 23, r.width - 16, 20), Secondaries[i].Niche, Style(11, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
             }
 
             float diffY = rowY + 4 * (rowH + 4) + 20;
-            GUI.Label(new Rect(leftX, diffY - 24, W * 0.9f, 22), "難度 DIFFICULTY [Q/E]", Style(15, FontStyle.Bold));
+            GUI.Label(new Rect(leftX, diffY - 24, W * 0.9f, 22), "難度 DIFFICULTY [Q/E]", Style(15, FontStyle.Bold, TextAnchor.UpperLeft, UiTechBlue));
             float diffW = (W * 0.92f) / 4f;
             for (int i = 0; i < Difficulties.Length; i++)
             {
                 var r = new Rect(leftX + i * diffW, diffY, diffW - 6, 44);
                 bool sel = _choiceDifficulty == i;
-                GUI.backgroundColor = sel ? new Color(0.7f, 0.65f, 0.2f) : new Color(0.2f, 0.2f, 0.18f);
+                GUI.backgroundColor = sel ? UiPanelSel : UiPanel;
                 if (GUI.Button(r, "")) _choiceDifficulty = i;
-                GUI.Label(new Rect(r.x + 4, r.y + 2, r.width - 8, 20), Difficulties[i].Label, Style(13, FontStyle.Bold, TextAnchor.MiddleCenter));
-                GUI.Label(new Rect(r.x + 4, r.y + 22, r.width - 8, 18), Difficulties[i].Desc, Style(10, FontStyle.Normal, TextAnchor.MiddleCenter));
+                GUI.Label(new Rect(r.x + 4, r.y + 2, r.width - 8, 20), Difficulties[i].Label, Style(13, FontStyle.Bold, TextAnchor.MiddleCenter, sel ? UiAccent : Color.white));
+                GUI.Label(new Rect(r.x + 4, r.y + 22, r.width - 8, 18), Difficulties[i].Desc, Style(10, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
             }
 
             float bossY = diffY + 60;
-            GUI.Label(new Rect(leftX, bossY - 24, W * 0.9f, 22), "目標 TARGET [Z/X/C]", Style(15, FontStyle.Bold));
+            GUI.Label(new Rect(leftX, bossY - 24, W * 0.9f, 22), "目標 TARGET [Z/X/C]", Style(15, FontStyle.Bold, TextAnchor.UpperLeft, UiTechBlue));
             string[] bossNames = { "鎧殼獸 CARAPEX", "刃肢獸 LACERA", "熾蛇 VOLTWYRM" };
             string[] bossSub = { "甲殼重裝・L2×M3推薦", "移動四肢・M1追蹤推薦", "縱列蛇身・L4穿透推薦" };
             float bossW = (W * 0.92f) / 3f;
@@ -1737,26 +1764,27 @@ namespace KaijuBreaker.Prototype
             {
                 var r = new Rect(leftX + i * bossW, bossY, bossW - 6, 50);
                 bool sel = _choiceBoss == BossIds[i];
-                GUI.backgroundColor = sel ? new Color(0.65f, 0.28f, 0.2f) : new Color(0.2f, 0.15f, 0.13f);
+                GUI.backgroundColor = sel ? UiKaijuSel : UiKaijuBg;   // kaiju = warm (on-brand, §01)
                 if (GUI.Button(r, "")) _choiceBoss = BossIds[i];
-                GUI.Label(new Rect(r.x + 4, r.y + 2, r.width - 8, 22), bossNames[i], Style(13, FontStyle.Bold, TextAnchor.MiddleCenter));
-                GUI.Label(new Rect(r.x + 4, r.y + 26, r.width - 8, 20), bossSub[i], Style(10, FontStyle.Normal, TextAnchor.MiddleCenter));
+                GUI.Label(new Rect(r.x + 4, r.y + 2, r.width - 8, 22), bossNames[i], Style(13, FontStyle.Bold, TextAnchor.MiddleCenter, sel ? UiAmber : Color.white));
+                GUI.Label(new Rect(r.x + 4, r.y + 26, r.width - 8, 20), bossSub[i], Style(10, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
             }
             GUI.backgroundColor = Color.white;
 
             float sumY = bossY + 66;
             var bd = MakeBossDef(_choiceBoss);
             GUI.Label(new Rect(leftX, sumY, W * 0.9f, 24),
-                Primaries[_choicePrimary].Name + " ＋ " + Secondaries[_choiceSecondary].Name, Style(14, FontStyle.Bold));
+                Primaries[_choicePrimary].Name + " ＋ " + Secondaries[_choiceSecondary].Name, Style(14, FontStyle.Bold, TextAnchor.UpperLeft, UiAccent));
             GUI.Label(new Rect(leftX, sumY + 22, W * 0.9f, 22),
-                "vs " + bd.Name + " | " + bd.ShineWeapon + " | 密度 ×" + Difficulties[_choiceDifficulty].Mult.ToString("0.0"), Style(12));
+                "vs " + bd.Name + " | " + bd.ShineWeapon + " | 密度 ×" + Difficulties[_choiceDifficulty].Mult.ToString("0.0"), Style(12, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
 
             var startRect = new Rect(W * 0.5f - 90, sumY + 56, 180, 44);
-            GUI.backgroundColor = new Color(0.15f, 0.4f, 0.55f);
-            if (GUI.Button(startRect, "出發 START")) StartRun();
+            GUI.backgroundColor = UiButton;
+            if (GUI.Button(startRect, "")) StartRun();
+            GUI.Label(startRect, "出發 START", Style(18, FontStyle.Bold, TextAnchor.MiddleCenter));
             GUI.backgroundColor = Color.white;
 
-            GUI.Label(new Rect(0, H - 26, W, 22), "1-4主武 5-8副武 Q/E難度 Z/X/C目標 Enter開始", Style(11, FontStyle.Normal, TextAnchor.MiddleCenter));
+            GUI.Label(new Rect(0, H - 26, W, 22), "1-4主武 5-8副武 Q/E難度 Z/X/C目標 Enter開始", Style(11, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
         }
 
         private void DrawHud()
@@ -1766,13 +1794,15 @@ namespace KaijuBreaker.Prototype
             string phaseLabel = _phase == Phase.Boss
                 ? ("破壞 " + _partsBrokenCount + "/" + _totalNonCoreParts)
                 : (_stageSub == StageSub.Wave1 ? "第一波雜兵" : _stageSub == StageSub.Wave2 ? "第二波雜兵" : "武器莢艙窗口");
-            GUI.Label(new Rect(10, 6, 260, 22), phaseLabel, Style(14, FontStyle.Bold));
+            GUI.Label(new Rect(10, 6, 260, 22), phaseLabel, Style(14, FontStyle.Bold, TextAnchor.UpperLeft, UiTechBlue));
             GUI.Label(new Rect(10, 26, 260, 20), "分數 " + _score + "  (" + _kills + " 擊殺)", Style(12));
             GUI.Label(new Rect(10, 44, 260, 20), "HP " + Mathf.CeilToInt(Mathf.Max(0, _phpCur)) + "/" + (int)PlayerMaxHp, Style(12));
             var hpRect = new Rect(10, 62, 140, 8);
+            GUI.backgroundColor = UiPanel;
             GUI.Box(hpRect, "");
-            GUI.backgroundColor = new Color(0.9f, 0.3f, 0.3f);
-            GUI.Box(new Rect(hpRect.x, hpRect.y, hpRect.width * Mathf.Clamp01(_phpCur / PlayerMaxHp), hpRect.height), "");
+            float hpFrac = Mathf.Clamp01(_phpCur / PlayerMaxHp);
+            GUI.backgroundColor = hpFrac < 0.3f ? UiWarn : UiTechBlue;   // player HP = cold; warm only when critical
+            GUI.Box(new Rect(hpRect.x, hpRect.y, hpRect.width * hpFrac, hpRect.height), "");
             GUI.backgroundColor = Color.white;
 
             if (_phase == Phase.Boss && _bossDef != null)
@@ -1782,63 +1812,67 @@ namespace KaijuBreaker.Prototype
                     if (kv.Value.PartType != PartType.BossCore) continue;
                     float frac = 1f - Mathf.Clamp01(kv.Value.BCurrent / kv.Value.BMax);
                     var r = new Rect(W * 0.5f - 130, 8, 260, 10);
+                    GUI.backgroundColor = UiPanel;
                     GUI.Box(r, "");
-                    GUI.backgroundColor = new Color(1f, 0.82f, 0.25f);
+                    GUI.backgroundColor = UiAmber;                     // kaiju core = warm amber threat
                     GUI.Box(new Rect(r.x, r.y, r.width * frac, r.height), "");
                     GUI.backgroundColor = Color.white;
-                    GUI.Label(new Rect(W * 0.5f - 130, 20, 260, 18), _bossDef.Name + " " + _bossDef.NameEn, Style(11, FontStyle.Bold, TextAnchor.MiddleCenter));
+                    GUI.Label(new Rect(W * 0.5f - 130, 20, 260, 18), _bossDef.Name + " " + _bossDef.NameEn, Style(11, FontStyle.Bold, TextAnchor.MiddleCenter, UiAmber));
                 }
             }
 
-            GUI.Label(new Rect(W - 130, 6, 120, 20), "素材 " + _matCount, Style(14, FontStyle.Bold, TextAnchor.MiddleRight));
+            GUI.Label(new Rect(W - 130, 6, 120, 20), "素材 " + _matCount, Style(14, FontStyle.Bold, TextAnchor.MiddleRight, UiAccent));
 
             float hudBaseY = Screen.height - 96;
-            GUI.Label(new Rect(10, hudBaseY, 220, 20), "P: " + Primaries[_pidx].Name, Style(13, FontStyle.Bold));
-            GUI.Label(new Rect(10, hudBaseY + 18, 260, 18), Primaries[_pidx].Niche, Style(10));
+            GUI.Label(new Rect(10, hudBaseY, 220, 20), "P: " + Primaries[_pidx].Name, Style(13, FontStyle.Bold, TextAnchor.UpperLeft, UiAccent));
+            GUI.Label(new Rect(10, hudBaseY + 18, 260, 18), Primaries[_pidx].Niche, Style(10, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
             if (_pidx == 2)
             {
                 var r = new Rect(10, hudBaseY + 38, 160, 8);
+                GUI.backgroundColor = UiPanel;
                 GUI.Box(r, "");
                 if (_l3Charging)
                 {
                     float fr = Mathf.Clamp01(_l3Charge / 1.5f);
-                    GUI.backgroundColor = fr >= 1f ? Color.white : new Color(0.38f, 0.82f, 1f);
+                    GUI.backgroundColor = fr >= 1f ? UiAmber : UiTechBlue;   // §7.4 charge cold → warm-yellow when ready
                     GUI.Box(new Rect(r.x, r.y, r.width * fr, r.height), "");
                     GUI.backgroundColor = Color.white;
-                    GUI.Label(new Rect(10, hudBaseY + 48, 220, 16), _l3Charge >= 1.5f ? "波動砲 READY — 放開 Z" : "蓄能中...", Style(10));
+                    GUI.Label(new Rect(10, hudBaseY + 48, 220, 16), _l3Charge >= 1.5f ? "波動砲 READY — 放開 Z" : "蓄能中...", Style(10, FontStyle.Normal, TextAnchor.UpperLeft, _l3Charge >= 1.5f ? UiAmber : UiTextDim));
                 }
                 else if (_l3Cooldown > 0f)
                 {
-                    GUI.backgroundColor = new Color(0.15f, 0.3f, 0.4f);
+                    GUI.backgroundColor = UiDisabled;
                     GUI.Box(new Rect(r.x, r.y, r.width * (1f - _l3Cooldown / 2.0f), r.height), "");
                     GUI.backgroundColor = Color.white;
-                    GUI.Label(new Rect(10, hudBaseY + 48, 220, 16), "冷卻 " + _l3Cooldown.ToString("0.0") + "s", Style(10));
+                    GUI.Label(new Rect(10, hudBaseY + 48, 220, 16), "冷卻 " + _l3Cooldown.ToString("0.0") + "s", Style(10, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
                 }
-                else GUI.Label(new Rect(10, hudBaseY + 48, 220, 16), "L3 READY [Z hold]", Style(10));
+                else GUI.Label(new Rect(10, hudBaseY + 48, 220, 16), "L3 READY [Z hold]", Style(10, FontStyle.Normal, TextAnchor.UpperLeft, UiAccent));
             }
 
             var swd = Secondaries[_sidx]; var ws = _ws != null ? _ws[_sidx] : null;
-            GUI.Label(new Rect(W - 230, hudBaseY, 220, 20), "S: " + swd.Name, Style(13, FontStyle.Bold, TextAnchor.UpperRight));
+            GUI.Label(new Rect(W - 230, hudBaseY, 220, 20), "S: " + swd.Name, Style(13, FontStyle.Bold, TextAnchor.UpperRight, UiAccent));
             if (ws != null)
             {
                 var pipR = new Rect(W - 230, hudBaseY + 20, 220, 10);
                 if (ws.Reloading)
                 {
+                    GUI.backgroundColor = UiPanel;
                     GUI.Box(pipR, "");
-                    GUI.backgroundColor = new Color(1f, 0.56f, 0.25f);
+                    GUI.backgroundColor = UiTechBlue;
                     GUI.Box(new Rect(pipR.x, pipR.y, pipR.width * (1f - ws.ReloadT / swd.Reload), pipR.height), "");
                     GUI.backgroundColor = Color.white;
-                    GUI.Label(new Rect(W - 230, hudBaseY + 32, 220, 16), "換彈 " + ws.ReloadT.ToString("0.0") + "s", Style(10, FontStyle.Normal, TextAnchor.UpperRight));
+                    GUI.Label(new Rect(W - 230, hudBaseY + 32, 220, 16), "換彈 " + ws.ReloadT.ToString("0.0") + "s", Style(10, FontStyle.Normal, TextAnchor.UpperRight, UiTextDim));
                 }
                 else
                 {
-                    GUI.Label(new Rect(W - 230, hudBaseY + 20, 220, 16), ws.Ammo + " / " + swd.Mag, Style(12, FontStyle.Normal, TextAnchor.UpperRight));
+                    bool low = ws.Ammo <= 1;
+                    GUI.Label(new Rect(W - 230, hudBaseY + 20, 220, 16), ws.Ammo + " / " + swd.Mag, Style(12, FontStyle.Bold, TextAnchor.UpperRight, low ? UiWarn : Color.white));
                 }
             }
 
-            GUI.Label(new Rect(10, Screen.height - 22, 200, 20), Difficulties[_choiceDifficulty].Label, Style(10));
-            GUI.Label(new Rect(W - 210, Screen.height - 22, 200, 20), _elapsed.ToString("0.0") + "s", Style(10, FontStyle.Normal, TextAnchor.UpperRight));
-            GUI.Label(new Rect(0, Screen.height - 22, W, 20), "R=返回選單  1-4/5-8換武器  空白鍵=副武器  Z蓄L3", Style(10, FontStyle.Normal, TextAnchor.UpperCenter));
+            GUI.Label(new Rect(10, Screen.height - 22, 200, 20), Difficulties[_choiceDifficulty].Label, Style(10, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
+            GUI.Label(new Rect(W - 210, Screen.height - 22, 200, 20), _elapsed.ToString("0.0") + "s", Style(10, FontStyle.Normal, TextAnchor.UpperRight, UiTextDim));
+            GUI.Label(new Rect(0, Screen.height - 22, W, 20), "R=返回選單  1-4/5-8換武器  空白鍵=副武器  Z蓄L3", Style(10, FontStyle.Normal, TextAnchor.UpperCenter, UiTextDim));
         }
 
         private void DrawFloats()
@@ -1861,11 +1895,13 @@ namespace KaijuBreaker.Prototype
         {
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _guiBgTex);
             float W = Screen.width, H = Screen.height;
-            GUI.Label(new Rect(0, H * 0.06f, W, 50), "狩獵完成", Style(30, FontStyle.Bold, TextAnchor.MiddleCenter));
-            GUI.Label(new Rect(0, H * 0.06f + 42, W, 30), _resultBossName + "  DEFEATED", Style(16, FontStyle.Normal, TextAnchor.MiddleCenter));
+            GUI.Label(new Rect(0, H * 0.06f, W, 50), "狩獵完成", Style(30, FontStyle.Bold, TextAnchor.MiddleCenter, UiAccent));
+            GUI.Label(new Rect(0, H * 0.06f + 42, W, 30), _resultBossName + "  DEFEATED", Style(16, FontStyle.Normal, TextAnchor.MiddleCenter, UiAmber));
 
             var boxR = new Rect(W * 0.15f, H * 0.22f, W * 0.7f, H * 0.42f);
+            GUI.backgroundColor = UiPanel;
             GUI.Box(boxR, "");
+            GUI.backgroundColor = Color.white;
             string[] labels =
             {
                 "破壞部位", "素材回收", "擊殺分數", _resultCoreName, "用時", "難度", "全部位破壞"
@@ -1883,24 +1919,28 @@ namespace KaijuBreaker.Prototype
             for (int i = 0; i < labels.Length; i++)
             {
                 float y = boxR.y + 10 + i * (boxR.height - 20) / labels.Length;
-                GUI.Label(new Rect(boxR.x + 12, y, boxR.width * 0.5f, 24), labels[i], Style(13));
-                GUI.Label(new Rect(boxR.x + boxR.width * 0.5f, y, boxR.width * 0.5f - 12, 24), values[i], Style(13, FontStyle.Bold, TextAnchor.UpperRight));
+                bool fullClearRow = i == labels.Length - 1;
+                GUI.Label(new Rect(boxR.x + 12, y, boxR.width * 0.5f, 24), labels[i], Style(13, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
+                Color vc = fullClearRow ? (_resultFullClear ? UiAccent : UiTextDim) : Color.white;
+                GUI.Label(new Rect(boxR.x + boxR.width * 0.5f, y, boxR.width * 0.5f - 12, 24), values[i], Style(13, FontStyle.Bold, TextAnchor.UpperRight, vc));
             }
 
             string msg = _resultFullClear ? "全破壞達成！精魄入袋。你是真正的獵人。"
                 : _resultPartsBroken >= Mathf.CeilToInt(_resultTotalParts * 0.5f) ? "你選擇了狩獵，而不只是擊殺。"
                 : _resultPartsBroken >= 1 ? "你拆了一個——還想再拆嗎？" : "你直接衝核心過關了。";
-            GUI.Label(new Rect(0, boxR.y + boxR.height + 16, W, 26), msg, Style(13, FontStyle.Normal, TextAnchor.MiddleCenter));
+            GUI.Label(new Rect(0, boxR.y + boxR.height + 16, W, 26), msg, Style(13, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
 
             var r1 = new Rect(W * 0.5f - 190, boxR.y + boxR.height + 56, 170, 44);
             var r2 = new Rect(W * 0.5f + 20, boxR.y + boxR.height + 56, 170, 44);
-            GUI.backgroundColor = new Color(0.15f, 0.4f, 0.55f);
-            if (GUI.Button(r1, "再來一次 (R)")) StartRun();
-            GUI.backgroundColor = new Color(0.5f, 0.3f, 0.15f);
-            if (GUI.Button(r2, "回選單 (M)")) GoToLoadout();
+            GUI.backgroundColor = UiButton;
+            if (GUI.Button(r1, "")) StartRun();
+            GUI.Label(r1, "再來一次 (R)", Style(15, FontStyle.Bold, TextAnchor.MiddleCenter));
+            GUI.backgroundColor = UiPanelSel;
+            if (GUI.Button(r2, "")) GoToLoadout();
+            GUI.Label(r2, "回選單 (M)", Style(15, FontStyle.Bold, TextAnchor.MiddleCenter));
             GUI.backgroundColor = Color.white;
 
-            GUI.Label(new Rect(0, H - 26, W, 22), "R = 再挑戰　M = 選單", Style(11, FontStyle.Normal, TextAnchor.MiddleCenter));
+            GUI.Label(new Rect(0, H - 26, W, 22), "R = 再挑戰　M = 選單", Style(11, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
         }
     }
 }
