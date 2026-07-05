@@ -1939,8 +1939,43 @@ namespace KaijuBreaker.Prototype
             GUI.Label(new Rect(0, H - 26, W, 22), "1-4主武 5-8副武 Q/E難度 Z/X/C目標 Enter開始", Style(11, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
         }
 
+        // Per-part soften/break meters floating above each boss part — shows the player exactly which part
+        // they're heating (orange heat bar), when it softens (bar turns gold + "弱點露出"), and break-fill (red).
+        private void DrawPartMeters()
+        {
+            foreach (var pr in _partsVis.Values)
+            {
+                if (pr.Go == null || !pr.Go.activeSelf || !_parts.IsPartAlive(pr.Id)) continue;
+                var part = _parts.Parts[pr.Id];
+                Vector3 wsp = _cam.WorldToScreenPoint(pr.Go.transform.position);
+                if (wsp.z < 0f) continue;
+                float cx = wsp.x, cy = Screen.height - wsp.y;
+                float bw = 48f, bh = 5f, bx = cx - bw * 0.5f, by = cy - 46f;
+                bool soft = part.HeatState == HeatState.Softened;
+                bool armorOpen = part.PartType == PartType.Armored && (part.ArmorState != ArmorState.Intact || soft);
+
+                float heatFrac = part.HMax > 0f ? Mathf.Clamp01(part.HCurrent / part.HMax) : 0f;
+                GUI.color = new Color(0f, 0f, 0f, 0.55f); GUI.DrawTexture(new Rect(bx - 1, by - 1, bw + 2, bh + 2), _guiBgTex);
+                GUI.color = soft ? new Color(1f, 0.78f, 0.25f) : new Color(1f, 0.45f, 0.12f);
+                GUI.DrawTexture(new Rect(bx, by, bw * heatFrac, bh), _guiBgTex);
+
+                float breakFrac = part.BMax > 0f ? Mathf.Clamp01(part.BCurrent / part.BMax) : 0f;
+                float by2 = by + bh + 2f;
+                GUI.color = new Color(0f, 0f, 0f, 0.55f); GUI.DrawTexture(new Rect(bx - 1, by2 - 1, bw + 2, bh + 2), _guiBgTex);
+                GUI.color = new Color(1f, 0.32f, 0.32f);
+                GUI.DrawTexture(new Rect(bx, by2, bw * breakFrac, bh), _guiBgTex);
+                GUI.color = Color.white;
+
+                if (part.PartType == PartType.Armored)
+                    GUI.Label(new Rect(bx - 12f, by - 17f, bw + 24f, 14f),
+                        armorOpen ? "弱點露出！" : "護甲：燒軟開甲",
+                        Style(10, FontStyle.Bold, TextAnchor.MiddleCenter, armorOpen ? UiAmber : UiTextDim));
+            }
+        }
+
         private void DrawHud()
         {
+            DrawPartMeters();
             float W = Screen.width;
 
             string phaseLabel = _phase == Phase.Boss
