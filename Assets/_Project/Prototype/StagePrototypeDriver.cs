@@ -1694,14 +1694,17 @@ namespace KaijuBreaker.Prototype
             _playerT.gameObject.SetActive(false);
         }
 
-        // Load a project sprite by path (editor play-mode only; null in a build → procedural fallback).
+        // Runtime-safe sprite load. The art lives under Assets/_Project/Art/Resources/, so it loads via
+        // Resources.Load in BOTH the editor and a player build. (AssetDatabase is editor-only — it returns
+        // null in a build, which is why the old editor-only path showed only procedural fallback shapes.)
+        // assetPath is "Assets/_Project/Art/<sub>.<ext>"; the Resources key is <sub> without the extension.
         private static Sprite LoadArt(string assetPath)
         {
-#if UNITY_EDITOR
-            return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
-#else
-            return null;
-#endif
+            const string prefix = "Assets/_Project/Art/";
+            string key = assetPath.StartsWith(prefix) ? assetPath.Substring(prefix.Length) : assetPath;
+            int dot = key.LastIndexOf('.');
+            if (dot >= 0) key = key.Substring(0, dot);
+            return Resources.Load<Sprite>(key);
         }
 
         private GameObject NewQuad(string name, Color color, int sortOrder)

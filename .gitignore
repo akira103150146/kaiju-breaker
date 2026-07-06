@@ -153,3 +153,6 @@ Assets/Screenshots.meta
 
 # AI-gen source images (working area; imported sprites live in Assets/_Project/Art/Kaiju)
 design/assets/gemini-generation/
+
+# Player builds (EXE/APK) — not versioned
+/Builds/
