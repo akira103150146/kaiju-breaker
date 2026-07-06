@@ -1,7 +1,21 @@
+using KaijuBreaker.Core;
 using UnityEngine;
 
 namespace KaijuBreaker.Content
 {
+    /// <summary>
+    /// Integrity checksum algorithm for the save file (meta-progression-system.md §G.3).
+    /// CRC32 is the shipping default; SHA1 is reserved as a future upgrade option.
+    /// </summary>
+    public enum IntegrityAlgorithm
+    {
+        /// <summary>IEEE 802.3 CRC-32 — fast, detects accidental disk corruption (2⁻³² collision).</summary>
+        Crc32,
+
+        /// <summary>SHA-1 — reserved for a future upgrade; not implemented in the MVP.</summary>
+        Sha1
+    }
+
     /// <summary>
     /// Policy applied when the primary save file fails integrity validation (CRC32 mismatch).
     /// See meta-progression-system.md §E.2, §G.3.
@@ -78,6 +92,38 @@ namespace KaijuBreaker.Content
                  "meta-progression-system.md §G.3 integrity_fail_action = 'try_backup'.")]
         [SerializeField] private CorruptionPolicy _corruptionHandlingPolicy = CorruptionPolicy.UseBackup;
 
+        [Tooltip("Integrity checksum algorithm (meta-progression-system.md §G.3). CRC32 is the shipping default.")]
+        [SerializeField] private IntegrityAlgorithm _integrityAlgorithm = IntegrityAlgorithm.Crc32;
+
+        [Header("Async Write Behaviour (G.2)")]
+        [Tooltip("Async write queue depth. 1 = latest-snapshot overwrite (safest for mobile). Range [1, 3]. " +
+                 "meta-progression-system.md §G.2 save_async_queue_depth.")]
+        [SerializeField] private int _saveAsyncQueueDepth = 1;
+
+        [Tooltip("Background save worker idle poll interval, milliseconds. Range [50, 500]. " +
+                 "meta-progression-system.md §G.2 save_worker_idle_ms.")]
+        [SerializeField] private int _saveWorkerIdleMs = 100;
+
+        [Tooltip("Whether the backup copy save.bak.json is maintained (meta-progression-system.md §G.2 save_backup_enabled).")]
+        [SerializeField] private bool _saveBackupEnabled = true;
+
+        [Header("Migration (G.2)")]
+        [Tooltip("Maximum version gap the migration chain will bridge. Range [2, 5]. Older saves are refused. " +
+                 "meta-progression-system.md §G.2 save_max_migration_generations.")]
+        [SerializeField] private int _saveMaxMigrationGenerations = 3;
+
+        [Header("New Game / Tracked Content (G.1, G.4)")]
+        [Tooltip("Weapons owned from a fresh save (meta-progression-system.md §G.1 starting_owned_weapons). Default: L1, M1.")]
+        [SerializeField] private WeaponId[] _startingOwnedWeapons = { WeaponId.L1, WeaponId.M1 };
+
+        [Tooltip("Weapon ids tracked in the save's weapons{} map (meta-progression-system.md §G.4 active_weapon_ids). " +
+                 "Full version = all 8; a fresh save initialises every tracked weapon (owned only if in StartingOwnedWeapons).")]
+        [SerializeField] private WeaponId[] _activeWeaponIds =
+            { WeaponId.L1, WeaponId.L2, WeaponId.L3, WeaponId.L4, WeaponId.M1, WeaponId.M2, WeaponId.M3, WeaponId.M4 };
+
+        [Tooltip("Kaiju ids initialised in the save's kaiju_records{} map (meta-progression-system.md §G.4 active_kaiju_ids).")]
+        [SerializeField] private string[] _activeKaijuIds = { "CARAPEX", "LACERA", "VOLTWYRM" };
+
         // ── Public read-only properties ───────────────────────────────────────────
 
         /// <summary>
@@ -110,6 +156,30 @@ namespace KaijuBreaker.Content
         /// </summary>
         public CorruptionPolicy CorruptionHandlingPolicy => _corruptionHandlingPolicy;
 
+        /// <summary>Integrity checksum algorithm (meta-progression-system.md §G.3). Default CRC32.</summary>
+        public IntegrityAlgorithm IntegrityAlgorithm => _integrityAlgorithm;
+
+        /// <summary>Async write queue depth (meta-progression-system.md §G.2). Range [1, 3].</summary>
+        public int SaveAsyncQueueDepth => _saveAsyncQueueDepth;
+
+        /// <summary>Background save worker idle poll interval in ms (meta-progression-system.md §G.2). Range [50, 500].</summary>
+        public int SaveWorkerIdleMs => _saveWorkerIdleMs;
+
+        /// <summary>Whether the backup copy is maintained (meta-progression-system.md §G.2 save_backup_enabled).</summary>
+        public bool SaveBackupEnabled => _saveBackupEnabled;
+
+        /// <summary>Maximum migration version gap the chain will bridge (meta-progression-system.md §G.2). Range [2, 5].</summary>
+        public int SaveMaxMigrationGenerations => _saveMaxMigrationGenerations;
+
+        /// <summary>Weapons owned from a fresh save (meta-progression-system.md §G.1 starting_owned_weapons).</summary>
+        public WeaponId[] StartingOwnedWeapons => _startingOwnedWeapons;
+
+        /// <summary>Weapon ids tracked in the save's weapons{} map (meta-progression-system.md §G.4 active_weapon_ids).</summary>
+        public WeaponId[] ActiveWeaponIds => _activeWeaponIds;
+
+        /// <summary>Kaiju ids initialised in the save's kaiju_records{} map (meta-progression-system.md §G.4 active_kaiju_ids).</summary>
+        public string[] ActiveKaijuIds => _activeKaijuIds;
+
         // ── Editor validation ─────────────────────────────────────────────────────
 
         private void OnValidate()
@@ -129,8 +199,20 @@ namespace KaijuBreaker.Content
 
             if (_backupWriteEveryN < 1)
                 Debug.LogError(
-                    $"[SaveConfig] '{name}': BackupWriteEveryN must be >= 1. " +
-                    $"Current: {_backupWriteEveryN}.", this);
+                    $"[SaveConfig] '{name}': BackupWriteEveryN must be >= 1. Current: {_backupWriteEveryN}.", this);
+
+            if (_saveAsyncQueueDepth < 1 || _saveAsyncQueueDepth > 3)
+                Debug.LogError(
+                    $"[SaveConfig] '{name}': SaveAsyncQueueDepth must be in [1, 3]. Current: {_saveAsyncQueueDepth}.", this);
+
+            if (_saveWorkerIdleMs < 50 || _saveWorkerIdleMs > 500)
+                Debug.LogError(
+                    $"[SaveConfig] '{name}': SaveWorkerIdleMs must be in [50, 500]. Current: {_saveWorkerIdleMs}.", this);
+
+            if (_saveMaxMigrationGenerations < 2 || _saveMaxMigrationGenerations > 5)
+                Debug.LogError(
+                    $"[SaveConfig] '{name}': SaveMaxMigrationGenerations must be in [2, 5]. " +
+                    $"Current: {_saveMaxMigrationGenerations}.", this);
         }
     }
 }

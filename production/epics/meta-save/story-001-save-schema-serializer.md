@@ -1,12 +1,12 @@
 # Story 001: SaveData Schema & Canonical JSON Serializer
 
 > **Epic**: 元進度與存檔系統
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 11/11 EditMode GREEN, part of 307-case suite)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -138,7 +138,13 @@ Secondary ADR: ADR-0002 (IEventBus / ISaveService interface placement in `Core`)
 **Required evidence**: `Assets/_Project/Tests/Meta/save_schema_serializer_test.cs` — must exist and all tests pass
 *(ADR-0005 overrides coding-standards path: Unity Test Framework requires tests inside `Assets/_Project/Tests/<Module>/`; EditMode test assembly.)*
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 11/11 GREEN (`Assets/_Project/Tests/EditMode/Meta/save_schema_serializer_test.cs`, Unity MCP, 2026-07-06). Covers AC-1 (sorted keys), AC-2 (determinism), AC-3 (CRC32 std vector CBF43926 + edges), AC-4 (SaveConfig.OnValidate ranges via reflection+LogAssert), AC-5 (round-trip incl null best-time), AC-6 (byte-exact canonical reference).
+
+**Reconciliations vs story text** (surfaced for review):
+1. **`ICanonicalSerializer` lives in `KaijuBreaker.Meta`, not Core** — it references `SaveData` (a Meta type) and Core is the zero-dependency base (ADR-0005); Core cannot reference Meta. Interface + data type sit together in Meta; nothing outside Meta consumes it.
+2. **`ISaveService` read-query surface NOT (re)declared here** — the committed `ISaveService` (economy epic) already has a different, in-use surface. Extending it with `IsWeaponOwned`/`GetKaijuRecord`/`GetLastLoadout`/etc. belongs to the Meta service implementation (Story 006), added additively there. Story 001's actual unlocking value = schema + canonical serializer + CRC32 (Story 002/003 depend on those, not on ISaveService reads).
+3. **Serializer = hand-rolled (ADR-0004 Option C)** — dependency-free, guarantees canonical form. Canonical floats use invariant round-trip `"R"` → integral values render as `1` (not `1.0`). `SaveData` uses `long` for materials/stats (overflow safety, §H.2).
+4. `SaveConfig` extended with §G knobs: `IntegrityAlgorithm`, `SaveAsyncQueueDepth` [1,3], `SaveWorkerIdleMs` [50,500], `SaveBackupEnabled`, `SaveMaxMigrationGenerations` [2,5], `StartingOwnedWeapons`, `ActiveWeaponIds`, `ActiveKaijuIds`.
 
 ---
 
