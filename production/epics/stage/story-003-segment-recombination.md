@@ -1,12 +1,12 @@
 # Story 003: 波段池隨機重組（加權 Fisher-Yates + No-Repeat Window）
 
 > **Epic**: 關卡系統與 Run 流程
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 8/8 EditMode GREEN, part of 296-case suite)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -112,9 +112,15 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `Assets/_Project/Tests/Stage/segment_recombination_test.cs` — EditMode 單元測試，必須全部通過 【BLOCKING】
+- `Assets/_Project/Tests/EditMode/Stage/segment_recombination_test.cs` — EditMode 單元測試，必須全部通過 【BLOCKING】
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 8/8 GREEN (Unity MCP, 2026-07-06). Covers AC-1..AC-5 (count/order/no-repeat, difficulty gate + full-pool relaxation, pool≤N skip, 100-seed determinism, 100-seed coverage) + bookend pass-through + ctor guards.
+
+**Reconciliations vs story text** (implemented against committed Content contracts):
+1. **New Content fields added by this story**: `SegmentDef.DifficultyWeight` (int 1–5 `[Range]`, the ascending-order key — the SO had no weight field) and `StageDef.IntroSegment` / `StageDef.PreBossLullSegment` (SegmentDef refs — the SO had only a lull *duration*, no bookend segment refs).
+2. Ctor takes `DifficultyTier` enum, not the story's bare `int currentDifficultyTier` — type-safe, matches `IDifficultyProvider.CurrentTier`; gate compares enum ordering (avoids 1-based vs 0-based tier ambiguity; `DifficultyTier` is 0-based D1=0..D4=3).
+3. Step-2 difficulty relaxation restores the FULL pool (story's literal 還原至全池) — guaranteeing a full draw beats honouring the gate/no-repeat window.
+4. `SegmentSequence.BossKaijuId` is the `StageDef.BossKaijuId` string (no dedicated BossArenaRef type introduced).
 
 ---
 

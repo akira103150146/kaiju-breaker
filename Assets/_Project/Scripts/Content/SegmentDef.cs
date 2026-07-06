@@ -44,6 +44,12 @@ namespace KaijuBreaker.Content
                  "-1 = no elite wave in this segment (e.g. difficulty-gated or tutorial segments).")]
         [SerializeField] private int _eliteWaveIndex = -1;
 
+        [Header("Recombination Ordering")]
+        [Tooltip("Escalation weight used to order drawn segments lightest-first within a run " +
+                 "(stage-system.md §D.1 step 5). Range: [1, 5]; 1 = gentlest opener, 5 = heaviest pre-boss. " +
+                 "Equal weights may sit adjacent (order among equals is otherwise unspecified).")]
+        [SerializeField, Range(1, 5)] private int _difficultyWeight = 1;
+
         [Header("Difficulty Gate")]
         [Tooltip("Minimum difficulty tier required for this segment to enter the draw pool. " +
                  "Segments with min_difficulty_tier > current tier are excluded before shuffling " +
@@ -73,6 +79,12 @@ namespace KaijuBreaker.Content
         /// -1 indicates no elite wave.
         /// </summary>
         public int EliteWaveIndex => _eliteWaveIndex;
+
+        /// <summary>
+        /// Escalation weight (1–5) used to order drawn segments lightest-first within a run
+        /// (stage-system.md §D.1 step 5). Lower = earlier. Consumed by <c>SegmentRecombinator</c>.
+        /// </summary>
+        public int DifficultyWeight => _difficultyWeight;
 
         /// <summary>
         /// Minimum difficulty tier for this segment to be included in the run draw.

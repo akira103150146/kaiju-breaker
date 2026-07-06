@@ -51,6 +51,15 @@ namespace KaijuBreaker.Content
                  "stage-system.md §K.2 pre_boss_lull_duration default: 20 s. Must be > 0.")]
         [SerializeField] private float _preBossLullDurationSeconds = 20f;
 
+        [Header("Fixed Bookend Segments (D.1)")]
+        [Tooltip("Fixed introduction segment played first every run — NOT part of the randomised draw. " +
+                 "stage-system.md §D.1: 固定引入段. May be null in early prototypes.")]
+        [SerializeField] private SegmentDef _introSegment;
+
+        [Tooltip("Fixed pre-boss lull segment played after the escalating draw and before the boss — " +
+                 "NOT part of the randomised draw. stage-system.md §D.1: 固定前頭目喘息. May be null in early prototypes.")]
+        [SerializeField] private SegmentDef _preBossLullSegment;
+
         [Header("Segment Pool")]
         [Tooltip("All hand-crafted SegmentDef assets available for randomised draw this stage. " +
                  "Length must be >= SegmentDrawCount. " +
@@ -90,6 +99,18 @@ namespace KaijuBreaker.Content
 
         /// <summary>Duration in seconds of the fixed pre-boss lull phase.</summary>
         public float PreBossLullDurationSeconds => _preBossLullDurationSeconds;
+
+        /// <summary>
+        /// Fixed intro segment played first every run (stage-system.md §D.1). Not part of the
+        /// randomised draw. May be null in early prototypes without a dedicated intro asset.
+        /// </summary>
+        public SegmentDef IntroSegment => _introSegment;
+
+        /// <summary>
+        /// Fixed pre-boss lull segment (stage-system.md §D.1), played after the escalating draw and
+        /// before the boss arena. Not part of the randomised draw. May be null in early prototypes.
+        /// </summary>
+        public SegmentDef PreBossLullSegment => _preBossLullSegment;
 
         /// <summary>
         /// Hand-crafted segment pool for randomised per-run draw (stage-system.md §D.1).

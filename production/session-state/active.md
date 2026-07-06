@@ -9,8 +9,10 @@
 - **New Core events** (`Core/Events/RunEvents.cs`): `RunStateChanged{From,To}`、`LoadoutConfirmed`、`WeaponPodGrabbed{Weapon}`（後者 Story 005 擁有/發布，現先宣告供 RunController 訂閱）。
 - **Reconciliations** (見 story-001 檔尾): `EnqueueAutosave()`≠story 的 `EnqueueSave()`；`BossCoreBroke`≠`BossCoreBreak`；同幀 PartBroke 存檔合併是 meta-save 職責 → AC-4 用 ≥ 下限斷言。
 - **程式流程圖 Artifact**（給 director 看）: 5 視圖（架構分層 / 戰鬥資料流 / Run 狀態機 / 訂閱-發布對照 / 進度），冷色調對齊 art-bible。掃描實際 Subscribe/Publish 接線繪製。
-- **Next**: stage/story-003 波段重組（純 Logic，加權 Fisher-Yates + no-repeat）→ 002/004/005/006/007。
-- **Commits**: (待提交) RunController + Core events + tests + 狀態更新。未 push（依 [[commit-often-push-on-request]]）。
+- **★ stage/story-003 波段重組 DONE — 8/8 GREEN → suite 296/296**. `SegmentRecombinator`+`SegmentSequence`（`Scripts/Stage`，純 C#，注入 `System.Random` 決定性）：§D.1 六步驟（pool>N 時排除 no-repeat → 難度過濾 `(int)MinDifficultyTier<=currentTier`，剩<N 還原全池 → Fisher-Yates → 取N → `DifficultyWeight` 升序(OrderBy 穩定) → 組裝 intro+escalating+lull+bossId）。ctor 吃 `DifficultyTier` 列舉（非 story 的 int）。
+- **新增 Content 欄位**（content-config 已完成，這是向後相容擴充）：`SegmentDef.DifficultyWeight`(int 1-5 `[Range]`)、`StageDef.IntroSegment`/`PreBossLullSegment`(SegmentDef 引用)。既有 .asset 尚未建立故無痛。
+- **Next**: stage 剩 002/004/005/006/007 多為 **Integration（需 Unity prefab/spawn）**；或轉做 **meta-save**（純邏輯偏多，能把 `ISaveService`/`IWeaponTierQuery` 真實實作起來，解 economy/stage 的 autosave 尾巴）。待與導演確認方向。
+- **Commits**: story-001 已提交（`19612c3`）。story-003（待提交）：SegmentRecombinator + Content 欄位 + tests + 狀態。未 push（依 [[commit-often-push-on-request]]）。
 
 ## Session 6 (2026-07-05) — kaiju art into DEMO + armor-break bug hunt (all pushed)
 - **16 boss-kaiju sprites (Gemini Pro web) → green-screened → in-game**: director generated all 16 parts on a green screen; I chroma-keyed (numpy despill + autocrop), named+placed into `Assets/_Project/Art/Kaiju/{Carapex,Lacera,Voltwyrm}/` (16 sprites + 16 `_white.png` hit-flash silhouettes), imported Sprite/Point/Uncompressed, downscaled 55MB→3MB. Source PNGs gitignored (`design/assets/gemini-generation/`). Parts: CARAPEX core/mandible/dorsal(intact+stripped)/body-base · LACERA head/fore+hind limb/tail(intact+stripped)/stub/body-base · VOLTWYRM core/neck/shield(intact+stripped).
