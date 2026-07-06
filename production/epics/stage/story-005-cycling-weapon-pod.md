@@ -1,12 +1,12 @@
 # Story 005: 循環武器莢艙行為 — 下降、徘徊、循環顯示、拾取
 
 > **Epic**: 關卡系統與 Run 流程
-> **Status**: Ready
+> **Status**: ✅ Core complete (2026-07-06 — WeaponPodController 5/5 PlayMode GREEN). WeaponPodSpawner (event→instantiate glue) is a thin follow-up.
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -120,7 +120,13 @@
 **Required evidence**:
 - `Assets/_Project/Tests/PlayMode/Stage/pod_cycle_dwell_test.cs` — PlayMode 整合測試，必須全部通過 【BLOCKING】
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ `Assets/_Project/Tests/PlayMode/Stage/pod_cycle_dwell_test.cs` 5/5 GREEN (Unity MCP, 2026-07-06). Covers descend→dwell transition, weapon cycling (pool>1), single-weapon no-cycle, reachability band clamp during dwell, pickup grabs the CURRENT weapon + publishes WeaponPodGrabbed + vanishes, dwell-expiry→despawn. `Assets/_Project/Prefabs/WeaponPod.prefab` built via MCP (SpriteRenderer + WeaponPodController + trigger collider).
+
+**Reconciliations vs story text** (surfaced for review):
+1. **`WeaponPodGrabbed` carries only the weapon** (no `isFirstTime`) — the committed event from stage-001; Meta derives first-pickup itself (meta-save Story 007's own owned-check), so the pod injects **no ISaveService**. AC-5's `isFirstTime` is therefore a Meta concern, already covered by meta-007.
+2. **Reachable band** passed to `Init(bandMinY, bandMaxY)` (world units) rather than derived from `PodDropConfig.PodReachableBandYPct` (a single screen-fraction — the committed SO has no explicit band). The spawner will compute the band from screen + Pct. Bob is `Mathf.Clamp`ed inside the band (reachability guarantee).
+3. **Pickup exposed as public `Collect()`** (the `OnTriggerEnter2D` Player path calls it) so tests drive pickup without a two-body physics rig. All timing/geometry from `PodDropConfig` (no hardcoded values). Config's `*Px` knobs are treated as world units (placeholder-tunable).
+4. **Follow-up:** `WeaponPodSpawner` (subscribe `PodSpawnRequested` → Instantiate `WeaponPod.prefab` → `Init` with the stage's weapon pool + band) — thin glue, deferred; the pod behaviour (the story's core + agency guarantee) is done. Bespoke pod art (cold-blue/orange capsules + rune icons) + 0.3s icon cross-fade are visual polish follow-ups.
 
 ---
 
