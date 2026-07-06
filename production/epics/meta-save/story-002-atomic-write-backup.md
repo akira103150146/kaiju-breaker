@@ -1,12 +1,12 @@
 # Story 002: Atomic Temp-Then-Rename Write & Backup
 
 > **Epic**: 元進度與存檔系統
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 6/6 EditMode GREEN, part of 313-case suite)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -146,7 +146,13 @@ while (_running) {
 **Required evidence**: `Assets/_Project/Tests/Meta/save_atomic_write_test.cs` — must exist and all tests pass
 *(ADR-0005: EditMode test assembly; pure C# file I/O logic with injected path overrides for test isolation.)*
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 6/6 GREEN (`Assets/_Project/Tests/EditMode/Meta/save_atomic_write_test.cs`, Unity MCP, 2026-07-06). Covers AC-1 (kill-before-rename via split `WriteTempFile`/`PromoteTempToSave`), AC-2 (depth-1 overwrite), AC-3 (deep-copy isolation incl nested list), AC-4 (SyncWrite valid CRC), AC-5 (backup byte-identical) + live-thread write/flush-on-stop.
+
+**Reconciliations vs story text** (surfaced for review):
+1. **`File.Move(…, overwrite)` overload is unavailable** in Unity's .NET Standard runtime → use `File.Replace(tmp, save, null)` (atomic ReplaceFile/rename) when the target exists, plain `File.Move` on first-ever write. Backup is a separate `File.Copy(save, bak, overwrite)` (new save → bak), NOT File.Replace's backup slot (which would hold the OLD file).
+2. Save directory is **injected** (`AtomicSaveWriter(config, saveDirectory, serializer)`) — production passes `Application.persistentDataPath` (wired in Story 006), tests pass a temp dir. File names all from `SaveConfig`.
+3. `SaveWorker` exposes `DrainOnce()` seam so queue/deep-copy behaviour is deterministically testable without racing the thread; `Start()`/`Stop()` run the same drain on a background thread; `Stop()` flushes the last pending snapshot.
+4. fsync = `FileStream.Flush(flushToDisk: true)` (desktop fsync/FlushFileBuffers). Mobile sandbox behaviour still [需查證] at device-test time.
 
 ---
 

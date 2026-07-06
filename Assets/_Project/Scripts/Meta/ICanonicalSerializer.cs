@@ -19,6 +19,12 @@ namespace KaijuBreaker.Meta
         /// </summary>
         string Serialize(SaveData data);
 
+        /// <summary>
+        /// Serialize omitting the <c>integrity_hash</c> field — the exact byte string the CRC32 is computed
+        /// over (meta-progression-system.md §D.2 <c>S = CRC32_hex(canonical_json(D \ {S}))</c>).
+        /// </summary>
+        string SerializeWithoutIntegrity(SaveData data);
+
         /// <summary>Parse canonical (or any well-formed) JSON produced for this schema back into a <see cref="SaveData"/>.</summary>
         SaveData Deserialize(string json);
     }

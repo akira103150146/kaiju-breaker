@@ -36,6 +36,64 @@ namespace KaijuBreaker.Meta
 
         /// <summary>Lifetime statistics (non-gameplay; achievements-facing).</summary>
         public StatsData Stats = new StatsData();
+
+        /// <summary>
+        /// Full deep clone — every nested dictionary, list, and object is copied, so the returned snapshot
+        /// is completely isolated from later mutation of the original. Required before handing a snapshot to
+        /// the background save worker (meta-progression-system.md §C.5.3; Story 002): the main thread keeps
+        /// crediting materials while a write is in flight.
+        /// </summary>
+        public SaveData DeepCopy()
+        {
+            var clone = new SaveData
+            {
+                Version = Version,
+                IntegrityHash = IntegrityHash,
+                Meta = new MetaBlock
+                {
+                    LastSelectedDifficulty = Meta.LastSelectedDifficulty,
+                    FirstLaunchComplete = Meta.FirstLaunchComplete,
+                    LastLoadout = new LoadoutData(Meta.LastLoadout.Primary, Meta.LastLoadout.Secondary),
+                },
+                Settings = new SettingsData
+                {
+                    ReduceMotion = Settings.ReduceMotion,
+                    ColorblindMode = Settings.ColorblindMode,
+                    TextScale = Settings.TextScale,
+                    BgmVolume = Settings.BgmVolume,
+                    SfxVolume = Settings.SfxVolume,
+                },
+                Stats = new StatsData
+                {
+                    TotalRunsStarted = Stats.TotalRunsStarted,
+                    TotalRunsCompleted = Stats.TotalRunsCompleted,
+                    TotalPartsBroken = Stats.TotalPartsBroken,
+                    TotalFullClears = Stats.TotalFullClears,
+                    TotalPlayTimeSeconds = Stats.TotalPlayTimeSeconds,
+                },
+            };
+
+            foreach (var kv in Weapons)
+                clone.Weapons[kv.Key] = new WeaponSaveData(kv.Value.Tier, kv.Value.Owned);
+
+            foreach (var kv in Materials)
+                clone.Materials[kv.Key] = kv.Value;
+
+            foreach (var kv in KaijuRecords)
+            {
+                var src = kv.Value;
+                var rec = new KaijuRecordData
+                {
+                    FullClearCount = src.FullClearCount,
+                    PartsEverBroken = new List<string>(src.PartsEverBroken),
+                    HuntCountPerDifficulty = new Dictionary<string, int>(src.HuntCountPerDifficulty),
+                    BestTimePerDifficulty = new Dictionary<string, float?>(src.BestTimePerDifficulty),
+                };
+                clone.KaijuRecords[kv.Key] = rec;
+            }
+
+            return clone;
+        }
     }
 
     /// <summary>One weapon's persisted state (meta-progression-system.md §C.3 weapons[id]).</summary>
