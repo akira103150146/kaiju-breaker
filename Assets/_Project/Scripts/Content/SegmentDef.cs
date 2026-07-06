@@ -56,6 +56,11 @@ namespace KaijuBreaker.Content
                  "per stage-system.md §D.1 step 2.")]
         [SerializeField] private DifficultyTier _minDifficultyTier = DifficultyTier.D1;
 
+        [Header("Weapon Pod")]
+        [Tooltip("Which weapon pool this segment's elite drop requests (stage-system.md §F.3). " +
+                 "Auto = fill the not-yet-dropped pool (Primary first). Consumed by PodDropTracker (Story 004).")]
+        [SerializeField] private PodPoolPreference _podPoolPreference = PodPoolPreference.Auto;
+
         // ── Public read-only properties ───────────────────────────────────────────
 
         /// <summary>Stable segment identifier used by ContentRegistry and run history.</summary>
@@ -91,6 +96,12 @@ namespace KaijuBreaker.Content
         /// Enforces difficulty-gated content per stage-system.md §D.3.
         /// </summary>
         public DifficultyTier MinDifficultyTier => _minDifficultyTier;
+
+        /// <summary>
+        /// Which weapon pool this segment's elite drop requests (stage-system.md §F.3).
+        /// Auto lets <c>PodDropTracker</c> fill the not-yet-dropped pool (Primary first).
+        /// </summary>
+        public PodPoolPreference PodPoolPreference => _podPoolPreference;
 
         // ── Editor validation ─────────────────────────────────────────────────────
 

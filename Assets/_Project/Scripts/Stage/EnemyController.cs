@@ -42,7 +42,10 @@ namespace KaijuBreaker.Stage
             Movement = def != null ? def.MovementPattern : null;
             Emitter = def != null ? def.EmitterPattern : null;
             IsElite = isElite;
-            Hp = HpForTier(def);
+
+            // Elite instances scale HP by the def's elite_hp_mult (stage-system.md §E.3; data-driven).
+            int baseHp = HpForTier(def);
+            Hp = isElite && def != null ? Mathf.CeilToInt(baseHp * def.EliteHpMult) : baseHp;
 
             if (isElite && def != null)
             {

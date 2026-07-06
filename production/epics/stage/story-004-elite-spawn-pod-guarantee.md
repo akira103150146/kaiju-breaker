@@ -1,12 +1,12 @@
 # Story 004: 菁英怪生成 + 莢艙保底掉落追蹤
 
 > **Epic**: 關卡系統與 Run 流程
-> **Status**: Ready
+> **Status**: ✅ Core complete (2026-07-06 — PodDropTracker 9/9 EditMode GREEN incl. 200-run guarantee; elite HP scaling in EnemyController). Elite-death event emission + elite density deferred (see reconciliations).
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -114,7 +114,12 @@
 **Required evidence**:
 - `Assets/_Project/Tests/PlayMode/Stage/weapon_pod_guarantee_test.cs` — PlayMode 整合測試，必須全部通過 【BLOCKING】
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ `Assets/_Project/Tests/EditMode/Stage/pod_drop_tracker_test.cs` 9/9 GREEN (Unity MCP, 2026-07-06). Covers AC-1 (elite→primary pod + dedupe), AC-2 (auto fills gap / random when both covered), AC-3 (FlushGuaranteed forces missing pool, no-op when covered), AC-4 (200-seed guarantee holds after flush), AC-5 (pre-boss lull random / count=2 / gap-first).
+
+**Reconciliations vs story text** (surfaced for review):
+1. **`PodDropTracker` is pure event-driven C#** → EditMode Logic test (story labelled PlayMode, but nothing touches the scene). New Core events `EliteKilled` / `PodSpawnRequested` / `EliteShardsDropped` + `PodType`/`PodPoolPreference` enums; new `SegmentDef.PodPoolPreference` field (the SO lacked it). `PodDropConfig` already had the guarantee/lull count knobs.
+2. **Elite specs live on `EnemyDef`** (EliteHpMult/EliteAuraColor/EliteShardBonus), not a separate `EnemyConfig` — `EnemyController.Init` now scales elite HP by `EliteHpMult` (`ceil`).
+3. **Deferred (documented):** (a) emitting `EliteKilled`/`EliteShardsDropped` on *actual* elite death needs a combat/damage system — enemies don't take damage yet (bullets blocked by ADR-0001); the tracker is driven by the event directly, exactly as the ACs specify. (b) `elite_scale_mult` (×1.1 body scale) has no committed config field → skipped (no hardcode). (c) `elite_density_mult` bullet density → ADR-0001. (d) `Random` pod-type resolution at spawn is Story 005's.
 
 ---
 
