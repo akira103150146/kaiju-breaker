@@ -1,12 +1,12 @@
 # Story 004: Save Versioning & Migration Chain
 
 > **Epic**: 元進度與存檔系統
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 8/8 EditMode GREEN, part of 330-case suite)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -152,7 +152,12 @@ record TooOld                    : MigrationResult;
 **Required evidence**: `Assets/_Project/Tests/Meta/save_version_migration_test.cs` — must exist and all tests pass
 *(ADR-0005: EditMode test assembly. `SaveMigrator` is pure C# with no Unity API calls; fully testable without a scene.)*
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 8/8 GREEN (`Assets/_Project/Tests/EditMode/Meta/save_version_migration_test.cs`, Unity MCP, 2026-07-06). Covers AC-1 (NotNeeded same-object), AC-2 (gap>max TooOld + exactly-at-max migrates), AC-3 (test-only v2 fills new field + preserves), AC-4 (purity + no input mutation), AC-5 decision-status + empty-registry baseline + newer-than-current throws.
+
+**Reconciliations vs story text** (surfaced for review):
+1. `SaveMigrator` injects `currentVersion` + the migrations `Dictionary` (ctor) so a synthetic future version + test-only migrations exercise the chain. `SaveMigrator.Default()` = `SaveData.CurrentVersion` + `Registry` (empty at v1). `MigrationResult` = sealed class + `MigrationStatus` enum (not record inheritance).
+2. **AC-5 autosave-once is Story 006's wiring** (`MetaSaveService.Initialize` — that composition point doesn't exist yet). This story verifies the *status* the orchestrator keys off (`Migrated` vs `NotNeeded`); the real `EnqueueSave`-once call is asserted in Story 006.
+3. Version bump owned by the executor (`data.Version = target` after each pure migration), not inside migration functions (contract). Newer-than-current save → throws (caller must handle VersionTooNew first, Story 003).
 
 ---
 
