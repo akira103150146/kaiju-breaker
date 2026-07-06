@@ -1,12 +1,12 @@
 # Story 002: SO 驅動雜兵 Prefab 生成（從 SegmentDef 波次引用）
 
 > **Epic**: 關卡系統與 Run 流程
-> **Status**: Ready
+> **Status**: 🔨 Partial — logic core DONE (2026-07-06, 12/12 EditMode GREEN); runtime Instantiate/prefab/PlayMode = follow-up (needs enemy prefabs + PlayMode infra; bullets blocked by ADR-0001)
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -116,7 +116,13 @@
 **Required evidence**:
 - `Assets/_Project/Tests/PlayMode/Stage/enemy_spawning_test.cs` — PlayMode 整合測試，必須全部通過 【BLOCKING】
 
-**Status**: [ ] Not yet created
+**Status**: 🔨 Logic core: [x] `Assets/_Project/Tests/EditMode/Stage/wave_planner_test.cs` 12/12 GREEN (difficulty-scaled counts + CeilToInt, spawnTime offsets, elite flagging, determinism, empty-pool guard, layout geometry). PlayMode instantiation test: [ ] follow-up.
+
+**Reconciliations / scope split** (surfaced for review):
+1. **Committed `SegmentDef` = pool model, not authored `waves[]`.** `SegmentDef` has `EnemyPool` (EnemyDef[]) + `WaveCount` + `EliteWaveIndex`; `EnemyDef` already carries `MovementPattern`/`EmitterPattern` SO refs. So the story's `waves[]{enemyPrefabId,spawnTime,count}` + `EnemyConfig` string→prefab map don't match the codebase. Implemented the pool model instead.
+2. **New `WaveTimingConfig` SO (Content, ADR-0003)** supplies the pacing/geometry the segment data omits (EnemiesPerWaveBase, WaveIntervalSeconds, layout, fieldWidth, spawnY) — keeps counts/timing out of code. Balance values are placeholder-tunable.
+3. **Done now (pure C#, EditMode):** `WavePlanner` (pool model → deterministic `WaveSpawnInstruction` list; count = `ceil(base × IDifficultyProvider.EnemyCountMult)`; timing offsets; one elite on the elite wave) + `SpawnLayoutHelper` (Center/HorizontalSpread/Column geometry) + `SpawnLayout` enum.
+4. **Follow-up (NOT done — needs assets/infra):** the runtime `WaveSpawner` MonoBehaviour that `Instantiate`s from the plan + an `EnemyController` component + **enemy prefabs (art-dependent, none exist yet)** + **PlayMode test infra (none exists)**. Enemy **bullet emission** stays blocked by ADR-0001 (Proposed). These want a focused editor/art session.
 
 ---
 
