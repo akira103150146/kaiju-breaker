@@ -1,12 +1,12 @@
 # Story 005: Persistent vs Per-Run State Boundary & New Game Initialization
 
 > **Epic**: 元進度與存檔系統
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 10/10 EditMode GREEN, part of 340-case suite)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -198,7 +198,13 @@ void OnLoadoutConfirmed(in LoadoutConfirmed evt) {
 **Required evidence**: `Assets/_Project/Tests/Meta/save_state_boundary_test.cs` — must exist and all tests pass
 *(ADR-0005: EditMode test assembly. All tests use injected fake `IEventBus` and `SaveConfig` SO fixture.)*
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 10/10 GREEN (`Assets/_Project/Tests/EditMode/Meta/save_state_boundary_test.cs`, Unity MCP, 2026-07-06). Covers AC-1 (new-game defaults + independent objects), AC-2 (difficulty persists across load), AC-3/4 (loadout primary/secondary fallback incl secondary-points-at-laser), AC-5 (reflection: no per-run fields), AC-6 (LoadoutConfirmed → state + 1 EnqueueSave) + pre-init throws + SaveReady published.
+
+**Reconciliations vs story text** (surfaced for review):
+1. **`LoadoutConfirmed` gained a payload** (`Primary`/`Secondary`/`Difficulty`) — it was an empty struct from stage-001; RunController ignores the payload (still transitions), Meta reads it. `SaveReady` event added to Core.
+2. **`MetaSaveService` created here** (was implied by stories 005+006). Read queries `GetLastDifficulty`/`GetLastLoadout` are **concrete on the service, not on the committed `ISaveService`** — final ISaveService surface is Story 006's decision. `InitializeNewGame` uses the shared `NewGameFactory` + Story 002 `SyncWrite`.
+3. Initialize order: LoadOrDefault → (NewGame/Corrupted/VersionTooNew → fresh new game) | (Success/Backup → migrate, autosave-once if Migrated, else NotNeeded → validate last loadout) → subscribe LoadoutConfirmed → ready → publish SaveReady. `SaveWorker.EnqueueCount` added for the AC-6 once-assertion.
+4. Full `ISaveService`/`IWeaponTierQuery` impl + material crediting = Story 006; weapon-ownership persistence = Story 007.
 
 ---
 

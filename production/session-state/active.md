@@ -4,7 +4,21 @@
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
 *Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full done/todo in `進度結算-2026-07-03.md`.*
 
-## Session 7 (2026-07-06) — stage epic Story 001 (Run 狀態機) + 程式流程圖
+## Session 7 (2026-07-06) — stage 001/003 + meta-save 001–004 + 程式流程圖 (方向: meta-save→stage Integration→game-feel 依序做完)
+- **導演指示**: 一律中文（[[respond-in-chinese]]）；方向選 1→2→3 全做（meta-save → stage Integration → game-feel）。任務清單見 TaskList。
+- **★ 完成並提交（各自 commit，未 push）+ 全綠**：
+  - stage/001 Run 狀態機 `RunController`（15）→ 見下方詳述。
+  - stage/003 波段重組 `SegmentRecombinator`+`SegmentSequence`（8）→ 見下方。
+  - meta/001 SaveData schema + `CanonicalJsonSerializer`(手刻,canonical) + `CRC32Calculator`（11）— `SaveConfig` 加 §G 旋鈕。
+  - meta/002 原子寫入 `AtomicSaveWriter`(temp→Flush(true)→File.Replace→copy bak) + `SaveWorker`(depth-1 overwrite queue, deep-copy, SyncWrite, thread)（6）— `SaveData.DeepCopy()`.
+  - meta/003 `SaveLoader`(primary→backup→newgame/corrupted, VerifyIntegrity, VersionTooNew, 非崩潰) + `SaveLoadResult` + `NewGameFactory` + `MaterialKeys` + Core `SaveCorrupted` 事件（9）.
+  - meta/004 `SaveMigrator`(注入 currentVersion+registry, pure-fn chain, TooOld/NotNeeded/Migrated) + `MigrationResult`（8）.
+  - **EditMode suite: 273 → 330 GREEN**（+57）。commits: 19612c3, bba0f19, bbb66ca, a28cdca, e190789, 07e4770。
+- **meta-save 關鍵 reconciliation**：`ICanonicalSerializer` 放 Meta（非 Core，因引用 SaveData）；既有 `ISaveService`(economy 版) 表面不動，讀方法/事件訂閱留給 story-006 `MetaSaveService`（additive）；`File.Move(overwrite)` 不存在→用 `File.Replace`；序列化器手刻(Option C)、canonical float 用 "R"、materials/stats 用 long。詳見各 story 檔尾。
+- **meta-save 剩**：005 永久/每輪邊界+新遊戲init（NewGameFactory 已在 003 建好，005 補 last_loadout fallback + 邊界）；006 `MetaSaveService`（訂閱 PartBroke/HuntEnded 即時入帳、實作 ISaveService+IWeaponTierQuery、EnqueueAutosave/FlushSync、migration 接線、autosave-once）；007 武器所有權。
+- **Artifact 程式流程圖**（給導演）：5 視圖，冷色調，掃描實際 Subscribe/Publish 繪製。
+
+## (session 7 起始) stage epic Story 001 (Run 狀態機) + 程式流程圖
 - **★ stage/story-001 Run 狀態機 DONE — 15/15 EditMode GREEN → suite now 288/288** (was 273). `RunController` (`Scripts/Stage/RunController.cs`, 純 C#, ctor-DI `IEventBus`+`ISaveService`): LOADOUT→STAGE→BOSS→RESULTS→LOADOUT，`EnterBoss(int totalBreakableParts)` public 排程呼叫、`ConfirmResults()` 回 LOADOUT；訂閱 `LoadoutConfirmed`/`BossCoreBroke`/`PartBroke`/`WeaponPodGrabbed`，發 `RunStateChanged`+`HuntEnded`；full-clear 由 BOSS 期間 distinct PartBroke ids vs total 判定；每次轉換+pod+part-break enqueue autosave。非法轉換擲 `InvalidOperationException`，非 BOSS 的 BossCoreBroke 安全忽略。
 - **New Core events** (`Core/Events/RunEvents.cs`): `RunStateChanged{From,To}`、`LoadoutConfirmed`、`WeaponPodGrabbed{Weapon}`（後者 Story 005 擁有/發布，現先宣告供 RunController 訂閱）。
 - **Reconciliations** (見 story-001 檔尾): `EnqueueAutosave()`≠story 的 `EnqueueSave()`；`BossCoreBroke`≠`BossCoreBreak`；同幀 PartBroke 存檔合併是 meta-save 職責 → AC-4 用 ≥ 下限斷言。

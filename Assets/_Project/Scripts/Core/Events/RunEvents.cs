@@ -41,12 +41,29 @@ namespace KaijuBreaker.Core
     }
 
     /// <summary>
-    /// on_loadout_confirmed — the player locked in their loadout (1 primary + 1 secondary + difficulty +
-    /// boss target) and pressed start. Drives the run controller's LOADOUT→STAGE transition and the first
-    /// autosave of the run (stage-system.md TR-stage-007). Published by the loadout screen / meta hub.
+    /// on_loadout_confirmed — the player locked in their loadout (1 primary + 1 secondary + difficulty)
+    /// and pressed start. Drives the run controller's LOADOUT→STAGE transition (payload ignored there) and
+    /// Meta's last_loadout / last_difficulty persistence (meta-progression-system.md §C.8; Story 005).
+    /// Published by the loadout screen / meta hub. A default-constructed value (L1/L1/D1) is valid for
+    /// callers that only need the transition signal.
     /// </summary>
     public readonly struct LoadoutConfirmed : IGameEvent
     {
+        /// <summary>Chosen primary (laser-family) weapon.</summary>
+        public readonly WeaponId Primary;
+
+        /// <summary>Chosen secondary (missile-family) weapon.</summary>
+        public readonly WeaponId Secondary;
+
+        /// <summary>Chosen difficulty tier for the run.</summary>
+        public readonly DifficultyTier Difficulty;
+
+        public LoadoutConfirmed(WeaponId primary, WeaponId secondary, DifficultyTier difficulty)
+        {
+            Primary = primary;
+            Secondary = secondary;
+            Difficulty = difficulty;
+        }
     }
 
     /// <summary>

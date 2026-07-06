@@ -19,4 +19,13 @@ namespace KaijuBreaker.Core
             BackupAlsoFailed = backupAlsoFailed;
         }
     }
+
+    /// <summary>
+    /// on_save_ready — the Meta save service finished initialising (load → migrate → validate) and its
+    /// query methods are now callable (meta-progression-system.md §C.8; Story 005). UI/meta-hub subscribe to
+    /// know the persisted loadout/difficulty/materials are available to read.
+    /// </summary>
+    public readonly struct SaveReady : IGameEvent
+    {
+    }
 }

@@ -33,6 +33,9 @@ namespace KaijuBreaker.Meta
         /// <summary>True while a snapshot is queued and not yet written. Test/diagnostic aid.</summary>
         public bool HasPending { get { lock (_lock) { return _pending != null; } } }
 
+        /// <summary>Number of <see cref="EnqueueSave"/> calls (diagnostic; counts enqueues, not writes).</summary>
+        public int EnqueueCount { get; private set; }
+
         /// <summary>
         /// Queue a deep-copied snapshot for background write and return immediately. If a snapshot is already
         /// pending it is replaced (depth-1 overwrite). Mutating <paramref name="state"/> afterwards does not
@@ -42,7 +45,7 @@ namespace KaijuBreaker.Meta
         {
             if (state == null) throw new ArgumentNullException(nameof(state));
             var copy = state.DeepCopy();
-            lock (_lock) { _pending = copy; }
+            lock (_lock) { _pending = copy; EnqueueCount++; }
         }
 
         /// <summary>
