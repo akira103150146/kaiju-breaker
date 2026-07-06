@@ -15,7 +15,9 @@
   - meta/004 `SaveMigrator`(注入 currentVersion+registry, pure-fn chain, TooOld/NotNeeded/Migrated) + `MigrationResult`（8）.
   - **EditMode suite: 273 → 330 GREEN**（+57）。commits: 19612c3, bba0f19, bbb66ca, a28cdca, e190789, 07e4770。
 - **meta-save 關鍵 reconciliation**：`ICanonicalSerializer` 放 Meta（非 Core，因引用 SaveData）；既有 `ISaveService`(economy 版) 表面不動，讀方法/事件訂閱留給 story-006 `MetaSaveService`（additive）；`File.Move(overwrite)` 不存在→用 `File.Replace`；序列化器手刻(Option C)、canonical float 用 "R"、materials/stats 用 long。詳見各 story 檔尾。
-- **meta-save 剩**：005 永久/每輪邊界+新遊戲init（NewGameFactory 已在 003 建好，005 補 last_loadout fallback + 邊界）；006 `MetaSaveService`（訂閱 PartBroke/HuntEnded 即時入帳、實作 ISaveService+IWeaponTierQuery、EnqueueAutosave/FlushSync、migration 接線、autosave-once）；007 武器所有權。
+- **★ meta-save EPIC 完成（7/7 story，全綠）**：001 schema+serializer+CRC32 · 002 原子寫入+worker · 003 完整性載入+復原 · 004 遷移鏈 · 005 邊界+新遊戲init+loadout fallback · 006 `MetaSaveService` 實作 `ISaveService`+`IWeaponTierQuery`(economy 入帳落地) + PartBroke/HuntEnded stats + FlushSync + `MetaSaveLifecycleBridge` · 007 武器所有權(WeaponPodGrabbed→WeaponUnlocked, monotonic)。commits 至 9b73ba8。**EditMode suite 273→357 GREEN**。
+- **meta-save 已知後續（非阻擋，已記於 story 檔）**：(a) App 組合根需 new MetaSaveService 並注入為真正的 ISaveService/IWeaponTierQuery（目前 Economy/Weapons 靠 DI 拿介面，尚未在 App 接線）；(b) per-kaiju/per-difficulty 記錄（parts_ever_broken/full_clear_count/best_time）需 int→string kaiju-id 映射 + HuntEnded 帶 difficulty/time；(c) PlayMode suspend 測試（manual QA doc 已寫 `production/qa/evidence/save-autosave-suspend-evidence.md`）。
+- **1→2→3 進度**：✅ 階段1 meta-save 完成 → ⏭ 階段2 stage Integration（002/004/005/006/007，多為 Unity prefab/場景）→ 階段3 game-feel。
 - **Artifact 程式流程圖**（給導演）：5 視圖，冷色調，掃描實際 Subscribe/Publish 繪製。
 
 ## (session 7 起始) stage epic Story 001 (Run 狀態機) + 程式流程圖
