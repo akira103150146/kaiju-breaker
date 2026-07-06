@@ -21,7 +21,7 @@ namespace KaijuBreaker.Meta
     /// <see cref="ISaveService"/> interface (owned by the economy epic). Deciding the final ISaveService
     /// surface is Story 006's job.</para>
     /// </summary>
-    public sealed class MetaSaveService
+    public sealed class MetaSaveService : ISaveService, IWeaponTierQuery
     {
         private readonly SaveConfig _config;
         private readonly IEventBus _bus;
@@ -29,6 +29,8 @@ namespace KaijuBreaker.Meta
         private readonly SaveMigrator _migrator;
         private readonly SaveWorker _worker;
         private readonly Action<LoadoutConfirmed> _onLoadoutConfirmed;
+        private readonly Action<PartBroke> _onPartBroke;
+        private readonly Action<HuntEnded> _onHuntEnded;
 
         private SaveData _state;
         private bool _initialized;
@@ -41,6 +43,8 @@ namespace KaijuBreaker.Meta
             _migrator = migrator ?? throw new ArgumentNullException(nameof(migrator));
             _worker = worker ?? throw new ArgumentNullException(nameof(worker));
             _onLoadoutConfirmed = OnLoadoutConfirmed;
+            _onPartBroke = OnPartBroke;
+            _onHuntEnded = OnHuntEnded;
         }
 
         /// <summary>True once <see cref="Initialize"/> has completed and query methods are callable.</summary>
@@ -87,12 +91,19 @@ namespace KaijuBreaker.Meta
             }
 
             _bus.Subscribe(_onLoadoutConfirmed);
+            _bus.Subscribe(_onPartBroke);
+            _bus.Subscribe(_onHuntEnded);
             _initialized = true;
             _bus.Publish(new SaveReady());
         }
 
         /// <summary>Unsubscribe on teardown (App owns lifetime).</summary>
-        public void Dispose() => _bus.Unsubscribe(_onLoadoutConfirmed);
+        public void Dispose()
+        {
+            _bus.Unsubscribe(_onLoadoutConfirmed);
+            _bus.Unsubscribe(_onPartBroke);
+            _bus.Unsubscribe(_onHuntEnded);
+        }
 
         /// <summary>
         /// Build a fresh new-game <see cref="SaveData"/> from <see cref="SaveConfig"/> defaults and write it
@@ -127,7 +138,99 @@ namespace KaijuBreaker.Meta
         /// <summary>Last confirmed loadout (already validated against ownership).</summary>
         public LoadoutData GetLastLoadout() { EnsureReady(); return _state.Meta.LastLoadout; }
 
+        // ── ISaveService (the real persistence backend; Economy/Weapons call these) ──
+
+        /// <inheritdoc/>
+        public void CreditMaterials(MaterialId id, int amount)
+        {
+            string key = MaterialKeys.ToKey(id);
+            _state.Materials.TryGetValue(key, out long current);
+            _state.Materials[key] = current + amount; // accumulate, never overwrite (long → no int32 wrap)
+            EnqueueAutosave();
+        }
+
+        /// <inheritdoc/>
+        public int GetMaterialCount(MaterialId id)
+        {
+            _state.Materials.TryGetValue(MaterialKeys.ToKey(id), out long v);
+            return v > int.MaxValue ? int.MaxValue : (int)v;
+        }
+
+        /// <inheritdoc/>
+        public void SpendMaterials(MaterialId id, int amount)
+        {
+            string key = MaterialKeys.ToKey(id);
+            _state.Materials.TryGetValue(key, out long current);
+            _state.Materials[key] = current - amount; // caller (Economy) verified affordability
+            EnqueueAutosave();
+        }
+
+        /// <inheritdoc/>
+        public void SetWeaponTier(WeaponId weapon, int tier)
+        {
+            string key = weapon.ToString();
+            if (_state.Weapons.TryGetValue(key, out var w)) w.Tier = tier;
+            else _state.Weapons[key] = new WeaponSaveData(tier, owned: true);
+            EnqueueAutosave();
+        }
+
+        /// <inheritdoc/>
+        public void EnqueueAutosave() => _worker.EnqueueSave(_state); // worker deep-copies internally
+
+        /// <inheritdoc/>
+        public void FlushSync() => _worker.SyncWrite(_state);
+
+        /// <inheritdoc/>
+        public (WeaponId Primary, WeaponId Secondary)? GetInitialLoadout()
+        {
+            var lo = _state?.Meta?.LastLoadout;
+            if (lo == null) return null;
+            if (Enum.TryParse(lo.Primary, out WeaponId primary) && Enum.TryParse(lo.Secondary, out WeaponId secondary))
+                return (primary, secondary);
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public int GetTier(WeaponId weapon) =>
+            _state.Weapons.TryGetValue(weapon.ToString(), out var w) ? w.Tier : 0;
+
+        /// <summary>True if a weapon is permanently owned (Story 007 flips this on first pickup).</summary>
+        public bool IsWeaponOwned(WeaponId weapon) =>
+            _state.Weapons.TryGetValue(weapon.ToString(), out var w) && w.Owned;
+
+        /// <summary>
+        /// Blocking flush of the latest state for the app-suspend/quit safety net (meta-progression-system.md
+        /// §C.5.1). Stops the async worker (draining any pending write) then writes synchronously.
+        /// </summary>
+        public void FlushSyncNow()
+        {
+            _worker.Stop();          // drains any pending snapshot
+            _worker.SyncWrite(_state);
+        }
+
         // ── Internals ─────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// on_part_break (§C.6.3): Meta persists the RECORDS side of a break — lifetime part-broken stat +
+        /// autosave. Material yields are NOT read here: Economy computes them and calls
+        /// <see cref="CreditMaterials"/> (committed division of labour, ADR-0002 §3) — Meta must not recompute.
+        /// </summary>
+        private void OnPartBroke(PartBroke evt)
+        {
+            _state.Stats.TotalPartsBroken += 1;
+            EnqueueAutosave();
+        }
+
+        /// <summary>
+        /// on_hunt_end: update lifetime run stats + autosave. Full-clear grants the global full-clear stat;
+        /// the essence/shard bonus itself is credited by Economy via <see cref="CreditMaterials"/>.
+        /// </summary>
+        private void OnHuntEnded(HuntEnded evt)
+        {
+            _state.Stats.TotalRunsCompleted += 1;
+            if (evt.IsAllPartsBroken) _state.Stats.TotalFullClears += 1;
+            EnqueueAutosave();
+        }
 
         private void OnLoadoutConfirmed(LoadoutConfirmed evt)
         {

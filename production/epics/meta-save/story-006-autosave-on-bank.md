@@ -1,12 +1,12 @@
 # Story 006: Autosave-on-Bank: on_part_break Instant Credit & Suspend Sync
 
 > **Epic**: 元進度與存檔系統
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 10/10 EditMode GREEN, part of 350-case suite; PlayMode lifecycle = manual QA)
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: 4h
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -179,7 +179,14 @@ The `OnApplicationPause` / `OnApplicationQuit` path requires a **PlayMode test**
 - `Assets/_Project/Tests/PlayMode/save_suspend_sync_test.cs` (PlayMode — `OnApplicationPause`/`OnApplicationQuit` lifecycle hooks) OR documented manual QA in `production/qa/evidence/save-autosave-suspend-evidence.md`
 *(ADR-0005: Integration tests use fake IEventBus + injected ISaveWorker; PlayMode needed only for Unity lifecycle callbacks.)*
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ EditMode 10/10 GREEN (`Assets/_Project/Tests/EditMode/Meta/save_autosave_integration_test.cs`, Unity MCP, 2026-07-06). PlayMode lifecycle → manual QA doc `production/qa/evidence/save-autosave-suspend-evidence.md` (⏳ pending device run).
+
+**Reconciliations vs story text** (IMPORTANT — significant divergence from committed architecture):
+1. **PartBroke/HuntEnded carry NO material yields.** The committed events (KaijuParts) don't have `ShardYield`/`CoreYield`/`Difficulty`/`CompletionTime`. Per the economy epic's committed division of labour (ADR-0002 §3), **Economy computes yields and calls `ISaveService.CreditMaterials`**; Meta persists — Meta must NOT recompute. So story ACs "Meta reads yields from PartBroke" are replaced by testing the real path: `MetaSaveService` implements the full `ISaveService` + `IWeaponTierQuery`, and `CreditMaterials`/`SpendMaterials`/`SetWeaponTier` accumulate into `_state` + autosave same-frame.
+2. **Meta subscribes PartBroke/HuntEnded only for the RECORDS/STATS it can derive from the current events**: `stats.total_parts_broken++` (PartBroke), `stats.total_runs_completed++` + `total_full_clears++` (HuntEnded all-broken). **Deferred** (need an int→string kaiju-id map + richer events with difficulty/time): per-kaiju `parts_ever_broken`, per-kaiju `full_clear_count`, `hunt_count_per_difficulty`, `best_time_per_difficulty`. Documented as a follow-up.
+3. **CoreType mapping** = `MaterialKeys` (Meta) — the material key is chosen by Economy (which material id it credits), not by Meta mapping a kaiju id. No `SaveConfig.KaijuCoreTypeMap` needed.
+4. Materials stored as `long` → `GetMaterialCount` clamps to `int.MaxValue` (no int32 wrap). Every persistent mutation calls `EnqueueAutosave` (depth-1 queue coalesces) so same-frame capture is guaranteed regardless of bus dispatch order.
+5. `FlushSyncNow` + `MetaSaveLifecycleBridge` (MonoBehaviour, `OnApplicationPause/Quit`) implemented; App-layer AddComponent+Bind wiring is out of scope (composition root).
 
 ---
 
