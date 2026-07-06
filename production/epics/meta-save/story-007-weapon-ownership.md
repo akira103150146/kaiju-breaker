@@ -1,12 +1,12 @@
 # Story 007: Weapon Ownership & Unlock Persistence
 
 > **Epic**: 元進度與存檔系統
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 7/7 EditMode GREEN, part of 357-case suite)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: 2h
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -146,7 +146,12 @@ void OnWeaponPodPickup(in WeaponPodPickup evt) {
 **Required evidence**: `Assets/_Project/Tests/Meta/save_weapon_ownership_test.cs` — must exist and all tests pass
 *(ADR-0005: EditMode test assembly. All 8 weapon IDs and all state transitions covered. AC-4 round-trip test uses `AtomicSaveWriter` + `SaveLoader` with a temporary in-memory or temp-path file.)*
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 7/7 GREEN (`Assets/_Project/Tests/EditMode/Meta/save_weapon_ownership_test.cs`, Unity MCP, 2026-07-06). Covers AC-1 (new-game ownership all 8), AC-2 (first pickup unlock+save+event), AC-3 (second pickup no-op), AC-4 (round-trip through CRC32 save/load), AC-5 (tier upgrade doesn't grant ownership, +owned stays through tier change), AC-6 (independent multi-unlock, one save each, dup no-op).
+
+**Reconciliations vs story text** (surfaced for review):
+1. Uses the committed `WeaponPodGrabbed` event (stage-001) as the pickup signal — Meta does its own owned-check (monotonic false→true), so no `WeaponPodPickup{IsFirstTime}` event is needed (the story explicitly permits Meta's own check). Handler subscribed in `MetaSaveService.Initialize`.
+2. `WeaponUnlocked` event added to Core (`WeaponEvents.cs`); Meta publishes it on first unlock, never calls UI.
+3. AC-5's tier path exercised via the real `ISaveService.SetWeaponTier` (no `WeaponUpgradeConfirmed` event is committed) — verified owned unchanged before/after.
 
 ---
 

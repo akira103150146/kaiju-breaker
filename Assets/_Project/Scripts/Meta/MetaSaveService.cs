@@ -31,6 +31,7 @@ namespace KaijuBreaker.Meta
         private readonly Action<LoadoutConfirmed> _onLoadoutConfirmed;
         private readonly Action<PartBroke> _onPartBroke;
         private readonly Action<HuntEnded> _onHuntEnded;
+        private readonly Action<WeaponPodGrabbed> _onWeaponPodGrabbed;
 
         private SaveData _state;
         private bool _initialized;
@@ -45,6 +46,7 @@ namespace KaijuBreaker.Meta
             _onLoadoutConfirmed = OnLoadoutConfirmed;
             _onPartBroke = OnPartBroke;
             _onHuntEnded = OnHuntEnded;
+            _onWeaponPodGrabbed = OnWeaponPodGrabbed;
         }
 
         /// <summary>True once <see cref="Initialize"/> has completed and query methods are callable.</summary>
@@ -93,6 +95,7 @@ namespace KaijuBreaker.Meta
             _bus.Subscribe(_onLoadoutConfirmed);
             _bus.Subscribe(_onPartBroke);
             _bus.Subscribe(_onHuntEnded);
+            _bus.Subscribe(_onWeaponPodGrabbed);
             _initialized = true;
             _bus.Publish(new SaveReady());
         }
@@ -103,6 +106,7 @@ namespace KaijuBreaker.Meta
             _bus.Unsubscribe(_onLoadoutConfirmed);
             _bus.Unsubscribe(_onPartBroke);
             _bus.Unsubscribe(_onHuntEnded);
+            _bus.Unsubscribe(_onWeaponPodGrabbed);
         }
 
         /// <summary>
@@ -230,6 +234,29 @@ namespace KaijuBreaker.Meta
             _state.Stats.TotalRunsCompleted += 1;
             if (evt.IsAllPartsBroken) _state.Stats.TotalFullClears += 1;
             EnqueueAutosave();
+        }
+
+        /// <summary>
+        /// on_weapon_pod_grabbed → first-pickup permanent unlock (meta-progression-system.md §C.2.2; Story 007).
+        /// <c>owned</c> is monotonic (false→true only): an already-owned weapon is a no-op — no redundant save,
+        /// no duplicate <see cref="WeaponUnlocked"/>. Meta does its own owned-check (the event needs no
+        /// IsFirstTime flag). Only the persistent flag is Meta's concern; the in-run equip is Stage/Weapons'.
+        /// </summary>
+        private void OnWeaponPodGrabbed(WeaponPodGrabbed evt)
+        {
+            string key = evt.Weapon.ToString();
+            if (_state.Weapons.TryGetValue(key, out var w))
+            {
+                if (w.Owned) return; // already owned — monotonic, nothing to do
+                w.Owned = true;
+            }
+            else
+            {
+                _state.Weapons[key] = new WeaponSaveData(tier: 0, owned: true);
+            }
+
+            EnqueueAutosave();
+            _bus.Publish(new WeaponUnlocked(evt.Weapon));
         }
 
         private void OnLoadoutConfirmed(LoadoutConfirmed evt)

@@ -68,4 +68,19 @@ namespace KaijuBreaker.Core
             Weapon = weapon;
         }
     }
+
+    /// <summary>
+    /// on_weapon_unlocked — a weapon became permanently owned for the first time (meta-progression-system.md
+    /// §C.2.2). Published by Meta when a first-pickup flips <c>weapons[id].owned</c> false→true; the UI layer
+    /// subscribes to show the unlock notification (Meta never calls UI directly, ADR-0002/0005).
+    /// </summary>
+    public readonly struct WeaponUnlocked : IGameEvent
+    {
+        public readonly WeaponId Weapon;
+
+        public WeaponUnlocked(WeaponId weapon)
+        {
+            Weapon = weapon;
+        }
+    }
 }
