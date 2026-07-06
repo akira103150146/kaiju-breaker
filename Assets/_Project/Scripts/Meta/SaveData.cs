@@ -13,8 +13,11 @@ namespace KaijuBreaker.Meta
     /// </summary>
     public sealed class SaveData
     {
+        /// <summary>The current save schema version this build reads/writes (§C.4). Bump when the schema changes.</summary>
+        public const int CurrentVersion = 1;
+
         /// <summary>Save schema version (§C.4 CURRENT_VERSION = 1). Range [1, ∞).</summary>
-        public int Version = 1;
+        public int Version = CurrentVersion;
 
         /// <summary>CRC32 hex of the canonical JSON of everything except this field (§D.2). 8 uppercase hex chars.</summary>
         public string IntegrityHash = string.Empty;

@@ -1,12 +1,12 @@
 # Story 003: CRC32 Integrity Check, Load & Corruption Repair
 
 > **Epic**: 元進度與存檔系統
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 9/9 EditMode GREEN, part of 322-case suite)
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -165,7 +165,14 @@ record VersionTooNew(int SaveVersion)          : SaveLoadResult;
 **Required evidence**: `Assets/_Project/Tests/Meta/save_integrity_load_test.cs` — must exist and all tests pass
 *(ADR-0005: EditMode test assembly. File I/O can be abstracted via `IFileSystem` interface injected into `SaveLoader`, enabling in-memory fake filesystem for all test cases.)*
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 9/9 GREEN (`Assets/_Project/Tests/EditMode/Meta/save_integrity_load_test.cs`, Unity MCP, 2026-07-06). Covers AC-1..AC-6 (valid load, backup restore, both-corrupt→event+no-crash, first-launch defaults, VerifyIntegrity subset, VersionTooNew file-untouched) + backup-only recovery + reset/continue paths.
+
+**Reconciliations vs story text** (surfaced for review):
+1. `SaveLoadResult` = sealed class with a `SaveLoadStatus` enum + static factories (not C# positional records with inheritance) — avoids record-inheritance concerns on the Unity C# level; carries `Data`/`SaveVersion`/`IntegrityWarning`.
+2. `SaveCorrupted` event added to **Core** (`Core/Events/SaveEvents.cs`) with a `BackupAlsoFailed` flag; Meta publishes it, never calls UI.
+3. New-game defaults built by shared `NewGameFactory.Create(config)` (Meta) — Story 005 owns the surrounding flow; `MaterialKeys` centralises the `MaterialId`↔snake_case save-key map (weapon/difficulty keys use `enum.ToString()`).
+4. Recovery methods (`ResetToNewGame`, `ContinueWithCorruption`) live on `SaveLoader`, not (yet) on `ISaveService` — the committed ISaveService surface is left intact; UI wiring is Story 006.
+5. Test I/O uses a real temp dir (consistent with Story 002) rather than an `IFileSystem` fake — simpler and exercises the real File.Replace/Copy path.
 
 ---
 
