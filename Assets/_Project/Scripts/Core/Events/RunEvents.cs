@@ -21,4 +21,48 @@ namespace KaijuBreaker.Core
             IsAllPartsBroken = isAllPartsBroken;
         }
     }
+
+    /// <summary>
+    /// The run flow advanced from one <see cref="RunState"/> to another (stage-system.md §Run 狀態機,
+    /// TR-stage-007). Emitted by the run controller on EVERY legal transition
+    /// (LOADOUT→STAGE→BOSS→RESULTS→LOADOUT). UI drives scene/HUD swaps from this; other systems may
+    /// gate behaviour on the current phase without referencing Stage directly.
+    /// </summary>
+    public readonly struct RunStateChanged : IGameEvent
+    {
+        public readonly RunState From;
+        public readonly RunState To;
+
+        public RunStateChanged(RunState from, RunState to)
+        {
+            From = from;
+            To = to;
+        }
+    }
+
+    /// <summary>
+    /// on_loadout_confirmed — the player locked in their loadout (1 primary + 1 secondary + difficulty +
+    /// boss target) and pressed start. Drives the run controller's LOADOUT→STAGE transition and the first
+    /// autosave of the run (stage-system.md TR-stage-007). Published by the loadout screen / meta hub.
+    /// </summary>
+    public readonly struct LoadoutConfirmed : IGameEvent
+    {
+    }
+
+    /// <summary>
+    /// on_weapon_pod_grabbed — the player collected a cycling weapon pod during the STAGE phase
+    /// (stage-system.md §L.2, Stage Story 005). Carries the weapon the pod granted. The run controller
+    /// subscribes only to enqueue an autosave at the pickup point; Weapons/UI consume the weapon id.
+    /// Story 005 owns publishing this; declared here in Core so subscribers exist ahead of the pod system.
+    /// </summary>
+    public readonly struct WeaponPodGrabbed : IGameEvent
+    {
+        /// <summary>The weapon granted by the collected pod.</summary>
+        public readonly WeaponId Weapon;
+
+        public WeaponPodGrabbed(WeaponId weapon)
+        {
+            Weapon = weapon;
+        }
+    }
 }

@@ -1,12 +1,12 @@
 # Story 001: Run 狀態機 LOADOUT → STAGE → BOSS → RESULTS
 
 > **Epic**: 關卡系統與 Run 流程
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-06 — 15/15 EditMode GREEN, part of 288-case suite)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: S
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-06
 
 ## Context
 
@@ -112,9 +112,16 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `Assets/_Project/Tests/Stage/run_state_machine_test.cs` — EditMode 單元測試，必須全部通過 【BLOCKING】
+- `Assets/_Project/Tests/EditMode/Stage/run_state_machine_test.cs` — EditMode 單元測試，必須全部通過 【BLOCKING】
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 15/15 GREEN (Unity MCP, 2026-07-06). Covers AC-1..AC-5 + full-loop reset + partial/full-clear HuntEnded.
+
+**Reconciliations vs story text** (implemented against committed Core contracts):
+1. Save API is `ISaveService.EnqueueAutosave()`, not the story's `EnqueueSave()`.
+2. Core-break event is `BossCoreBroke` (committed), not `BossCoreBreak`.
+3. `HuntEnded.IsAllPartsBroken` derived from distinct `PartBroke` ids counted during BOSS vs the total passed to `RunController.EnterBoss(int totalBreakableParts)`; core's PartBroke fires same-frame just before BossCoreBroke so it is counted.
+4. New Core events added for this story: `RunStateChanged{From,To}`, `LoadoutConfirmed`, `WeaponPodGrabbed{Weapon}` (last is owned/published by Story 005; declared now so RunController can subscribe for autosave).
+5. Same-frame `PartBroke` autosave coalescing (depth-1) is meta-save's job (ADR-0004); RunController enqueues per event → AC-4 asserted as ≥ lower-bound.
 
 ---
 
