@@ -17,7 +17,15 @@
 - **meta-save 關鍵 reconciliation**：`ICanonicalSerializer` 放 Meta（非 Core，因引用 SaveData）；既有 `ISaveService`(economy 版) 表面不動，讀方法/事件訂閱留給 story-006 `MetaSaveService`（additive）；`File.Move(overwrite)` 不存在→用 `File.Replace`；序列化器手刻(Option C)、canonical float 用 "R"、materials/stats 用 long。詳見各 story 檔尾。
 - **★ meta-save EPIC 完成（7/7 story，全綠）**：001 schema+serializer+CRC32 · 002 原子寫入+worker · 003 完整性載入+復原 · 004 遷移鏈 · 005 邊界+新遊戲init+loadout fallback · 006 `MetaSaveService` 實作 `ISaveService`+`IWeaponTierQuery`(economy 入帳落地) + PartBroke/HuntEnded stats + FlushSync + `MetaSaveLifecycleBridge` · 007 武器所有權(WeaponPodGrabbed→WeaponUnlocked, monotonic)。commits 至 9b73ba8。**EditMode suite 273→357 GREEN**。
 - **meta-save 已知後續（非阻擋，已記於 story 檔）**：(a) App 組合根需 new MetaSaveService 並注入為真正的 ISaveService/IWeaponTierQuery（目前 Economy/Weapons 靠 DI 拿介面，尚未在 App 接線）；(b) per-kaiju/per-difficulty 記錄（parts_ever_broken/full_clear_count/best_time）需 int→string kaiju-id 映射 + HuntEnded 帶 difficulty/time；(c) PlayMode suspend 測試（manual QA doc 已寫 `production/qa/evidence/save-autosave-suspend-evidence.md`）。
-- **1→2→3 進度**：✅ 階段1 meta-save 完成 → ⏭ 階段2 stage Integration（002/004/005/006/007，多為 Unity prefab/場景）→ 階段3 game-feel。
+- **1→2→3 進度**：✅ 階段1 meta-save 完成 → 🔨 階段2 stage Integration 大半完成 → 階段3 game-feel。
+- **★ 建置修復（session 7）**：原型 `LoadArt` 用 editor-only `AssetDatabase` → build 裡無圖。修法：美術移到 `Art/Resources/`，`LoadArt` 改 `Resources.Load`（commit `d10e92e`）。重建 **EXE（118MB 含圖）+ APK（46.9MB 含圖）** 成功；`/Builds/` 已 gitignore。Android IL2CPP 建置很慢/不穩（第一次 ~20min、重建卡 ~28min、session 掉線一次），最終都成功。manual QA doc: 建議之後看 gradle 快取。
+- **★ 階段2 stage Integration（session 7，真 prefab/場景 + PlayMode）**：
+  - 002 ✅ 全完成：`WavePlanner`(池模型+難度縮放)+`SpawnLayoutHelper`+`WaveTimingConfig`(12 EditMode) → `WaveSpawner`+`EnemyController`+`Enemy.prefab`(4 PlayMode 實測 Instantiate+SO 接線)。
+  - 004 ✅ 核心：`PodDropTracker`(保底 9 EditMode 含 200 輪)+`EliteKilled`/`PodSpawnRequested`/`EliteShardsDropped` 事件+`PodType`/`PodPoolPreference` 列舉+`SegmentDef.PodPoolPreference`+菁英 HP 縮放。
+  - 005 ✅ 核心：`WeaponPodController`(下降/徘徊/循環/可達性 clamp/拾取→`WeaponPodGrabbed`/消失，5 PlayMode)+`WeaponPod.prefab`。
+  - **PlayMode 測試基建建立**（`Tests/PlayMode/Stage/`，用執行期 template GO 當 prefab 避開 AssetDatabase）。commits: 26bbbeb, 8463132, 1bc96af, 61db8d8。
+  - **剩**：006 頭目過渡（喘息計時 + boss 場景 async 載入，場景重）、007 引導（Stage1 首段覆寫，邏輯）。deferred（各 story 檔有記）：敵人子彈發射(ADR-0001)、`WaveSpawner`/`WeaponPodSpawner` 接進 run flow 場景、per-enemy 美術。
+- **測試總計**：**378 EditMode + 9 PlayMode GREEN**。
 - **Artifact 程式流程圖**（給導演）：5 視圖，冷色調，掃描實際 Subscribe/Publish 繪製。
 
 ## (session 7 起始) stage epic Story 001 (Run 狀態機) + 程式流程圖
