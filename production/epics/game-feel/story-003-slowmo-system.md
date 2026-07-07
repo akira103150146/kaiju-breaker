@@ -1,7 +1,7 @@
 # Story 003: 慢動作系統 (Slow-Motion System)
 
 > **Epic**: 打擊感（VFX / SFX / Game Feel）
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-07, EditMode GREEN)
 > **Layer**: Presentation
 > **Type**: Logic
 > **Estimate**: M (3–4h)

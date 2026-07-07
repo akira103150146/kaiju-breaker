@@ -1,7 +1,7 @@
 # Story 004: 螢幕震動系統 (Screen Shake System)
 
 > **Epic**: 打擊感（VFX / SFX / Game Feel）
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-07, EditMode GREEN)
 > **Layer**: Presentation
 > **Type**: Logic
 > **Estimate**: M (3–4h)
