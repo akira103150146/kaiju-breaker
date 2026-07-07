@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa763e7e64f3854fbe3b6f708af9682, type: 3}
+  m_Name: PlayerShipConfig
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.PlayerShipConfig
+  _moveSpeed: 9
+  _pointerFollowLerp: 18
+  _minX: -4
+  _maxX: 4
+  _minY: -6
+  _stageMaxY: 1.5
+  _bossMaxY: 4
+  _maxHp: 100
+  _invulnSeconds: 0.9
+  _primaryFireInterval: 0.12
+  _primaryProjectileSpeed: 16
+  _primaryDamage: 12
+  _primaryHeatDelta: 17

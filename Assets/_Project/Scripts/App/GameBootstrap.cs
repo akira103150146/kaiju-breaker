@@ -28,6 +28,9 @@ namespace KaijuBreaker.App
         /// <summary>The live composed system graph (null until Awake, or if no ContentRegistry is assigned).</summary>
         public GameComposition Composition => _composition;
 
+        /// <summary>The ContentRegistry this bootstrap composed from (for scene glue that needs config, e.g. WaveTiming).</summary>
+        public ContentRegistry Content => _content;
+
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);

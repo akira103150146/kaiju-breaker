@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9323f99059a492b468f787801c8f8231, type: 3}
   m_Name: WaveTimingConfig
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.WaveTimingConfig
-  _enemiesPerWaveBase: 4
-  _waveIntervalSeconds: 6
+  _enemiesPerWaveBase: 8
+  _waveIntervalSeconds: 4
   _defaultLayout: 1
   _fieldWidth: 8
   _spawnY: 6

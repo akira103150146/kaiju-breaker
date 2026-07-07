@@ -80,7 +80,12 @@ namespace KaijuBreaker.Stage
         {
             var spawned = _spawner.Spawned;
             for (int i = 0; i < spawned.Count; i++)
-                if (spawned[i] != null) return false;
+            {
+                var e = spawned[i];
+                // Cleared once an enemy is destroyed (null) OR deactivated — a kill and an off-bottom escape
+                // both deactivate it, so the segment can advance instead of waiting on stragglers forever.
+                if (e != null && e.gameObject.activeSelf) return false;
+            }
             return true;
         }
     }
