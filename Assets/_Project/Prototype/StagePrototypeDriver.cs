@@ -1876,10 +1876,11 @@ namespace KaijuBreaker.Prototype
 
         private GUIStyle Style(int size, FontStyle style = FontStyle.Normal, TextAnchor anchor = TextAnchor.UpperLeft, Color? color = null)
         {
-            // Ark Pixel 16px is crisp ONLY at integer multiples (16/32/48). Snap the requested size to
-            // the nearest multiple so the pixel font never renders blurry (hud-ui-assets §1.2). Applied
-            // only when the pixel font is assigned; the built-in fallback keeps the original ad-hoc sizes.
-            if (_pixelFont != null) size = Mathf.Max(16, Mathf.RoundToInt(size / 16f) * 16);
+            // Snap the pixel font DOWN to the nearest multiple of 4 (min 8) for reasonable crispness WITHOUT
+            // ever exceeding the requested size — the label Rects were laid out for these sizes, so an
+            // upward snap (the old Max(16, …)) made small text overflow and clip inside its box. Flooring
+            // keeps every label inside its container (fixes the text-clipping issue) on both PC and mobile.
+            if (_pixelFont != null) size = Mathf.Max(8, (size / 4) * 4);
             var s = new GUIStyle(GUI.skin.label) { fontSize = size, fontStyle = style, alignment = anchor, wordWrap = false };
             if (_pixelFont != null) s.font = _pixelFont;          // art-bible §7.2 pixel font (one-place hook)
             s.normal.textColor = color ?? Color.white;            // §7.2 primary text = white
