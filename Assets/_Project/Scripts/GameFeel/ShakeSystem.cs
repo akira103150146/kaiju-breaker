@@ -23,6 +23,7 @@ namespace KaijuBreaker.GameFeel
         private readonly IEventBus _bus;
         private readonly GameFeelConfig _config;
         private readonly Func<float> _nextSignedUnit; // returns [-1, 1]
+        private readonly ReduceMotionSettings _motion; // optional runtime a11y scale (may be null)
 
         private readonly Action<PartBroke> _onPartBroke;
         private readonly Action<BossCoreBroke> _onBossCoreBroke;
@@ -36,11 +37,13 @@ namespace KaijuBreaker.GameFeel
         /// <summary>Current shake magnitude (px); decays toward 0.</summary>
         public float CurrentMagnitude => _current;
 
-        public ShakeSystem(IEventBus bus, GameFeelConfig config, Func<float> nextSignedUnit = null)
+        public ShakeSystem(IEventBus bus, GameFeelConfig config, Func<float> nextSignedUnit = null,
+                           ReduceMotionSettings motion = null)
         {
             _bus = bus ?? throw new ArgumentNullException(nameof(bus));
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _nextSignedUnit = nextSignedUnit ?? (() => UnityEngine.Random.Range(-1f, 1f));
+            _motion = motion;
 
             _onPartBroke = e => AddShake(_config.ShakeMagPartBreakBase);
             _onBossCoreBroke = e => AddShake(_config.ShakeMagBossDeath);
@@ -81,7 +84,7 @@ namespace KaijuBreaker.GameFeel
         /// </summary>
         public void AddShake(float magnitude)
         {
-            float m = Mathf.Max(0f, magnitude) * _config.ShakeAccessibilityMult;
+            float m = Mathf.Max(0f, magnitude) * _config.ShakeAccessibilityMult * (_motion?.ShakeMult ?? 1f);
             _current = Mathf.Min(Mathf.Max(_current, m), _config.ShakeMagnitudeCap);
         }
 

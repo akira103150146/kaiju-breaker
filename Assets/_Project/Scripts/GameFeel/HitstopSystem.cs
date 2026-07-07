@@ -21,6 +21,7 @@ namespace KaijuBreaker.GameFeel
         private readonly IEventBus _bus;
         private readonly GameFeelConfig _config;
         private readonly ITimeScaleControl _time;
+        private readonly ReduceMotionSettings _motion; // optional runtime a11y scale (may be null)
         private readonly Action<PartBroke> _onPartBroke;
         private readonly Action<BossCoreBroke> _onBossCoreBroke;
 
@@ -34,11 +35,13 @@ namespace KaijuBreaker.GameFeel
         /// <summary>Seconds of freeze remaining.</summary>
         public float RemainingSeconds => _timer;
 
-        public HitstopSystem(IEventBus bus, GameFeelConfig config, ITimeScaleControl time)
+        public HitstopSystem(IEventBus bus, GameFeelConfig config, ITimeScaleControl time,
+                             ReduceMotionSettings motion = null)
         {
             _bus = bus ?? throw new ArgumentNullException(nameof(bus));
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _time = time ?? throw new ArgumentNullException(nameof(time));
+            _motion = motion;
             _onPartBroke = OnPartBroke;
             _onBossCoreBroke = OnBossCoreBroke;
             _bus.Subscribe(_onPartBroke);
@@ -66,7 +69,8 @@ namespace KaijuBreaker.GameFeel
 
         private void Freeze(float milliseconds, bool isBoss)
         {
-            float seconds = milliseconds * 0.001f * _config.HitstopAccessibilityMult;
+            float motionMult = _motion?.HitstopMult ?? 1f;
+            float seconds = milliseconds * 0.001f * _config.HitstopAccessibilityMult * motionMult;
             if (seconds <= 0f) return; // reduce-motion (a11y mult 0) → no freeze
             _timer = seconds;          // reset, never accumulate
             _isBossHitstop = isBoss;

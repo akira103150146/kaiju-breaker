@@ -24,6 +24,7 @@ namespace KaijuBreaker.GameFeel
         private readonly IEventBus _bus;
         private readonly GameFeelConfig _config;
         private readonly ITimeScaleControl _time;
+        private readonly ReduceMotionSettings _motion; // optional runtime a11y scale (may be null)
         private readonly Action<PartBroke> _onPartBroke;
         private readonly Action<BossCoreBroke> _onBossCoreBroke;
 
@@ -36,11 +37,13 @@ namespace KaijuBreaker.GameFeel
         /// <summary>True while slow-mo is holding or ramping.</summary>
         public bool IsActive => _phase != Phase.Idle;
 
-        public SlowmoSystem(IEventBus bus, GameFeelConfig config, ITimeScaleControl time)
+        public SlowmoSystem(IEventBus bus, GameFeelConfig config, ITimeScaleControl time,
+                            ReduceMotionSettings motion = null)
         {
             _bus = bus ?? throw new ArgumentNullException(nameof(bus));
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _time = time ?? throw new ArgumentNullException(nameof(time));
+            _motion = motion;
             _onPartBroke = OnPartBroke;
             _onBossCoreBroke = OnBossCoreBroke;
             _bus.Subscribe(_onPartBroke);
@@ -67,7 +70,7 @@ namespace KaijuBreaker.GameFeel
 
         private void Begin(float rawMin, float rawHold, bool isBoss)
         {
-            float mult = Mathf.Clamp01(_config.SlowmoAccessibilityMult);
+            float mult = Mathf.Clamp01(_config.SlowmoAccessibilityMult * (_motion?.SlowmoMult ?? 1f));
             if (mult <= 0f) return; // reduce-motion → no slow-mo
 
             _min = Mathf.Lerp(1f, rawMin, mult);

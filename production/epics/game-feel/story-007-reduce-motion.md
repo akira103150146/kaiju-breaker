@@ -1,7 +1,7 @@
 # Story 007: Reduce-Motion 無障礙開關 (Reduce-Motion Accessibility Toggle)
 
 > **Epic**: 打擊感（VFX / SFX / Game Feel）
-> **Status**: Ready
+> **Status**: ✅ Complete (2026-07-07, 6/6 EditMode GREEN)
 > **Layer**: Presentation
 > **Type**: Logic
 > **Estimate**: M (3–4h)
