@@ -1,12 +1,12 @@
 # Story 006: 頭目入場與 Run 場景過渡
 
 > **Epic**: 關卡系統與 Run 流程
-> **Status**: Ready
+> **Status**: ✅ Core complete (2026-07-07 — PreBossLullController 6/6 EditMode GREEN). Real additive scene load (App ISceneLoader impl) + BossSilhouette = thin follow-ups.
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-07
 
 ## Context
 
@@ -109,7 +109,12 @@
 **Required evidence**:
 - `Assets/_Project/Tests/PlayMode/Stage/boss_transition_test.cs` — PlayMode 整合測試，必須全部通過 【BLOCKING】
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ `Assets/_Project/Tests/EditMode/Stage/pre_boss_lull_test.cs` 6/6 GREEN (Unity MCP, 2026-07-07). Covers AC-1 (lull start → PreBossLullStarted + boss-scene preload + pod top-up + idempotent), AC-2 (timer elapse → EnterBoss callback + wait-for-slow-scene gate), AC-3 (BossArenaEntered event). AC-4 (BossCoreBreak→RESULTS) is RunController's (story-001), already covered.
+
+**Reconciliations vs story text** (surfaced for review):
+1. New Core `ISceneLoader` interface (App implements over SceneManager — ADR-0005) + Core events `PreBossLullStarted{kaijuId}` / `BossArenaEntered{kaijuId}`.
+2. **Lull is a companion `PreBossLullController` (pure C#, tick-driven)**, not folded into the committed RunController — it invokes an `onLullComplete` callback wired to `RunController.EnterBoss` and publishes `BossArenaEntered`. Requires BOTH timer-elapsed AND scene-ready before completing (stall-free transition). Calls `PodDropTracker.SpawnPreBossLullPods()` at lull start (Story 004 logic).
+3. **Deferred (thin follow-ups):** the real `ISceneLoader` impl in App (additive load/unload of `kaiju_<id>` scenes — those boss-arena scenes are kaiju-roster content), `BossSilhouetteController` fade-in during lull, and RunController/App wiring that calls `OnLastSegmentEnded → StartLull` in the live run flow.
 
 ---
 
