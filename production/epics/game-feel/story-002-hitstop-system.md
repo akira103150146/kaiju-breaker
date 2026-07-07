@@ -121,9 +121,13 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- Logic: `Assets/_Project/Tests/GameFeel/GameFeel_Hitstop_Test.cs` — must exist and pass (BLOCKING)
+- Logic: `Assets/_Project/Tests/EditMode/GameFeel/GameFeel_Hitstop_Test.cs` — must exist and pass (BLOCKING)
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ 7/7 GREEN (Unity MCP, 2026-07-07). Covers AC-1 (freeze→restore after 115ms), AC-3 (consecutive reset not accumulate), AC-4 (unscaled countdown), AC-2 (boss overrides part-break + part-break can't override boss), overshoot restore, a11y-mult-0 disables. AC-5 (input buffering) = Input system's, out of scope.
+
+**Reconciliations vs story text** (surfaced for review):
+1. Freeze goes through an injected `ITimeScaleControl` (App maps to `Time.timeScale`) so timing is EditMode-testable via `Tick(unscaledDelta)` — no Play Mode. Committed event is `BossCoreBroke` (not `BossCoreBreak`).
+2. Accessibility multiplier (`HitstopAccessibilityMult`) applied at trigger; a value of 0 disables hitstop (reduce-motion, Story 007 owns the knob). No game-state mutation (pure presentation).
 
 ---
 
