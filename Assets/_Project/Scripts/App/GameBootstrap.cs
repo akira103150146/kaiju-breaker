@@ -23,6 +23,7 @@ namespace KaijuBreaker.App
         private UnityTimeScaleControl _timeScale;
         private Vector3 _cameraBasePosition;
         private bool _hasCameraBase;
+        private Texture2D _whiteTex;
 
         /// <summary>The live composed system graph (null until Awake, or if no ContentRegistry is assigned).</summary>
         public GameComposition Composition => _composition;
@@ -63,6 +64,25 @@ namespace KaijuBreaker.App
             float unitsPerPixel = cam.orthographic && Screen.height > 0 ? (cam.orthographicSize * 2f) / Screen.height : 0.01f;
             var offset = new Vector3(offsetPx.x, offsetPx.y, 0f) * unitsPerPixel;
             cam.transform.position = _cameraBasePosition + offset;
+        }
+
+        // GameFeel flash adapter: a full-screen white overlay whose alpha follows FlashSystem (§D.3).
+        // Capped at FlashMaxAlpha by the system, so the player's hitpoint stays identifiable at peak flash.
+        private void OnGUI()
+        {
+            if (_composition == null) return;
+            float alpha = _composition.Flash.Alpha;
+            if (alpha <= 0.001f) return;
+            if (_whiteTex == null)
+            {
+                _whiteTex = new Texture2D(1, 1);
+                _whiteTex.SetPixel(0, 0, Color.white);
+                _whiteTex.Apply();
+            }
+            var prev = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, alpha);
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _whiteTex);
+            GUI.color = prev;
         }
 
         private void OnApplicationPause(bool pauseStatus)
