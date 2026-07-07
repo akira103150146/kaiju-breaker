@@ -47,13 +47,23 @@ namespace KaijuBreaker.Prototype
             return s;
         }
 
+        // Physical-size UI scale so IMGUI is readable on high-DPI phones (desktop dpi≈96 → 1×, phone → 3-4×).
+        // GUI.matrix scales all IMGUI uniformly AND transforms tap/click events, so buttons stay hittable.
+        private static float UiScale()
+        {
+            float dpi = Screen.dpi > 1f ? Screen.dpi : 96f;
+            return Mathf.Clamp(dpi / 96f, 1f, 4f);
+        }
+
         private void OnGUI()
         {
             // Deep-blue-black arcade backdrop (art-bible §7.5 Meta background #0A0E1A).
             if (_bgTex == null) { _bgTex = new Texture2D(1, 1); _bgTex.SetPixel(0, 0, Hex("#0A0E1A")); _bgTex.Apply(); }
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _bgTex);
 
-            float w = Screen.width, h = Screen.height;
+            float s = UiScale();
+            GUI.matrix = Matrix4x4.Scale(new Vector3(s, s, 1f));
+            float w = Screen.width / s, h = Screen.height / s;   // virtual (scaled) dimensions
+            GUI.DrawTexture(new Rect(0, 0, w, h), _bgTex);
             GUI.Label(new Rect(0, h * 0.30f, w, 80), "殲獸戰機 / KAIJU BREAKER", Style(48, Hex("#40F8FF"), FontStyle.Bold)); // cold-cyan title
             GUI.Label(new Rect(0, h * 0.45f, w, 40), "— prototype —", Style(22, Hex("#8AA0B0")));
             GUI.Label(new Rect(0, h * 0.60f, w, 40), "Press any key / tap to START", Style(22, Hex("#00C0E0")));

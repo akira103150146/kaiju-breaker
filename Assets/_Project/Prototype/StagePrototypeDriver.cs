@@ -1845,9 +1845,26 @@ namespace KaijuBreaker.Prototype
         // OnGUI — LOADOUT / HUD / RESULTS (IMGUI, no scene wiring)
         // ═════════════════════════════════════════════════════════════════════
 
+        // Physical-size UI scale so the IMGUI HUD/menus are readable on high-DPI phones (desktop dpi≈96 → 1×,
+        // phone → 3-4×). GUI.matrix scales all IMGUI uniformly AND transforms tap events, so buttons stay
+        // hittable. Screen-space draws use the virtual VW/VH; world-anchored overlays divide WorldToScreenPoint
+        // by this scale to land in the same virtual space.
+        private static float UiScale()
+        {
+            float dpi = Screen.dpi > 1f ? Screen.dpi : 96f;
+            return Mathf.Clamp(dpi / 96f, 1f, 4f);
+        }
+
+        /// <summary>Virtual (scale-corrected) screen width for IMGUI layout under the UiScale matrix.</summary>
+        private float VW => Screen.width / UiScale();
+
+        /// <summary>Virtual (scale-corrected) screen height for IMGUI layout under the UiScale matrix.</summary>
+        private float VH => Screen.height / UiScale();
+
         private void OnGUI()
         {
             RefreshCameraFraming();
+            GUI.matrix = Matrix4x4.Scale(new Vector3(UiScale(), UiScale(), 1f));
             switch (_phase)
             {
                 case Phase.Loadout: DrawLoadout(); break;
@@ -1871,8 +1888,8 @@ namespace KaijuBreaker.Prototype
 
         private void DrawLoadout()
         {
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _guiBgTex);
-            float W = Screen.width, H = Screen.height;
+            float W = VW, H = VH;
+            GUI.DrawTexture(new Rect(0, 0, W, H), _guiBgTex);
             GUI.Label(new Rect(0, H * 0.03f, W, 50), "殲獸戰機  KAIJU BREAKER", Style(30, FontStyle.Bold, TextAnchor.MiddleCenter, UiAccent));
             GUI.Label(new Rect(0, H * 0.03f + 40, W, 30), "Vision Slice — 完整循環展示", Style(14, FontStyle.Normal, TextAnchor.MiddleCenter, UiTextDim));
 
@@ -1958,7 +1975,8 @@ namespace KaijuBreaker.Prototype
                 var part = _parts.Parts[pr.Id];
                 Vector3 wsp = _cam.WorldToScreenPoint(pr.Go.transform.position);
                 if (wsp.z < 0f) continue;
-                float cx = wsp.x, cy = Screen.height - wsp.y;
+                float s = UiScale();
+                float cx = wsp.x / s, cy = (Screen.height - wsp.y) / s; // actual px → virtual space
                 float bw = 52f, bh = 6f, bx = cx - bw * 0.5f, by = cy - 50f;
                 bool soft = part.HeatState == HeatState.Softened;
                 bool armorOpen = part.PartType == PartType.Armored && (part.ArmorState != ArmorState.Intact || soft);
@@ -1987,7 +2005,7 @@ namespace KaijuBreaker.Prototype
         private void DrawHud()
         {
             DrawPartMeters();
-            float W = Screen.width;
+            float W = VW;
 
             string phaseLabel = _phase == Phase.Boss
                 ? ("破壞 " + _partsBrokenCount + "/" + _totalNonCoreParts)
@@ -2021,7 +2039,7 @@ namespace KaijuBreaker.Prototype
 
             GUI.Label(new Rect(W - 130, 6, 120, 20), "素材 " + _matCount, Style(14, FontStyle.Bold, TextAnchor.MiddleRight, UiAccent));
 
-            float hudBaseY = Screen.height - 96;
+            float hudBaseY = VH - 96;
             GUI.Label(new Rect(10, hudBaseY, 220, 20), "P: " + Primaries[_pidx].Name, Style(13, FontStyle.Bold, TextAnchor.UpperLeft, UiAccent));
             GUI.Label(new Rect(10, hudBaseY + 18, 260, 18), Primaries[_pidx].Niche, Style(10, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
             if (_pidx == 2)
@@ -2068,9 +2086,9 @@ namespace KaijuBreaker.Prototype
                 }
             }
 
-            GUI.Label(new Rect(10, Screen.height - 22, 200, 20), Difficulties[_choiceDifficulty].Label, Style(10, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
-            GUI.Label(new Rect(W - 210, Screen.height - 22, 200, 20), _elapsed.ToString("0.0") + "s", Style(10, FontStyle.Normal, TextAnchor.UpperRight, UiTextDim));
-            GUI.Label(new Rect(0, Screen.height - 22, W, 20), "R=返回選單  1-4/5-8換武器  空白鍵=副武器  Z蓄L3", Style(10, FontStyle.Normal, TextAnchor.UpperCenter, UiTextDim));
+            GUI.Label(new Rect(10, VH - 22, 200, 20), Difficulties[_choiceDifficulty].Label, Style(10, FontStyle.Normal, TextAnchor.UpperLeft, UiTextDim));
+            GUI.Label(new Rect(W - 210, VH - 22, 200, 20), _elapsed.ToString("0.0") + "s", Style(10, FontStyle.Normal, TextAnchor.UpperRight, UiTextDim));
+            GUI.Label(new Rect(0, VH - 22, W, 20), "R=返回選單  1-4/5-8換武器  空白鍵=副武器  Z蓄L3", Style(10, FontStyle.Normal, TextAnchor.UpperCenter, UiTextDim));
         }
 
         private void DrawFloats()
@@ -2081,7 +2099,8 @@ namespace KaijuBreaker.Prototype
                 var world = ToWorld(f.X, f.Y);
                 var sp = _cam.WorldToScreenPoint(world);
                 if (sp.z < 0f) continue;
-                var gp = new Vector2(sp.x, Screen.height - sp.y);
+                float s = UiScale();
+                var gp = new Vector2(sp.x / s, (Screen.height - sp.y) / s); // actual px → virtual space
                 var c = f.Color; c.a = a;
                 var style = Style(f.Bold ? 15 : 12, f.Bold ? FontStyle.Bold : FontStyle.Normal, TextAnchor.MiddleCenter);
                 style.normal.textColor = c;
@@ -2091,8 +2110,8 @@ namespace KaijuBreaker.Prototype
 
         private void DrawResults()
         {
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _guiBgTex);
-            float W = Screen.width, H = Screen.height;
+            float W = VW, H = VH;
+            GUI.DrawTexture(new Rect(0, 0, W, H), _guiBgTex);
             GUI.Label(new Rect(0, H * 0.06f, W, 50), "狩獵完成", Style(30, FontStyle.Bold, TextAnchor.MiddleCenter, UiAccent));
             GUI.Label(new Rect(0, H * 0.06f + 42, W, 30), _resultBossName + "  DEFEATED", Style(16, FontStyle.Normal, TextAnchor.MiddleCenter, UiAmber));
 
