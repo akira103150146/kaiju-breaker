@@ -1,6 +1,6 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-07 (session 7 — HUGE: meta-save+stage+game-feel epics + App 組合根接線 + runtime 驗證, all pushed)*
+*Last updated: 2026-07-07 (session 8 — 首個「正式系統可玩 run」A→E 全完成: 玩家/道中/敵人移動+彈幕多樣化/Boss真戰/手機控制+勝負結算, 442 EditMode GREEN, 5 commits 未 push)*
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
 *Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full session-7 done/todo in `進度結算-2026-07-07.md`.*
 
@@ -9,8 +9,28 @@
 - **RUNTIME 驗證**: 真 Play session 發 PartBroke → timeScale=0+flash 0.78+shake 11+Meta partsBroken=1（整條事件鏈跑通）。
 - **TESTS**: **442 EditMode + 10 PlayMode GREEN**。**~40 commits 全 push**（origin/main HEAD `3e4d3d3`）。
 - **BUILDS**: `Builds/Windows/kaiju-breaker.exe`(118MB) + `Builds/Android/kaiju-breaker.apk`(46.9MB) 含美術+UI修復。
-- **TODO（下次）**: ① 玩家機體+移動+武器發射接敵人+碰撞+勝負 → 用正式系統做首個可玩 run（目前只有拋棄式 `Stage01Prototype` 可玩）② softened glow/粒子/orb 視覺(需 boss 部件+美術) ③ 🔒ADR-0001 bullet-sim(敵人子彈) ④ input/hud-ui/kaiju-roster epics ⑤ bespoke 美術取代 placeholder ⑥ bossBreakablePartCount 從 KaijuDef 帶入。
+- **✅ session 8 已完成**：首個「正式系統可玩 run」A→E（見下方 Session 8 段落）。完整迴圈 LOADOUT→道中(多樣小怪)→Boss(真戰)→勝負結算，PC+手機控制，可玩。
+- **TODO（下次）**: ① `git push`（5 commits `c435183`→`67627a2` 未推）② Boss 進場走真 PreBossLull ③ 結算/HUD 改 UGUI+像素字(ADR-0006) ④ 手機控制 UGUI 化+裝置 touch-feel ⑤ bespoke kaiju 美術+軟化 glow/粒子 ⑥ composable emitter 擴充 ⑦ Game view 直向。
 - **關鍵路徑**: `Scripts/App/*` 組合根 · `Scenes/Bootstrap.unity` · `Data/*` assets · MCP `run_tests` EditMode/PlayMode。
+
+## Session 8 (2026-07-07) — 首個「正式系統可玩 run」開工 (道中+Boss並重、正式prefab、彈幕多樣化)
+- **導演定案**（見 memory [[playable-run-real-systems-directives]] + [[mobile-controls-joystick-secondary-button]]）：道中與 Boss **並重**（整條迴圈都要）；**正式 prefab+元件**路線；**小怪要更多**且**不同進場/移動邏輯 + 發射子彈邏輯（彈幕多樣化必做）**；PC 輸入 OK，**手機要虛擬搖桿+副武器按鈕**；手機效能「目前看起來沒問題，直接做」→ 敵人子彈先用 **MonoBehaviour 池化 kinematic** 子彈（ADR-0001 hybrid 的 Mono 側，不卡效能 spike）。
+- **分階段計畫（TaskList）**：A 道中可玩 ✅ · B 敵人移動多樣化(MovementPatternSO 執行) · C 彈幕多樣化(EmitterPatternSO+Mono池化敵人子彈) · D Boss 戰(真 PartStateSystem) · E 手機控制+勝負結算 UI。
+- **★ Phase A 完成並提交（`c435183`）+ 442 EditMode GREEN**：
+  - 新腳本 `Scripts/App/Gameplay/`：`IPlayerInput`+`KeyboardMouseInput`（PC 鍵鼠；手機另一 provider 待 Phase E）、`PlayerShip`（移動+HP+i-frames+接觸傷害+0血 Died 事件=真敗北）、`PlayerProjectile`（池化、kinematic、trigger、冷色）、`PlayerWeaponController`（主武器自動開火+池）、`GameplaySceneDirector`（發 LoadoutConfirmed→RunController STAGE+StageDirector 序列→SegmentSequenceRunner 生波；player.Died→敗北）。
+  - `Content`：`PlayerShipConfig` SO、`EnemyTierBalanceConfig` SO(T1=30/T2=70 資料驅動 HP)。
+  - 改 `EnemyController`(資料驅動 HP+TakeDamage/死亡/hit-flash/出界回收+Rigidbody2D useFullKinematicContacts)、`SegmentSequenceRunner`(死亡/出界=已清→波段能推進)、`GameBootstrap`(+Content getter)。
+  - 正式 prefab：`Prefabs/Player.prefab`、`PlayerProjectile.prefab`、升級 `Enemy.prefab`(trigger+kinematic RB+sprite+tierBalance)；生成占位 sprite `Art/Generated/`(冷色玩家/暖色敵人=可讀性規則)；相機改正交直向；波段加密(8/波×2波×3段)。
+  - **RUNTIME 驗證（Play + 強制 Physics2D.Simulate，因編輯器失焦會節流 frame，已把 PlayerSettings.runInBackground=true）**：彈→敵 30→18(−12)+彈消失、擊殺 30→0 停用、接觸 100→90(−10)、0血→DEFEAT log。截圖：冷色玩家機底部自動連射、8 暖色敵人橫排。
+- **Phase A 已知 follow-up**：① RunController 只有「破核心→RESULTS」勝利路徑，**缺 STAGE/BOSS 敗北→RESULTS 轉換**（Phase E 補，敗北目前只停火+log）② Game view 需設**直向解析度**(目前 landscape，敵人 y=6 生成帶被擠到頂)③ 敵人移動仍是占位下飄(Phase B 換 MovementPatternSO 執行)④ 只有 RamGrub 一種敵人資產(B/C 要補 tri_shot/aimed_gun/ring_burst + 移動/emitter 資產)⑤ 玩家副武器/真武器類接線(Phase D boss 用)⑥ 池化敵人(目前 Instantiate)。
+- **frozen 敵人設計已萃取**（給 B/C）：10 隻道中敵(ram_grub/tri_shot/aimed_gun/ring_burst/shield_flier/column_grunt/side_weaver/splitter/kamikaze/fast_strafer；MVP 核心4+菁英)；現行 SO 是**扁平 enum**(MovementType 5種、EmitterPatternType 4種)——先照現行 enum 做執行系統(已是多樣)，composable 版(DiveSwoop/Spiral/Zigzag/多 emitter)為設計已凍結的後續擴充。可讀性硬規則：敵彈暖色/玩家冷色、telegraph≥0.3s、非追蹤、難度只縮數量。
+- **★ B→C→D→E 一次全部完成並提交（導演指示「一次完成 BCDE」）+ 全程 442 EditMode GREEN**：
+  - **B 敵人移動多樣化**（`7e88a4b`）：`EnemyMovement`(純、可測)執行 5 種 MovementType（StraightRush 俯衝/HorizontalDrift 橫飄/Hover 到位懸停/UTurn 折返上升/Sinusoidal 蛇行），px→world 0.025。驗證：hover 停 2.5、uturn 反轉上升、sine 蛇行 maxX 1.75。
+  - **C 彈幕多樣化**（`7e88a4b`）：`EnemyBullet`+`EnemyBulletPool`(Mono 池化 kinematic，ADR-0001 Mono 側)+`EnemyEmission`(純：Aimed 扇/Linear 牆/Radial 環/RingBurst 死亡環)。`EnemyController` 週期發射+0.3s telegraph 閃光+死亡環；暖色彈。context(pool+player)經 SegmentSequenceRunner→WaveSpawner→enemy(選用參數，不動既有測試)。`PlayerShip` 吃彈。名冊：5 movement + 5 emitter SO + tri_shot/aimed_gun/ring_burst/side_weaver 敵人，段落池混編。驗證：ring=8、aimed=3 朝玩家；活體敵人從池發彈→玩家 −10+消失；截圖暖色彈 vs 冷色機。
+  - **D Boss 戰**（`f576ea3`）：`BossPart`(場景部件→發真 LaserHit/MissileHit)+`BossController`(從 KaijuDef InitializeParts、綁部件+世界座標、EnterBoss、每幀 Tick、PartBroke 隱藏、BossCoreBroke 勝利、註冊 theme)。玩家副武器(飛彈)開火；`PlayerProjectile` 雷射熱/飛彈破雙軌+boss 分支。內容：`Kaiju_Carapex`(核心+雙下顎+裝甲背甲)+boss-block sprite+場景 Boss 階層。驗證：BeginBossFight→run=Boss；40 雷射軟化核心+4 飛彈擊破→BossCoreBroke→run=Results(won=YES)+log；截圖紅核/灰裝甲/紫下顎。
+  - **E 手機控制+勝負結算**（`67627a2`）：`RunController.Defeat()`(STAGE/BOSS→RESULTS 敗北，補上原本只有勝利路徑的缺口)。`GameplaySceneDirector` 敗北→Defeat + IMGUI 結算疊層(VICTORY/DEFEAT+RESTART，DPI 縮放，PC/觸控通用)。`PlayerInputRouter`(取代 KeyboardMouseInput)：一個 IPlayerInput 跨平台=PC 鍵盤/Space + **固定虛擬搖桿(左下移動)+副武器按鈕(右下)** 用螢幕區域 touch/mouse polling(免 Canvas)。驗證：搖桿軸數學(right→(1,0)、half-up→(0,0.5)、遠→clamp 1)、搖桿+按鈕渲染、玩家死→run=Results+DEFEAT 疊層。
+- **首個「正式系統可玩 run」= A→E 全綠可玩**。完整迴圈：LOADOUT→道中(多樣移動+彈幕的成群小怪)→Boss(真 PartStateSystem 蓄熱→軟化→擊破→勝利)→勝負結算，PC 鍵鼠+手機搖桿/按鈕。commits `c435183`→`67627a2`（未 push，依 [[commit-often-push-on-request]]）。
+- **A→E 已知 follow-up（非阻擋）**：① Boss 進場走真 PreBossLull/場景載入(目前 OnWavesCleared 直接 BeginBossFight)② 結算改 UGUI+像素字(ADR-0006；目前 IMGUI MVP，中文按鈕已改 ASCII 避免亂碼)③ 手機控制 IMGUI→UGUI 圓形 sprite + 裝置 touch-feel 微調(input/story-001 spike)④ 敵人池化(目前 Instantiate)⑤ bespoke kaiju 美術+軟化 glow/裝甲視覺回饋+雷射/飛彈分別視覺⑥ composable emitter(DiveSwoop/Spiral/Zigzag/多 emitter)⑦ Game view 設直向解析度。
 
 ## Session 7 (2026-07-06) — stage 001/003 + meta-save 001–004 + 程式流程圖 (方向: meta-save→stage Integration→game-feel 依序做完)
 - **導演指示**: 一律中文（[[respond-in-chinese]]）；方向選 1→2→3 全做（meta-save → stage Integration → game-feel）。任務清單見 TaskList。
