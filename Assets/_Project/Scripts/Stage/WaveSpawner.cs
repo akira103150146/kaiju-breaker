@@ -72,6 +72,7 @@ namespace KaijuBreaker.Stage
             var go = Object.Instantiate(
                 _enemyPrefab, new Vector3(instruction.Position.x, instruction.Position.y, 0f),
                 Quaternion.identity, _parent);
+            go.SetActive(true); // a spawned enemy is always live (the prefab/template may be inactive)
 
             var controller = go.GetComponent<EnemyController>();
             if (controller != null)
