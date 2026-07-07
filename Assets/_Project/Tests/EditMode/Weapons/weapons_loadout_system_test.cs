@@ -24,6 +24,8 @@ namespace KaijuBreaker.Tests.EditMode.Weapons
             public void SpendMaterials(MaterialId id, int amount) { }
             public void SetWeaponTier(WeaponId weapon, int tier) { }
             public void EnqueueAutosave() => EnqueueCalls++;
+            public bool GetFlag(string key) => false;
+            public void SetFlag(string key, bool value) { }
             public void FlushSync() { }
             public (WeaponId Primary, WeaponId Secondary)? GetInitialLoadout() => _loadout;
         }

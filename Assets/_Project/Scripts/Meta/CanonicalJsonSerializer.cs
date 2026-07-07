@@ -30,6 +30,7 @@ namespace KaijuBreaker.Meta
             var root = new List<KeyValuePair<string, string>>
             {
                 Kv("version", Int(data.Version)),
+                Kv("flags", EmitBoolMap(data.Flags)),
                 Kv("weapons", EmitWeapons(data.Weapons)),
                 Kv("materials", EmitLongMap(data.Materials)),
                 Kv("kaiju_records", EmitKaijuRecords(data.KaijuRecords)),
@@ -66,6 +67,14 @@ namespace KaijuBreaker.Meta
             var members = new List<KeyValuePair<string, string>>();
             if (map != null)
                 foreach (var kv in map) members.Add(Kv(kv.Key, Int(kv.Value)));
+            return Obj(members);
+        }
+
+        private static string EmitBoolMap(Dictionary<string, bool> map)
+        {
+            var members = new List<KeyValuePair<string, string>>();
+            if (map != null)
+                foreach (var kv in map) members.Add(Kv(kv.Key, Bool(kv.Value)));
             return Obj(members);
         }
 
@@ -241,6 +250,9 @@ namespace KaijuBreaker.Meta
 
             foreach (var kv in GetObj(root, "materials"))
                 d.Materials[kv.Key] = (long)AsDouble(kv.Value);
+
+            foreach (var kv in GetObj(root, "flags"))
+                d.Flags[kv.Key] = kv.Value is bool b && b;
 
             foreach (var kv in GetObj(root, "kaiju_records"))
             {

@@ -94,6 +94,16 @@ namespace KaijuBreaker.Core
         /// <summary>Request an asynchronous autosave (e.g. after banking a part-break reward).</summary>
         void EnqueueAutosave();
 
+        /// <summary>
+        /// Read a persistent one-time boolean flag (false if never set). Used for one-shot UI/onboarding
+        /// state such as "first_pod_pickup_shown" (stage-system.md §H.2). Backed by the JSON save (ADR-0004),
+        /// NOT PlayerPrefs.
+        /// </summary>
+        bool GetFlag(string key);
+
+        /// <summary>Set a persistent one-time boolean flag and enqueue an autosave. See <see cref="GetFlag"/>.</summary>
+        void SetFlag(string key, bool value);
+
         /// <summary>Synchronously flush pending saves to disk (called on app suspend/quit).</summary>
         void FlushSync();
 

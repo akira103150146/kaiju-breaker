@@ -40,6 +40,9 @@ namespace KaijuBreaker.Meta
         /// <summary>Lifetime statistics (non-gameplay; achievements-facing).</summary>
         public StatsData Stats = new StatsData();
 
+        /// <summary>One-time persistent boolean flags (e.g. "first_pod_pickup_shown"); absent key = false.</summary>
+        public Dictionary<string, bool> Flags = new Dictionary<string, bool>();
+
         /// <summary>
         /// Full deep clone — every nested dictionary, list, and object is copied, so the returned snapshot
         /// is completely isolated from later mutation of the original. Required before handing a snapshot to
@@ -81,6 +84,9 @@ namespace KaijuBreaker.Meta
 
             foreach (var kv in Materials)
                 clone.Materials[kv.Key] = kv.Value;
+
+            foreach (var kv in Flags)
+                clone.Flags[kv.Key] = kv.Value;
 
             foreach (var kv in KaijuRecords)
             {

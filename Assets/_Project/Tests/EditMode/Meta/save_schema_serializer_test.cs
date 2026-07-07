@@ -78,7 +78,7 @@ namespace KaijuBreaker.Tests.EditMode.Meta
         public void test_serialize_minimal_matches_canonical_reference()
         {
             const string expected =
-                "{\"integrity_hash\":\"\",\"kaiju_records\":{},\"materials\":{\"core_carapace\":5}," +
+                "{\"flags\":{},\"integrity_hash\":\"\",\"kaiju_records\":{},\"materials\":{\"core_carapace\":5}," +
                 "\"meta\":{\"first_launch_complete\":false,\"last_loadout\":{\"primary\":\"L1\",\"secondary\":\"M1\"}," +
                 "\"last_selected_difficulty\":\"D1\"}," +
                 "\"settings\":{\"bgm_volume\":1,\"colorblind_mode\":\"default\",\"reduce_motion\":false," +

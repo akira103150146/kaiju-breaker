@@ -1,12 +1,12 @@
 # Story 007: Stage 1 前 10 分鐘引導設計實作
 
 > **Epic**: 關卡系統與 Run 流程
-> **Status**: Ready
+> **Status**: ✅ Core complete (2026-07-07 — OnboardingController 8/8 EditMode GREEN). AC-6 5-player playtest = manual (pending); intro speed-override application = wiring follow-up.
 > **Layer**: Core
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: 2026-07-02
-> **Last Updated**: —
+> **Last Updated**: 2026-07-07
 
 ## Context
 
@@ -120,7 +120,13 @@
 - `Assets/_Project/Tests/PlayMode/Stage/onboarding_rules_test.cs` — PlayMode 整合測試 【BLOCKING】
 - `production/qa/evidence/onboarding-evidence.md` — 5 人 Playtest 報告 + sign-off 【ADVISORY — MVP 阻斷】
 
-**Status**: [ ] Not yet created
+**Status**: [x] ✅ `Assets/_Project/Tests/EditMode/Stage/onboarding_rules_test.cs` 8/8 GREEN (Unity MCP, 2026-07-07). Covers AC-1 (intro wave0 D1 → ram_grub speed override), AC-2 (D2 no override / wave1 no override), AC-3 (force primary pod when first segment has no elite / no-op when elite present), AC-4 (tooltip once + flag persist + permanent-off), AC-5 (silent on non-stage_01). AC-6 (5-player comprehension) = manual playtest (pending). Playtest doc [ ] not yet written.
+
+**Reconciliations vs story text** (surfaced for review):
+1. **`ISaveService` gained `GetFlag`/`SetFlag`** (additive) backed by a new **`SaveData.Flags`** bool map + serializer support; the committed interface had no flag persistence. Regression: minimal-canonical reference test updated (`"flags":{}` sorts first). MetaSaveService + all ISaveService test doubles updated.
+2. New `OnboardingConfig` SO (RamGrubIntroSpeedMult/TooltipText/TooltipDurationSec). New Core events: `IntroSegmentWaveSpawning`/`EnemySpeedOverride`/`ForceFirstSegmentPodCarrier`/`ShowOnboardingTooltip`.
+3. `OnboardingController` is pure C#, active only when `currentStageId=="stage_01"` (zero subscriptions otherwise). `ReviewFirstSegment(SegmentSequence)` is called by RunController after recombination.
+4. **Deferred:** WaveSpawner honouring `EnemySpeedOverride` at spawn (wiring); RunController calling `ReviewFirstSegment` + publishing `IntroSegmentWaveSpawning` (run-flow wiring); the 5-player playtest evidence doc.
 
 ---
 

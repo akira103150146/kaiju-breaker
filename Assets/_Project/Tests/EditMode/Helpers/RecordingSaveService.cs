@@ -56,6 +56,12 @@ namespace KaijuBreaker.Tests.EditMode.Helpers
 
         public void EnqueueAutosave() => EnqueueCalls++;
 
+        private readonly Dictionary<string, bool> _flags = new Dictionary<string, bool>();
+
+        public bool GetFlag(string key) => _flags.TryGetValue(key, out bool v) && v;
+
+        public void SetFlag(string key, bool value) { _flags[key] = value; EnqueueCalls++; }
+
         public void FlushSync() { }
 
         public (WeaponId Primary, WeaponId Secondary)? GetInitialLoadout() => InitialLoadout;

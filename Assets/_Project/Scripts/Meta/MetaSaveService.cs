@@ -182,6 +182,16 @@ namespace KaijuBreaker.Meta
         public void EnqueueAutosave() => _worker.EnqueueSave(_state); // worker deep-copies internally
 
         /// <inheritdoc/>
+        public bool GetFlag(string key) => _state.Flags.TryGetValue(key, out bool v) && v;
+
+        /// <inheritdoc/>
+        public void SetFlag(string key, bool value)
+        {
+            _state.Flags[key] = value;
+            EnqueueAutosave();
+        }
+
+        /// <inheritdoc/>
         public void FlushSync() => _worker.SyncWrite(_state);
 
         /// <inheritdoc/>
