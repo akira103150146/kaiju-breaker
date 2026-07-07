@@ -21,5 +21,5 @@ MonoBehaviour:
   _eliteDensityMult: 1
   _eliteShardBonus: 0
   _eliteAuraColor: {r: 1, g: 0.6667, b: 0.2, a: 1}
-  _movementPattern: {fileID: 0}
-  _emitterPattern: {fileID: 0}
+  _movementPattern: {fileID: 11400000, guid: 5301799bc19c570498b4a118d62a8f78, type: 2}
+  _emitterPattern: {fileID: 11400000, guid: 914889e262135d64e9b4a99dfd61650e, type: 2}
