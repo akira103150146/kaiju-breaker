@@ -20,6 +20,17 @@ namespace KaijuBreaker.App
     }
 
     /// <summary>
+    /// A no-op <see cref="ISceneLoader"/> that completes every load/unload immediately — the fallback when no
+    /// real loader is supplied (headless/tests, or before boss-arena scenes exist). The pre-boss lull then
+    /// gates purely on its timer.
+    /// </summary>
+    public sealed class ImmediateSceneLoader : ISceneLoader
+    {
+        public void LoadAdditiveAsync(string sceneName, Action onComplete) => onComplete?.Invoke();
+        public void UnloadAsync(string sceneName, Action onComplete) => onComplete?.Invoke();
+    }
+
+    /// <summary>
     /// <see cref="ISceneLoader"/> over Unity's additive scene loading (ADR-0005). The boss-arena scenes are
     /// kaiju-roster content; until they exist, a missing scene completes immediately so the run flow still
     /// advances (the lull gate then just depends on its timer).

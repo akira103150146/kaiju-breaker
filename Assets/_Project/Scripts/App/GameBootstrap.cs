@@ -39,14 +39,15 @@ namespace KaijuBreaker.App
             }
 
             _timeScale = new UnityTimeScaleControl();
-            _composition = new GameComposition(_content, Application.persistentDataPath, _timeScale);
+            _composition = new GameComposition(_content, Application.persistentDataPath, _timeScale, new UnitySceneLoader());
             Debug.Log("[GameBootstrap] System graph composed (event bus + Meta/Difficulty/KaijuParts/Economy/GameFeel/Run).");
         }
 
         private void Update()
         {
             if (_composition == null) return;
-            _composition.TickGameFeel(Time.unscaledDeltaTime);
+            _composition.TickGameFeel(Time.unscaledDeltaTime); // feel on real time
+            _composition.Stage?.Tick(Time.deltaTime);          // pre-boss lull on game time
             ApplyShake();
         }
 

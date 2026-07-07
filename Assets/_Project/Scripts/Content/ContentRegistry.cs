@@ -25,6 +25,12 @@ namespace KaijuBreaker.Content
         [SerializeField] private InputSettings _input;
         [SerializeField] private SaveConfig _save;
 
+        [Header("Stage Config (MVP: stage_01)")]
+        [SerializeField] private StageDef _stage;
+        [SerializeField] private PodDropConfig _podDrop;
+        [SerializeField] private WaveTimingConfig _waveTiming;
+        [SerializeField] private OnboardingConfig _onboarding;
+
         [Header("Weapon Definitions (one per WeaponId, 8 total)")]
         [SerializeField] private WeaponDef[] _weapons = new WeaponDef[0];
 
@@ -41,6 +47,12 @@ namespace KaijuBreaker.Content
         public EconomyConfig Economy => _economy;
         public InputSettings Input => _input;
         public SaveConfig Save => _save;
+
+        // ── Stage config (MVP single stage) ───────────────────────────────────────
+        public StageDef Stage => _stage;
+        public PodDropConfig PodDrop => _podDrop;
+        public WaveTimingConfig WaveTiming => _waveTiming;
+        public OnboardingConfig Onboarding => _onboarding;
 
         /// <summary>All weapon definitions (unordered).</summary>
         public IReadOnlyList<WeaponDef> Weapons => _weapons;

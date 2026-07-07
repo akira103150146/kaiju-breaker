@@ -40,11 +40,15 @@ namespace KaijuBreaker.App
         public SoftenedSignatureSystem Softened { get; }
         public RunController Run { get; }
 
+        /// <summary>Per-run stage assembly (null if the ContentRegistry has no stage config wired).</summary>
+        public StageDirector Stage { get; }
+
         public GameComposition(ContentRegistry content, string saveDirectory, ITimeScaleControl timeScale,
-                               Func<float> shakeRandom = null)
+                               ISceneLoader sceneLoader = null, Func<float> shakeRandom = null)
         {
             if (content == null) throw new ArgumentNullException(nameof(content));
             if (timeScale == null) throw new ArgumentNullException(nameof(timeScale));
+            sceneLoader = sceneLoader ?? new ImmediateSceneLoader();
 
             Bus = new TypedEventBus();
 
@@ -72,6 +76,14 @@ namespace KaijuBreaker.App
             Softened = new SoftenedSignatureSystem(Bus, content.GameFeel);
 
             Run = new RunController(Bus, Meta);
+
+            // Per-run stage assembly — only when the stage config is wired (MVP stage_01).
+            if (content.Stage != null && content.PodDrop != null && content.Onboarding != null)
+            {
+                Stage = new StageDirector(Bus, Meta, Difficulty, sceneLoader, Run,
+                                          content.Stage, content.PodDrop, content.Onboarding,
+                                          () => new System.Random(), bossBreakablePartCount: 0);
+            }
         }
 
         /// <summary>Advance the frame-driven feel systems on unscaled time (call every frame from App).</summary>
@@ -86,6 +98,7 @@ namespace KaijuBreaker.App
         /// <summary>Tear down every subscribing system (App teardown). DifficultySystem/Flash hold no subscriptions.</summary>
         public void Dispose()
         {
+            Stage?.Dispose();
             Run.Dispose();
             Softened.Dispose();
             Shake.Dispose();
