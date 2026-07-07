@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9323f99059a492b468f787801c8f8231, type: 3}
+  m_Name: WaveTimingConfig
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.WaveTimingConfig
+  _enemiesPerWaveBase: 4
+  _waveIntervalSeconds: 6
+  _defaultLayout: 1
+  _fieldWidth: 8
+  _spawnY: 6
+  _columnSpacing: 1.2

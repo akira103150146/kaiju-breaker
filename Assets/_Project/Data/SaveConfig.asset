@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5c853766d5998f47a209b2c27b35e59, type: 3}
+  m_Name: SaveConfig
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.SaveConfig
+  _saveFileName: player_save.json
+  _backupFileName: player_save.bak.json
+  _tempFileName: player_save.tmp.json
+  _backupWriteEveryN: 1
+  _corruptionHandlingPolicy: 0
+  _integrityAlgorithm: 0
+  _saveAsyncQueueDepth: 1
+  _saveWorkerIdleMs: 100
+  _saveBackupEnabled: 1
+  _saveMaxMigrationGenerations: 3
+  _startingOwnedWeapons: 0000000004000000
+  _activeWeaponIds: 0000000001000000020000000300000004000000050000000600000007000000
+  _activeKaijuIds:
+  - CARAPEX
+  - LACERA
+  - VOLTWYRM

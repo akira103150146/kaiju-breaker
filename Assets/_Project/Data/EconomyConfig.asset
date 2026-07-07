@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 691b5dd65234c654faa6ae9bf427169e, type: 3}
+  m_Name: EconomyConfig
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EconomyConfig
+  _shardYieldBase: 2
+  _shardYieldSoftenedMult: 1.5
+  _shardYieldSoftenedStaggeredMult: 2
+  _eliteShardBonus: 3
+  _essencePerFullClear: 1
+  _shardCompletenessBonus: 5
+  _coreYieldBossCore: 1
+  _corePerfectDoubleDrop: 1
+  _coreForCarapace: 1
+  _coreForLimb: 2
+  _coreForEnergy: 3
+  _weaponUpgradeCostT0ToT1: 8
+  _weaponUpgradeCostT1ToT2: 12
+  _weaponUpgradeCostT2ToT3: 25
+  _upgradeCoreCostT1ToT2: 5
+  _upgradeCoreCostT2ToT3: 8
+  _upgradeEssenceCostT2ToT3: 1
+  _maxTtbImprovementPct: 0.15
+  _tier0To2CapPct: 0.1

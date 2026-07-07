@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3617ab63d0b1704980142a4ef7dcca9, type: 3}
+  m_Name: Stage_01
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.StageDef
+  _stageId: stage_01
+  _bossKaijuId: carapex
+  _segmentDrawCount: 3
+  _noRepeatWindow: 1
+  _preBossLullDurationSeconds: 20
+  _introSegment: {fileID: 0}
+  _preBossLullSegment: {fileID: 0}
+  _segmentPool:
+  - {fileID: 11400000, guid: e79a12a009f70b344a04ba1bfdf72133, type: 2}
+  - {fileID: 11400000, guid: 58cef9a8ab48cf14b9e9d5d9decfe494, type: 2}
+  - {fileID: 11400000, guid: 6a511aa8c99ac4e4db4889ba989c6f91, type: 2}
+  - {fileID: 11400000, guid: 06c4c5972cf2397468a9201ef92612be, type: 2}
+  - {fileID: 11400000, guid: 55e3af7bb817937459be2177cc4d6151, type: 2}
+  _primaryWeaponPool: []
+  _secondaryWeaponPool: []

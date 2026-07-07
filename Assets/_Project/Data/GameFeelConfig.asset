@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80659ba09b0c5f44387a85ebd31743c3, type: 3}
+  m_Name: GameFeelConfig
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.GameFeelConfig
+  _shakeMagSoften: 3
+  _shakeMagArmorStrip: 5
+  _shakeMagL3Shockwave: 14
+  _shakeMagM3TorpedoHit: 9
+  _shakeMagM3HeatShock: 8
+  _shakeMagM4Cluster: 7
+  _shakeMagPartBreakBase: 11
+  _shakeMagPartBreakEscalation: 0.7
+  _shakeMagBossDeath: 24
+  _shakeMagnitudeCap: 24
+  _shakeDecayRate: 42
+  _shakeThreshold: 0.3
+  _shakeAccessibilityMult: 1
+  _slowmoPartBreakTimescale: 0.12
+  _slowmoPartBreakHoldSeconds: 0.65
+  _slowmoBossDeathTimescale: 0.05
+  _slowmoBossDeathHoldSeconds: 1.2
+  _slowmoRampRate: 3.8
+  _slowmoAccessibilityMult: 1
+  _hitstopPartBreakMs: 115
+  _hitstopBossDeathMs: 220
+  _hitstopAccessibilityMult: 1
+  _softenedColorHue: {r: 1, g: 0.4, b: 0, a: 1}
+  _softenedPulseFrequencyHz: 2
+  _softenedGlowRadiusPct: 0.25
+  _softenedVisualOnsetMaxSeconds: 0.5
+  _softenedSfxMaxPerFrame: 2
+  _softenedIconEnabled: 1
+  _flashDecayRate: 2.6
+  _flashMaxAlpha: 0.85
+  _flashAccessibilityMult: 1
+  _staggerVisualOnsetMaxSeconds: 0.3

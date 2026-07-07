@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e71ee4f30b50e0b4a8634228b75c2318, type: 3}
+  m_Name: PartSystemConfig
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.PartSystemConfig
+  _partRegenEnabled: 0
+  _chainBreakIsRecursive: 0
+  _m3T3ChainDmgMult: 1.5
+  _m3T3ChainMaxTargets: 2
+  _m3ChainDamageBase: 10
+  _l2T3AdjacentHeatPct: 0.3
+  _adjacencyMaxNeighbors: 4
+  _hitboxSizeMultiplierNormal: 1
+  _hitboxSizeMultiplierArmored: 0.8
+  _hitboxSizeMultiplierCore: 1.2

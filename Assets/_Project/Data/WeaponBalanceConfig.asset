@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1824b98ed443f840b50ee1814ccead4, type: 3}
+  m_Name: WeaponBalanceConfig
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.WeaponBalanceConfig
+  _d0Reference: 100
+  _buPerD0: 10
+  _huPerD0: 25
+  _hMaxNormal: 100
+  _hMaxArmored: 150
+  _hMaxBossCore: 200
+  _hDecayRate: 3
+  _thetaS: 100
+  _thetaSExit: 80
+  _bMaxNormal: 100
+  _bMaxArmored: 150
+  _bMaxBossCore: 200
+  _bUnsoftenedMult: 0.35
+  _requiredBreakThresholdNormal: 100
+  _requiredBreakThresholdArmored: 150
+  _requiredBreakThresholdBossCore: 200
+  _defaultPrimary: 0
+  _defaultSecondary: 4
+  _staggerDuration: 2
+  _staggerBreakMult: 1.5
+  _equalPowerBandTolerance: 0.1

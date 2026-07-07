@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66396937539456c4fb3585914b2febc8, type: 3}
+  m_Name: Segment_s1_03
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.SegmentDef
+  _segmentId: s1_03
+  _segmentDisplayName: 
+  _enemyPool:
+  - {fileID: 11400000, guid: dbe4a5040bd047d4386cceff5f969265, type: 2}
+  _waveCount: 1
+  _eliteWaveIndex: -1
+  _difficultyWeight: 3
+  _minDifficultyTier: 0
+  _podPoolPreference: 2

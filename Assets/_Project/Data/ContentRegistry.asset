@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 728db82d012300b4baeb547bb3f17946, type: 3}
+  m_Name: ContentRegistry
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.ContentRegistry
+  _weaponBalance: {fileID: 11400000, guid: 21b01c74e7c531e4883e6d87c45bbc70, type: 2}
+  _partSystem: {fileID: 11400000, guid: d12c55731993afe4fb44dbdb7753a86c, type: 2}
+  _difficulty: {fileID: 11400000, guid: e42d1e81ceef33045ba5c6ca0599daa9, type: 2}
+  _gameFeel: {fileID: 11400000, guid: bb7caa16439cd974da3df32130d753a9, type: 2}
+  _economy: {fileID: 11400000, guid: e14f3599399b8dd4b9041982fae1946a, type: 2}
+  _input: {fileID: 11400000, guid: aeeea4663af06b7448ff07e583b3550c, type: 2}
+  _save: {fileID: 11400000, guid: 2cd30a13c88e4724bb6c6964fc02a643, type: 2}
+  _stage: {fileID: 11400000, guid: 9370bacca5d29c647b34cc3f2b500084, type: 2}
+  _podDrop: {fileID: 11400000, guid: 287a96d09be925c4085a004e5b3b8782, type: 2}
+  _waveTiming: {fileID: 11400000, guid: 1fa948e98e4f41943b0afbace0a306e5, type: 2}
+  _onboarding: {fileID: 11400000, guid: bf0b3b8323e13794197b671789f92a28, type: 2}
+  _weapons: []
+  _kaiju: []
