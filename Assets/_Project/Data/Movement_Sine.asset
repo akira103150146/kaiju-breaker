@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbf4d37a637c4554e80226ce73ad84f1, type: 3}
+  m_Name: Movement_Sine
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.MovementPatternSO
+  _movementType: 4
+  _moveSpeedPxPerSec: 100
+  _introSpeedMult: 1
+  _amplitudePx: 70
+  _frequencyHz: 0.8

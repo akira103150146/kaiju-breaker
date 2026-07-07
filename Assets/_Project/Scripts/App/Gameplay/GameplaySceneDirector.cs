@@ -31,6 +31,9 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Trash-enemy prefab the wave spawner instantiates. Required.")]
         [SerializeField] private GameObject _enemyPrefab;
 
+        [Tooltip("Pooled enemy-bullet prefab (EnemyBullet). Enemies fire from a shared pool built at run start.")]
+        [SerializeField] private EnemyBullet _enemyBulletPrefab;
+
         [Tooltip("Begin the run automatically on Play. Off = call BeginRun() from a menu/START button.")]
         [SerializeField] private bool _autoStart = true;
 
@@ -92,10 +95,21 @@ namespace KaijuBreaker.App.Gameplay
             }
 
             var content = _bootstrap.Content;
+
+            // Shared enemy-bullet pool for the whole run; enemies fire from it (aimed at the player).
+            EnemyCombatContext combat = null;
+            if (_enemyBulletPrefab != null)
+            {
+                var poolGo = new GameObject("EnemyBulletPool");
+                var pool = poolGo.AddComponent<EnemyBulletPool>();
+                pool.Configure(_enemyBulletPrefab);
+                combat = new EnemyCombatContext(pool, _player != null ? _player.transform : null);
+            }
+
             var runnerGo = new GameObject("WaveRunner");
             _waveRunner = runnerGo.AddComponent<SegmentSequenceRunner>();
             _waveRunner.Run(sequence, _comp.Difficulty, content.WaveTiming, _enemyPrefab,
-                            new System.Random(), OnWavesCleared);
+                            new System.Random(), OnWavesCleared, combat);
 
             _playerWeapon?.SetFiring(true);
             Debug.Log($"[GameplaySceneDirector] Run started — {sequence.EscalatingSegments.Count} segments queued.");

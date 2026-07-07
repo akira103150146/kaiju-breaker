@@ -131,7 +131,13 @@ namespace KaijuBreaker.App.Gameplay
                 TakeDamage(enemy.Def.ContactDamage);
                 return;
             }
-            // Enemy bullets (Phase C) will also route here via their own component; handled when that type exists.
+            // Enemy bullet — take its damage and despawn it (the player owns hit detection; App sees Stage).
+            var bullet = other.GetComponentInParent<EnemyBullet>();
+            if (bullet != null && bullet.IsActive)
+            {
+                TakeDamage(bullet.Damage);
+                bullet.Despawn();
+            }
         }
     }
 }

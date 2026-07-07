@@ -387,6 +387,7 @@ MonoBehaviour:
   _playerPrefab: {fileID: 5039581499492642538, guid: f498b232a0b659e4c948d25fbe430a75, type: 3}
   _playerSpawn: {x: 0, y: -4.5, z: 0}
   _enemyPrefab: {fileID: 2191252469180199104, guid: 5f8d5e00209f8ce4aa91348c6ede2abf, type: 3}
+  _enemyBulletPrefab: {fileID: 4855459094042239723, guid: 22ffe98064bb3634c9444512e3b59dcf, type: 3}
   _autoStart: 1
 --- !u!4 &2070403809
 Transform:

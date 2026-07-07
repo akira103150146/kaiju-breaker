@@ -15,7 +15,8 @@ MonoBehaviour:
   _segmentId: s1_03
   _segmentDisplayName: 
   _enemyPool:
-  - {fileID: 11400000, guid: dbe4a5040bd047d4386cceff5f969265, type: 2}
+  - {fileID: 11400000, guid: ef67d5e2a08d83140b17abad426619ea, type: 2}
+  - {fileID: 11400000, guid: 62cdf772c3a28db4681e2a041517ff46, type: 2}
   _waveCount: 2
   _eliteWaveIndex: -1
   _difficultyWeight: 3

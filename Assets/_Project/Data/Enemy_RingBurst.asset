@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a04b7802ffaac604eaf50e0094514a21, type: 3}
-  m_Name: Enemy_RamGrub
+  m_Name: Enemy_RingBurst
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EnemyDef
-  _enemyId: ram_grub
+  _enemyId: ring_burst
   _hpTier: 0
   _contactDamage: 10
   _pointValue: 10
@@ -21,5 +21,5 @@ MonoBehaviour:
   _eliteDensityMult: 1
   _eliteShardBonus: 0
   _eliteAuraColor: {r: 1, g: 0.6667, b: 0.2, a: 1}
-  _movementPattern: {fileID: 11400000, guid: cf0752f4a52f42547a1def1398abf04e, type: 2}
-  _emitterPattern: {fileID: 0}
+  _movementPattern: {fileID: 11400000, guid: 519fa3ca8e299d04c9e4fa5b083c1d36, type: 2}
+  _emitterPattern: {fileID: 11400000, guid: e1728c82b252483468f61bba9297f932, type: 2}

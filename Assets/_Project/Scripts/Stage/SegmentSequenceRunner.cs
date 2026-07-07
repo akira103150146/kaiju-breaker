@@ -23,6 +23,7 @@ namespace KaijuBreaker.Stage
         private GameObject _enemyPrefab;
         private System.Random _rng;
         private Action _onSequenceComplete;
+        private EnemyCombatContext _context;
 
         private WaveSpawner _spawner;
         private int _index = -1;
@@ -39,7 +40,8 @@ namespace KaijuBreaker.Stage
         /// fires after the final segment clears (wire it to <see cref="StageDirector.NotifyLastSegmentEnded"/>).
         /// </summary>
         public void Run(SegmentSequence sequence, IDifficultyProvider difficulty, WaveTimingConfig timing,
-                        GameObject enemyPrefab, System.Random rng, Action onSequenceComplete)
+                        GameObject enemyPrefab, System.Random rng, Action onSequenceComplete,
+                        EnemyCombatContext context = null)
         {
             _segments = sequence != null ? sequence.EscalatingSegments : new List<SegmentDef>();
             _difficulty = difficulty;
@@ -47,6 +49,7 @@ namespace KaijuBreaker.Stage
             _enemyPrefab = enemyPrefab;
             _rng = rng ?? new System.Random();
             _onSequenceComplete = onSequenceComplete;
+            _context = context;
 
             _spawner = GetComponent<WaveSpawner>();
             if (_spawner == null) _spawner = gameObject.AddComponent<WaveSpawner>();
@@ -65,7 +68,7 @@ namespace KaijuBreaker.Stage
                 _onSequenceComplete?.Invoke();
                 return;
             }
-            _spawner.Configure(_segments[_index], _timing, _difficulty, _enemyPrefab, _rng, transform);
+            _spawner.Configure(_segments[_index], _timing, _difficulty, _enemyPrefab, _rng, transform, _context);
             _spawner.Begin();
         }
 

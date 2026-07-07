@@ -24,6 +24,7 @@ namespace KaijuBreaker.Stage
         private bool _running;
         private GameObject _enemyPrefab;
         private Transform _parent;
+        private EnemyCombatContext _context;
 
         /// <summary>Every enemy spawned so far this segment (in spawn order).</summary>
         public List<EnemyController> Spawned { get; } = new List<EnemyController>();
@@ -39,10 +40,12 @@ namespace KaijuBreaker.Stage
         /// testable (fake difficulty, seeded rng). Call <see cref="Begin"/> to start the timed spawns.
         /// </summary>
         public void Configure(SegmentDef segment, WaveTimingConfig timing, IDifficultyProvider difficulty,
-                              GameObject enemyPrefab, System.Random rng, Transform parent)
+                              GameObject enemyPrefab, System.Random rng, Transform parent,
+                              EnemyCombatContext context = null)
         {
             _enemyPrefab = enemyPrefab;
             _parent = parent;
+            _context = context;
             _plan = new WavePlanner(timing, difficulty, rng).Plan(segment);
             _next = 0;
             _elapsed = 0f;
@@ -78,6 +81,7 @@ namespace KaijuBreaker.Stage
             if (controller != null)
             {
                 controller.Init(instruction.Enemy, instruction.IsElite);
+                controller.SetCombatContext(_context?.BulletPool, _context?.PlayerTarget);
                 Spawned.Add(controller);
             }
         }
