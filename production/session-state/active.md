@@ -1,8 +1,16 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-06 (session 7 — stage epic started: Run 狀態機 done + flow-diagram artifact)*
+*Last updated: 2026-07-07 (session 7 — HUGE: meta-save+stage+game-feel epics + App 組合根接線 + runtime 驗證, all pushed)*
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
-*Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full done/todo in `進度結算-2026-07-03.md`.*
+*Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full session-7 done/todo in `進度結算-2026-07-07.md`.*
+
+## ⚡ RESUME SNAPSHOT (2026-07-07, session 7 final)
+- **DONE**: meta-save(7) + stage(7) + game-feel(7) epics 全完成；**App 組合根接線**(`GameComposition`/`GameBootstrap`/`StageDirector`/`BreakPayoffSequencer`/`KaijuThemeRegistry` + Unity adapters)；**placeholder assets** `Assets/_Project/Data/`(ContentRegistry+configs)；**`Bootstrap.unity`** 場景 + `SegmentSequenceRunner`(場景生敵人) + flash 疊層。
+- **RUNTIME 驗證**: 真 Play session 發 PartBroke → timeScale=0+flash 0.78+shake 11+Meta partsBroken=1（整條事件鏈跑通）。
+- **TESTS**: **442 EditMode + 10 PlayMode GREEN**。**~40 commits 全 push**（origin/main HEAD `3e4d3d3`）。
+- **BUILDS**: `Builds/Windows/kaiju-breaker.exe`(118MB) + `Builds/Android/kaiju-breaker.apk`(46.9MB) 含美術+UI修復。
+- **TODO（下次）**: ① 玩家機體+移動+武器發射接敵人+碰撞+勝負 → 用正式系統做首個可玩 run（目前只有拋棄式 `Stage01Prototype` 可玩）② softened glow/粒子/orb 視覺(需 boss 部件+美術) ③ 🔒ADR-0001 bullet-sim(敵人子彈) ④ input/hud-ui/kaiju-roster epics ⑤ bespoke 美術取代 placeholder ⑥ bossBreakablePartCount 從 KaijuDef 帶入。
+- **關鍵路徑**: `Scripts/App/*` 組合根 · `Scenes/Bootstrap.unity` · `Data/*` assets · MCP `run_tests` EditMode/PlayMode。
 
 ## Session 7 (2026-07-06) — stage 001/003 + meta-save 001–004 + 程式流程圖 (方向: meta-save→stage Integration→game-feel 依序做完)
 - **導演指示**: 一律中文（[[respond-in-chinese]]）；方向選 1→2→3 全做（meta-save → stage Integration → game-feel）。任務清單見 TaskList。
