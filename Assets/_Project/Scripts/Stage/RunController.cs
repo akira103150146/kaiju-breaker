@@ -82,6 +82,18 @@ namespace KaijuBreaker.Stage
         }
 
         /// <summary>
+        /// End the run in defeat from STAGE or BOSS (the player died). Transitions to RESULTS and settles the
+        /// hunt as a non-full-clear. No-op outside STAGE/BOSS so a stray call cannot corrupt the state machine.
+        /// (The win path stays exclusively <see cref="BossCoreBroke"/>.)
+        /// </summary>
+        public void Defeat()
+        {
+            if (CurrentState != RunState.Stage && CurrentState != RunState.Boss) return;
+            TransitionTo(RunState.Results);
+            _bus.Publish(new HuntEnded(false));
+        }
+
+        /// <summary>
         /// Confirm the RESULTS screen and return to LOADOUT for the next run (loadout scene reloads).
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown when not currently in <see cref="RunState.Results"/>.</exception>

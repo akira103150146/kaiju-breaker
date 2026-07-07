@@ -128,6 +128,7 @@ namespace KaijuBreaker.App.Gameplay
         private void OnRunStateChanged(RunStateChanged evt)
         {
             if (_player != null) _player.SetBossPhase(evt.To == RunState.Boss);
+            if (evt.To == RunState.Results) { _showResults = true; _resultWin = !_defeated; }
         }
 
         private void OnPlayerDied()
@@ -135,7 +136,41 @@ namespace KaijuBreaker.App.Gameplay
             if (_defeated) return;
             _defeated = true;
             _playerWeapon?.SetFiring(false);
-            Debug.Log("[GameplaySceneDirector] DEFEAT — player HP reached 0. (Defeat→RESULTS transition is a Phase E follow-up.)");
+            _comp?.Run.Defeat(); // STAGE/BOSS → RESULTS (defeat), settles as non-full-clear
+            Debug.Log("[GameplaySceneDirector] DEFEAT — player HP reached 0.");
+        }
+
+        private bool _showResults;
+        private bool _resultWin;
+        private GUIStyle _resultStyle;
+
+        // Lightweight results overlay (ADR-0006 UGUI meta screen is a follow-up). Works on PC + touch.
+        private void OnGUI()
+        {
+            if (!_showResults) return;
+            float s = Mathf.Clamp(Screen.dpi > 0 ? Screen.dpi / 96f : 1f, 1f, 3.5f);
+            var prev = GUI.matrix;
+            GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(s, s, 1f));
+            float w = Screen.width / s, h = Screen.height / s;
+
+            if (_resultStyle == null)
+                _resultStyle = new GUIStyle(GUI.skin.label) { fontSize = 28, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+
+            var box = new Rect(w * 0.5f - 150f, h * 0.5f - 90f, 300f, 180f);
+            GUI.Box(box, GUIContent.none);
+            _resultStyle.normal.textColor = _resultWin ? new Color(0.4f, 0.95f, 1f) : new Color(1f, 0.45f, 0.4f);
+            GUI.Label(new Rect(box.x, box.y + 20f, box.width, 40f), _resultWin ? "VICTORY" : "DEFEAT", _resultStyle);
+
+            if (GUI.Button(new Rect(box.x + 70f, box.y + 110f, 160f, 40f), "RESTART (R)") ||
+                (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.R))
+                Restart();
+            GUI.matrix = prev;
+        }
+
+        private void Restart()
+        {
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(scene.buildIndex);
         }
     }
 }

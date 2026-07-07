@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 2681909794880122237}
   - component: {fileID: 4042027547823218670}
   - component: {fileID: 5039581499492642538}
-  - component: {fileID: 4348183417604834892}
   - component: {fileID: 2028230214280663346}
+  - component: {fileID: 2453548485297747475}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -183,19 +183,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.PlayerShip
   _config: {fileID: 11400000, guid: 4cbc945ae1504bb42bc298a755e11b3f, type: 2}
   _sprite: {fileID: 4105150313647393316}
---- !u!114 &4348183417604834892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 678df5c9cced2664bad11e9f239e61d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.KeyboardMouseInput
-  _camera: {fileID: 0}
 --- !u!114 &2028230214280663346
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -213,3 +200,16 @@ MonoBehaviour:
   _muzzleOffset: {x: 0, y: 0.42}
   _cullY: 7.5
   _projectileParent: {fileID: 0}
+--- !u!114 &2453548485297747475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4077772709127002868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e37208ad2403b04788ecd72bf6512f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.PlayerInputRouter
+  _showTouchControls: 1
