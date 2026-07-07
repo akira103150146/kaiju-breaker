@@ -115,13 +115,14 @@ namespace KaijuBreaker.Tests.EditMode.App
         }
 
         [Test]
-        public void test_gamefeel_tick_restores_time_scale_after_hitstop()
+        public void test_break_payoff_hands_hitstop_off_to_slowmo()
         {
             _comp.Bus.Publish(Break(kaijuId: 1));
-            Assert.AreEqual(0f, _time.TimeScale);
+            Assert.AreEqual(0f, _time.TimeScale, "hitstop froze first");
 
-            _comp.TickGameFeel(0.2f); // past the 115ms hitstop window
-            Assert.AreEqual(1f, _time.TimeScale, "the composed frame tick ends the freeze");
+            _comp.TickGameFeel(0.2f); // past the 115ms hitstop window → sequencer hands off to slow-mo
+            Assert.Greater(_time.TimeScale, 0f, "no longer frozen");
+            Assert.Less(_time.TimeScale, 1f, "now in slow-mo, not back to full speed");
         }
 
         // ── Reduce-motion flows through the shared settings + Meta persistence ─

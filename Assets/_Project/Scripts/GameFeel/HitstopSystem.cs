@@ -35,8 +35,18 @@ namespace KaijuBreaker.GameFeel
         /// <summary>Seconds of freeze remaining.</summary>
         public float RemainingSeconds => _timer;
 
+        private readonly bool _subscribed;
+
+        /// <summary>Fired the frame the freeze ends (used by the break-payoff sequencer to hand off to slow-mo).</summary>
+        public event System.Action HitstopEnded;
+
+        /// <param name="subscribeToBus">
+        /// When true (default, standalone use) the system self-subscribes to break events. Pass false when a
+        /// payoff sequencer drives it via <see cref="TriggerPartBreak"/>/<see cref="TriggerBossDeath"/> so it
+        /// can sequence hitstop → slow-mo without two systems fighting over the time scale.
+        /// </param>
         public HitstopSystem(IEventBus bus, GameFeelConfig config, ITimeScaleControl time,
-                             ReduceMotionSettings motion = null)
+                             ReduceMotionSettings motion = null, bool subscribeToBus = true)
         {
             _bus = bus ?? throw new ArgumentNullException(nameof(bus));
             _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -44,28 +54,34 @@ namespace KaijuBreaker.GameFeel
             _motion = motion;
             _onPartBroke = OnPartBroke;
             _onBossCoreBroke = OnBossCoreBroke;
-            _bus.Subscribe(_onPartBroke);
-            _bus.Subscribe(_onBossCoreBroke);
+            _subscribed = subscribeToBus;
+            if (_subscribed)
+            {
+                _bus.Subscribe(_onPartBroke);
+                _bus.Subscribe(_onBossCoreBroke);
+            }
         }
 
         /// <summary>Unsubscribe on teardown.</summary>
         public void Dispose()
         {
+            if (!_subscribed) return;
             _bus.Unsubscribe(_onPartBroke);
             _bus.Unsubscribe(_onBossCoreBroke);
         }
 
-        private void OnPartBroke(PartBroke evt)
+        /// <summary>Freeze for the part-break window (a boss freeze in progress is not overridden, §I.2).</summary>
+        public void TriggerPartBreak()
         {
-            // A boss-death freeze is not overridden by a part-break (§I.2).
             if (_active && _isBossHitstop) return;
             Freeze(_config.HitstopPartBreakMs, isBoss: false);
         }
 
-        private void OnBossCoreBroke(BossCoreBroke evt)
-        {
-            Freeze(_config.HitstopBossDeathMs, isBoss: true); // overrides any in-progress part-break freeze
-        }
+        /// <summary>Freeze for the boss-death window (overrides any in-progress part-break freeze).</summary>
+        public void TriggerBossDeath() => Freeze(_config.HitstopBossDeathMs, isBoss: true);
+
+        private void OnPartBroke(PartBroke evt) => TriggerPartBreak();
+        private void OnBossCoreBroke(BossCoreBroke evt) => TriggerBossDeath();
 
         private void Freeze(float milliseconds, bool isBoss)
         {
@@ -92,6 +108,7 @@ namespace KaijuBreaker.GameFeel
                 _active = false;
                 _isBossHitstop = false;
                 _time.TimeScale = 1f;
+                HitstopEnded?.Invoke(); // sequencer hands off to slow-mo here (same frame → no gap)
             }
         }
     }

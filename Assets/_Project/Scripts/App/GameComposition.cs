@@ -35,9 +35,11 @@ namespace KaijuBreaker.App
         public ReduceMotionSettings Motion { get; }
         public ReduceMotionController ReduceMotion { get; }
         public HitstopSystem Hitstop { get; }
+        public SlowmoSystem Slowmo { get; }
         public ShakeSystem Shake { get; }
         public FlashSystem Flash { get; }
         public SoftenedSignatureSystem Softened { get; }
+        public BreakPayoffSequencer Payoff { get; }
         public RunController Run { get; }
 
         /// <summary>Per-run stage assembly (null if the ContentRegistry has no stage config wired).</summary>
@@ -70,10 +72,14 @@ namespace KaijuBreaker.App
             // GameFeel — reduce-motion multipliers persist through Meta's flags.
             Motion = new ReduceMotionSettings();
             ReduceMotion = new ReduceMotionController(Motion, Meta);
-            Hitstop = new HitstopSystem(Bus, content.GameFeel, timeScale, Motion);
+            // Hitstop + Slowmo are driven by the payoff sequencer (not self-subscribed) so the freeze hands
+            // off cleanly to slow-mo instead of both fighting over the time scale.
+            Hitstop = new HitstopSystem(Bus, content.GameFeel, timeScale, Motion, subscribeToBus: false);
+            Slowmo = new SlowmoSystem(Bus, content.GameFeel, timeScale, Motion, subscribeToBus: false);
             Shake = new ShakeSystem(Bus, content.GameFeel, shakeRandom, Motion);
             Flash = new FlashSystem(content.GameFeel, Motion);
             Softened = new SoftenedSignatureSystem(Bus, content.GameFeel);
+            Payoff = new BreakPayoffSequencer(Bus, Hitstop, Slowmo, Flash);
 
             Run = new RunController(Bus, Meta);
 
@@ -90,6 +96,7 @@ namespace KaijuBreaker.App
         public void TickGameFeel(float unscaledDeltaSeconds)
         {
             Hitstop.Tick(unscaledDeltaSeconds);
+            Slowmo.Tick(unscaledDeltaSeconds);
             Shake.Tick(unscaledDeltaSeconds);
             Flash.Tick(unscaledDeltaSeconds);
             Softened.ResetFrame();
@@ -100,8 +107,10 @@ namespace KaijuBreaker.App
         {
             Stage?.Dispose();
             Run.Dispose();
+            Payoff.Dispose();
             Softened.Dispose();
             Shake.Dispose();
+            Slowmo.Dispose();
             Hitstop.Dispose();
             Economy.Dispose();
             Parts.Dispose();

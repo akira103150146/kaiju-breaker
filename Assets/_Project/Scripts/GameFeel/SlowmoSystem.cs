@@ -37,8 +37,15 @@ namespace KaijuBreaker.GameFeel
         /// <summary>True while slow-mo is holding or ramping.</summary>
         public bool IsActive => _phase != Phase.Idle;
 
+        private readonly bool _subscribed;
+
+        /// <param name="subscribeToBus">
+        /// True (default) → self-subscribe to break events (standalone). False → a payoff sequencer triggers
+        /// it via <see cref="TriggerPartBreak"/>/<see cref="TriggerBossDeath"/> after hitstop ends, so the two
+        /// don't both drive the time scale on the same event.
+        /// </param>
         public SlowmoSystem(IEventBus bus, GameFeelConfig config, ITimeScaleControl time,
-                            ReduceMotionSettings motion = null)
+                            ReduceMotionSettings motion = null, bool subscribeToBus = true)
         {
             _bus = bus ?? throw new ArgumentNullException(nameof(bus));
             _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -46,27 +53,34 @@ namespace KaijuBreaker.GameFeel
             _motion = motion;
             _onPartBroke = OnPartBroke;
             _onBossCoreBroke = OnBossCoreBroke;
-            _bus.Subscribe(_onPartBroke);
-            _bus.Subscribe(_onBossCoreBroke);
+            _subscribed = subscribeToBus;
+            if (_subscribed)
+            {
+                _bus.Subscribe(_onPartBroke);
+                _bus.Subscribe(_onBossCoreBroke);
+            }
         }
 
         /// <summary>Unsubscribe on teardown.</summary>
         public void Dispose()
         {
+            if (!_subscribed) return;
             _bus.Unsubscribe(_onPartBroke);
             _bus.Unsubscribe(_onBossCoreBroke);
         }
 
-        private void OnPartBroke(PartBroke evt)
+        /// <summary>Begin part-break slow-mo (a boss slow-mo in progress is not overridden).</summary>
+        public void TriggerPartBreak()
         {
-            if (IsActive && _isBoss) return; // boss slow-mo is not overridden by a part-break
+            if (IsActive && _isBoss) return;
             Begin(_config.SlowmoPartBreakTimescale, _config.SlowmoPartBreakHoldSeconds, isBoss: false);
         }
 
-        private void OnBossCoreBroke(BossCoreBroke evt)
-        {
-            Begin(_config.SlowmoBossDeathTimescale, _config.SlowmoBossDeathHoldSeconds, isBoss: true);
-        }
+        /// <summary>Begin boss-death slow-mo (deeper + longer; overrides a part-break slow-mo).</summary>
+        public void TriggerBossDeath() => Begin(_config.SlowmoBossDeathTimescale, _config.SlowmoBossDeathHoldSeconds, isBoss: true);
+
+        private void OnPartBroke(PartBroke evt) => TriggerPartBreak();
+        private void OnBossCoreBroke(BossCoreBroke evt) => TriggerBossDeath();
 
         private void Begin(float rawMin, float rawHold, bool isBoss)
         {
