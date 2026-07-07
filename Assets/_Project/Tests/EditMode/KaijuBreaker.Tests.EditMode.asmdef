@@ -12,7 +12,8 @@
         "KaijuBreaker.Meta",
         "KaijuBreaker.Stage",
         "KaijuBreaker.Difficulty",
-        "KaijuBreaker.GameFeel"
+        "KaijuBreaker.GameFeel",
+        "KaijuBreaker.App"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,66 +1,76 @@
-using KaijuBreaker.Core;
+using KaijuBreaker.Content;
 using UnityEngine;
 
 namespace KaijuBreaker.App
 {
     /// <summary>
-    /// Composition root (ADR-0005 §3). Lives on a persistent GameObject in the
-    /// Bootstrap scene and runs once at startup before any other scene loads.
-    ///
-    /// Responsibilities:
-    ///   1. Construct the single <see cref="IEventBus"/>.
-    ///   2. Construct each system and inject its dependencies (event bus + query interfaces).
-    ///   3. Initialise Addressables and transition to the MetaHub scene.
-    ///
-    /// This object is PURE WIRING — it holds no game state. Per ADR-0005 / coding-standards:
-    /// no static singletons holding state, no FindObjectOfType, DI over singletons.
-    /// Systems receive their dependencies here; they never reference each other directly.
+    /// Composition root MonoBehaviour (ADR-0005 §3). Lives on a persistent GameObject in the Bootstrap scene
+    /// and builds the whole system graph once at startup via <see cref="GameComposition"/> — the pure-C#
+    /// wiring — then supplies the Unity subsystem adapters and the per-frame drive loop. Holds NO game state
+    /// and no static singletons; systems receive their dependencies through the composition and talk only via
+    /// the event bus.
     /// </summary>
     [DefaultExecutionOrder(-1000)]
     public sealed class GameBootstrap : MonoBehaviour
     {
-        // Inspector-assigned ScriptableObject config references (populated in the Bootstrap
-        // scene — no runtime Find() calls). Added as each Content SO type lands (content-config epic).
-        // [SerializeField] private GameFeelConfig _gameFeelConfig;
-        // [SerializeField] private DifficultyConfig _difficultyConfig;
-        // [SerializeField] private SaveConfig _saveConfig;
-        // ... etc.
+        [Tooltip("The ContentRegistry asset holding every tuning ScriptableObject. Assign in the Bootstrap scene.")]
+        [SerializeField] private ContentRegistry _content;
 
-        /// <summary>The application-wide event bus. Injected into systems; not a global access point.</summary>
-        private IEventBus _bus;
+        [Tooltip("Optional camera the screen-shake offset is applied to. Defaults to Camera.main.")]
+        [SerializeField] private Camera _shakeCamera;
+
+        private GameComposition _composition;
+        private UnityTimeScaleControl _timeScale;
+        private Vector3 _cameraBasePosition;
+        private bool _hasCameraBase;
+
+        /// <summary>The live composed system graph (null until Awake, or if no ContentRegistry is assigned).</summary>
+        public GameComposition Composition => _composition;
 
         private void Awake()
         {
-            // Survive scene transitions — the composition root persists for the whole session.
             DontDestroyOnLoad(gameObject);
 
-            // 1. The one event bus (ADR-0002). Everything else is injected with it.
-            _bus = new TypedEventBus();
+            if (_content == null)
+            {
+                Debug.LogWarning("[GameBootstrap] No ContentRegistry assigned — system graph not built. " +
+                                 "Assign the ContentRegistry asset in the Bootstrap scene (see NEXT-STEPS §D.5).");
+                return;
+            }
 
-            WireSystems();
-
-            Debug.Log("[GameBootstrap] Core composition root initialised (event bus ready).");
-
-            // TODO (content-config + system epics): once systems exist, load the core_boot
-            // Addressables group and transition to the MetaHub scene.
+            _timeScale = new UnityTimeScaleControl();
+            _composition = new GameComposition(_content, Application.persistentDataPath, _timeScale);
+            Debug.Log("[GameBootstrap] System graph composed (event bus + Meta/Difficulty/KaijuParts/Economy/GameFeel/Run).");
         }
 
-        /// <summary>
-        /// Construct systems and inject dependencies. Each line is added as its epic lands;
-        /// order follows the dependency graph (Difficulty/Save → Parts → Weapons/Economy → …).
-        /// </summary>
-        private void WireSystems()
+        private void Update()
         {
-            // Foundation infrastructure is ready (_bus). System wiring is filled in per epic, e.g.:
-            //   var difficulty = new DifficultySystem(_difficultyConfig);                 // IDifficultyProvider
-            //   var meta       = new MetaSystem(_saveConfig, _bus);                        // ISaveService, IWeaponTierQuery
-            //   var kaijuParts = new KaijuPartsSystem(_partSystemConfig, _bus);            // IPartStateQuery
-            //   var weapons    = new WeaponsSystem(_weaponBalance, _bus, kaijuParts, meta);// injects IPartStateQuery + IWeaponTierQuery
-            //   var economy    = new EconomySystem(_economyConfig, _bus, meta);
-            //   var gameFeel   = new GameFeelSystem(_gameFeelConfig, _bus, kaijuParts);
-            //   var bridge     = new BulletSimBridge(_bus);                                // IBulletSimBridge
-            //   ...
-            // No system references another directly — only the bus + Core query interfaces.
+            if (_composition == null) return;
+            _composition.TickGameFeel(Time.unscaledDeltaTime);
+            ApplyShake();
         }
+
+        private void ApplyShake()
+        {
+            var cam = _shakeCamera != null ? _shakeCamera : Camera.main;
+            if (cam == null) return;
+
+            if (!_hasCameraBase) { _cameraBasePosition = cam.transform.position; _hasCameraBase = true; }
+
+            Vector2 offsetPx = _composition.Shake.ComputeOffset();
+            // Convert the pixel offset to a small world nudge (orthographic): 1 unit ≈ camera height / pixel height.
+            float unitsPerPixel = cam.orthographic && Screen.height > 0 ? (cam.orthographicSize * 2f) / Screen.height : 0.01f;
+            var offset = new Vector3(offsetPx.x, offsetPx.y, 0f) * unitsPerPixel;
+            cam.transform.position = _cameraBasePosition + offset;
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            if (pauseStatus) _composition?.Meta.FlushSyncNow(); // mobile suspend safety net (ADR-0004)
+        }
+
+        private void OnApplicationQuit() => _composition?.Meta.FlushSyncNow();
+
+        private void OnDestroy() => _composition?.Dispose();
     }
 }
