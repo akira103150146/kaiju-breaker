@@ -1,7 +1,7 @@
 # Story 005: SOFTENED 簽章與 STAGGERED 回饋 (SOFTENED Signature & STAGGERED Feedback)
 
 > **Epic**: 打擊感（VFX / SFX / Game Feel）
-> **Status**: Ready
+> **Status**: ✅ Core complete (2026-07-07, EditMode GREEN); particles/glow visuals = renderer follow-up
 > **Layer**: Presentation
 > **Type**: Visual/Feel
 > **Estimate**: L (4–6h)

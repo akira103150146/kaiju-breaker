@@ -1,7 +1,7 @@
 # Story 001: GameFeelConfig ScriptableObject
 
 > **Epic**: 打擊感（VFX / SFX / Game Feel）
-> **Status**: Ready
+> **Status**: ✅ Satisfied by existing GameFeelConfig SO (content-config epic)
 > **Layer**: Foundation (Content assembly)
 > **Type**: Config/Data
 > **Estimate**: S (2–3h)

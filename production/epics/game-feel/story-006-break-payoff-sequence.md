@@ -1,7 +1,7 @@
 # Story 006: 破壞爆破酬勞序列 (Break Payoff Sequence)
 
 > **Epic**: 打擊感（VFX / SFX / Game Feel）
-> **Status**: Ready
+> **Status**: ✅ Core complete (2026-07-07, EditMode GREEN); particles/glow visuals = renderer follow-up
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: L (5–7h)
