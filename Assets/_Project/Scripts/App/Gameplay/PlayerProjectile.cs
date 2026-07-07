@@ -1,4 +1,5 @@
 using System;
+using KaijuBreaker.Core;
 using KaijuBreaker.Stage;
 using UnityEngine;
 
@@ -16,14 +17,17 @@ namespace KaijuBreaker.App.Gameplay
     public sealed class PlayerProjectile : MonoBehaviour
     {
         private float _speed;
-        private float _damage;
-        private float _heatDelta;
+        private float _damage;      // vs trash-enemy HP
+        private float _heatDelta;   // laser heat vs a boss part
+        private float _breakDamage; // missile break units vs a boss part
+        private bool _isMissile;
+        private WeaponId _weaponId;
         private float _life;
         private float _cullY;
         private bool _active;
         private Action<PlayerProjectile> _onDespawn;
 
-        /// <summary>Heat contribution this projectile carries to a boss part (soften track). Read in Phase D.</summary>
+        /// <summary>Heat contribution this projectile carries to a boss part (soften track).</summary>
         public float HeatDelta => _heatDelta;
 
         private void Awake()
@@ -35,13 +39,16 @@ namespace KaijuBreaker.App.Gameplay
         }
 
         /// <summary>Arm this projectile for flight. Called by the pool on spawn.</summary>
-        public void Launch(Vector3 position, float speed, float damage, float heatDelta, float cullY,
-                           Action<PlayerProjectile> onDespawn)
+        public void Launch(Vector3 position, float speed, float damage, float heatDelta, float breakDamage,
+                           bool isMissile, WeaponId weaponId, float cullY, Action<PlayerProjectile> onDespawn)
         {
             transform.position = position;
             _speed = speed;
             _damage = damage;
             _heatDelta = heatDelta;
+            _breakDamage = breakDamage;
+            _isMissile = isMissile;
+            _weaponId = weaponId;
             _cullY = cullY;
             _life = 4f;
             _onDespawn = onDespawn;
@@ -61,13 +68,23 @@ namespace KaijuBreaker.App.Gameplay
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!_active) return;
+
             var enemy = other.GetComponentInParent<EnemyController>();
             if (enemy != null)
             {
                 enemy.TakeDamage(_damage);
                 Despawn();
+                return;
             }
-            // Boss-part branch (publish LaserHit via the weapon) is added in Phase D.
+
+            // Boss part — lasers feed the heat/soften track, missiles feed the break track (dual-track).
+            var part = other.GetComponentInParent<BossPart>();
+            if (part != null)
+            {
+                if (_isMissile) part.ReceiveMissile(_breakDamage, _weaponId);
+                else part.ReceiveLaser(_heatDelta);
+                Despawn();
+            }
         }
 
         private void Despawn()

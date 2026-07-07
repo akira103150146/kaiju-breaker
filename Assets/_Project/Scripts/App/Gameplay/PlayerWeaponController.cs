@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using KaijuBreaker.Content;
+using KaijuBreaker.Core;
 using UnityEngine;
 
 namespace KaijuBreaker.App.Gameplay
@@ -30,31 +31,51 @@ namespace KaijuBreaker.App.Gameplay
         [SerializeField] private Transform _projectileParent;
 
         private readonly List<PlayerProjectile> _pool = new List<PlayerProjectile>();
+        private IPlayerInput _input;
         private float _primaryCooldown;
+        private float _secondaryCooldown;
         private bool _firing = true;
 
-        /// <summary>Enable/disable primary auto-fire (e.g. pause between phases or on defeat).</summary>
+        private void Awake() => _input = GetComponent<IPlayerInput>();
+
+        /// <summary>Enable/disable fire (e.g. pause between phases or on defeat).</summary>
         public void SetFiring(bool firing) => _firing = firing;
 
         private void Update()
         {
             if (_config == null || _projectilePrefab == null) return;
             if (!_firing) return;
+            float dt = Time.deltaTime;
 
-            _primaryCooldown -= Time.deltaTime;
+            // Primary — always-on auto-fire (laser: trash HP + boss heat).
+            _primaryCooldown -= dt;
             if (_primaryCooldown <= 0f)
             {
                 FirePrimary();
                 _primaryCooldown = _config.PrimaryFireInterval;
+            }
+
+            // Secondary — manual missile (trash HP + boss break). PC = Space/RMB; mobile button in Phase E.
+            _secondaryCooldown -= dt;
+            if (_secondaryCooldown <= 0f && _input != null && _input.SecondaryPressedThisFrame)
+            {
+                FireSecondary();
+                _secondaryCooldown = _config.SecondaryCooldown;
             }
         }
 
         private void FirePrimary()
         {
             Vector3 origin = transform.position + (Vector3)_muzzleOffset;
-            var p = Rent();
-            p.Launch(origin, _config.PrimaryProjectileSpeed, _config.PrimaryDamage, _config.PrimaryHeatDelta,
-                     _cullY, Return);
+            Rent().Launch(origin, _config.PrimaryProjectileSpeed, _config.PrimaryDamage, _config.PrimaryHeatDelta,
+                          0f, false, default, _cullY, Return);
+        }
+
+        private void FireSecondary()
+        {
+            Vector3 origin = transform.position + (Vector3)_muzzleOffset;
+            Rent().Launch(origin, _config.SecondaryProjectileSpeed, _config.SecondaryTrashDamage, 0f,
+                          _config.SecondaryBreakDamage, true, WeaponId.M1, _cullY, Return);
         }
 
         private PlayerProjectile Rent()

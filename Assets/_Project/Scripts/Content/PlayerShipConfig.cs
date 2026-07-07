@@ -50,6 +50,19 @@ namespace KaijuBreaker.Content
         [Tooltip("Heat delta a primary projectile contributes to a boss part on hit (drives the soften track).")]
         [SerializeField] private float _primaryHeatDelta = 17f;
 
+        [Header("Secondary manual-fire (missile — breaks parts)")]
+        [Tooltip("Minimum seconds between secondary shots.")]
+        [SerializeField] private float _secondaryCooldown = 0.45f;
+
+        [Tooltip("Secondary projectile speed (world units/sec).")]
+        [SerializeField] private float _secondaryProjectileSpeed = 13f;
+
+        [Tooltip("Damage a secondary projectile deals to a trash enemy's HP.")]
+        [SerializeField] private float _secondaryTrashDamage = 45f;
+
+        [Tooltip("Break delta (break units) a secondary projectile applies to a boss part (the break track).")]
+        [SerializeField] private float _secondaryBreakDamage = 30f;
+
         // ── Movement ────────────────────────────────────────────────────────────────
         /// <summary>Keyboard/stick move speed (world units/sec).</summary>
         public float MoveSpeed => _moveSpeed;
@@ -80,6 +93,16 @@ namespace KaijuBreaker.Content
         public float PrimaryDamage => _primaryDamage;
         /// <summary>Heat delta a primary projectile adds to a boss part.</summary>
         public float PrimaryHeatDelta => _primaryHeatDelta;
+
+        // ── Secondary fire ────────────────────────────────────────────────────────────
+        /// <summary>Minimum seconds between secondary (missile) shots.</summary>
+        public float SecondaryCooldown => _secondaryCooldown;
+        /// <summary>Secondary projectile speed (world units/sec).</summary>
+        public float SecondaryProjectileSpeed => _secondaryProjectileSpeed;
+        /// <summary>Secondary projectile damage vs a trash enemy's HP.</summary>
+        public float SecondaryTrashDamage => _secondaryTrashDamage;
+        /// <summary>Break-unit delta a secondary projectile applies to a boss part.</summary>
+        public float SecondaryBreakDamage => _secondaryBreakDamage;
 
         private void OnValidate()
         {

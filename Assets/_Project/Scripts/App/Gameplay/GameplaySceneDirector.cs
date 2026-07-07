@@ -34,6 +34,9 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Pooled enemy-bullet prefab (EnemyBullet). Enemies fire from a shared pool built at run start.")]
         [SerializeField] private EnemyBullet _enemyBulletPrefab;
 
+        [Tooltip("Boss encounter controller (hidden until the 道中 clears). Optional — no boss if unassigned.")]
+        [SerializeField] private BossController _bossController;
+
         [Tooltip("Begin the run automatically on Play. Off = call BeginRun() from a menu/START button.")]
         [SerializeField] private bool _autoStart = true;
 
@@ -117,8 +120,9 @@ namespace KaijuBreaker.App.Gameplay
 
         private void OnWavesCleared()
         {
-            // Phase A: 道中 cleared. The pre-boss lull → boss handoff is Phase D; for now stop and report.
-            Debug.Log("[GameplaySceneDirector] 道中 CLEAR — all wave segments cleared (boss entrance is Phase D).");
+            Debug.Log("[GameplaySceneDirector] 道中 CLEAR — entering boss fight.");
+            if (_bossController != null) _bossController.BeginBossFight(_comp);
+            else Debug.Log("[GameplaySceneDirector] No BossController assigned — run ends after 道中.");
         }
 
         private void OnRunStateChanged(RunStateChanged evt)
