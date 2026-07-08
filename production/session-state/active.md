@@ -9,9 +9,11 @@
 - **RUNTIME 驗證**: 真 Play session 發 PartBroke → timeScale=0+flash 0.78+shake 11+Meta partsBroken=1（整條事件鏈跑通）。
 - **TESTS**: **442 EditMode + 10 PlayMode GREEN**。**~40 commits 全 push**（origin/main HEAD `3e4d3d3`）。
 - **BUILDS**: `Builds/Windows/kaiju-breaker.exe`(118MB) + `Builds/Android/kaiju-breaker.apk`(46.9MB) 含美術+UI修復。
-- **✅ session 8 已完成**：首個「正式系統可玩 run」A→E + **介面美術頂一下 + 選單流程**。完整體驗＝**標題 → 選頭目(洛克人X4風獨立hub) → 選裝備(L/M/難度) → 出擊 → 道中(多樣小怪) → Boss(真戰) → 勝負結算**，PC+手機控制。UI 用 Ark Pixel 字體(中文OK)+程序化冷色貼圖(GameUiSkin)。**已 push 到 origin/main HEAD `d7f4abd`**；**EXE+APK 已重建含新UI**。
-- **★ 工作習慣**：MCP 進 Play/截圖會把 Unity 切前景打斷導演 → 預設用 **EditMode 測試+反射驗證**，視覺確認集中並先告知（見 [[verify-without-stealing-focus]]）。
-- **TODO（下次）**: ① LACERA/VOLTWYRM KaijuDef+encounter → 接上選頭目(目前只有CARAPEX可打，另兩隻LOCKED) ② 武器選擇真正驅動玩家開火(接真WeaponBehaviour) ③ Boss 進場走真 PreBossLull ④ UI 改 UGUI+TMP(ADR-0006；目前 IMGUI) ⑤ bespoke kaiju 美術+軟化glow/粒子+頭目頭像 ⑥ composable emitter ⑦ Game view 直向。
+- **✅ session 8 已完成**：首個「正式系統可玩 run」A→E + 介面美術/選單 + **雷電3式強化 + 循環武器莢艙 + meta utility 升級 + 三頭目**。完整體驗＝**標題 → 選頭目(洛克人X4風,三隻可打) → 強化⚙(花碎片升開火速度/掉落率) → 選裝備 → 出擊 → 道中(撿P火力/M飛彈/W莢艙) → Boss(CARAPEX/LACERA/VOLTWYRM 真戰) → 勝負結算**，PC+手機。UI=Ark Pixel+程序化冷色貼圖。**已 push HEAD `65a83e8`**；**EXE+APK 重建中/已含全部**。
+- **雷電3式強化（in-run，每run重置，只加殺傷力）**：P綠(火力↑散彈加彈數) / M藍(飛彈↑) / W莢艙(徘徊循環顯示當前武器→切型)；小怪掉P/M、菁英掉莢艙+P。**meta（跨run）只升 utility**（開火速度/掉落率，花碎片，`UtilityUpgrades` 6測試）——兩層不重疊。武器型4味(散/集/廣/穿)。
+- **三頭目**：BossController 改 roster(BossEntry[])，選頭目 index 選誰打；Kaiju_Lacera(肢/5部件)+Kaiju_Voltwyrm(能量/核+2裝甲+2頸)；場景 Boss_Lacera/Boss_Voltwyrm，部件綁定驗證 5/5。
+- **★ 工作習慣**：MCP 進 Play/截圖會把 Unity 切前景打斷導演 → 預設用 **EditMode 測試+反射驗證**，視覺確認集中並先告知（[[verify-without-stealing-focus]]）。本輪 B/C/D 全程沒進 Play。**448 EditMode GREEN**。
+- **TODO（下次）**: ① 武器選擇/型號真正驅動玩家開火(接真 WeaponBehaviour，目前 placeholder 每型參數) ② 新兩頭目的 per-part 開火/移動 + bespoke kaiju 美術 + 頭目頭像 ③ Boss 進場走真 PreBossLull ④ UI 改 UGUI+TMP(ADR-0006) ⑤ upgrade 等級移進 SaveData(目前 flag 編碼) ⑥ composable emitter ⑦ Game view 直向。
 - **關鍵路徑**: `Scripts/App/*` 組合根 · `Scenes/Bootstrap.unity` · `Data/*` assets · MCP `run_tests` EditMode/PlayMode。
 
 ## Session 8 (2026-07-07) — 首個「正式系統可玩 run」開工 (道中+Boss並重、正式prefab、彈幕多樣化)
