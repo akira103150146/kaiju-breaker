@@ -35,7 +35,15 @@
 - **⏳ 重建 EXE(116.7MB)+APK(47MB) 完成**（含三頭目 per-part 發射 + CARAPEX 視覺）。
 - **✅ 5 新頭目全可玩**（`caff979`，2026-07-09）：execute_code 程序化建 5 KaijuDef asset(含各部位 emitter)+場景 BossPart 階層(placeholder 色塊 sprite：核紅/一般橙/裝甲鋼藍)+註冊 roster(KaijuId 1–8 唯一)。選頭目 UI 改動態 4×2 格顯示全 8 隻。全用 AssetDatabase/SerializedObject 驗證：8-boss roster、emitter 解析、部位名稱對得上 def。emitter：巢母卵囊放射/稜殼晶面放射/潮顎顎牆/燼使燼孔放射/虛尖脊柱放射+衛星瞄準+盾牆。EXE 116.8MB+APK 47MB 重建含全部。
   - **踩雷**：execute_code 的 `using` 不能放方法內(用完整命名空間)；`GameObject.Find` 找不到 inactive(頭目隱藏中，改用 roster BossRoot 參照驗證)；Unity 跳「save scene」對話框會卡住 MCP build 指令(導演按掉才通)。KaijuDef .asset 手改/程序化都可(SerializedObject 設 _parts/_emitters 陣列最穩)。
-- **下一步(續作)**：① 部位移動資料(Lacera 四肢 SweepArc/Voltwyrm 頸旋轉/稜殼晶面公轉—需場景 pivot/程序化)；② 5 新頭目 body-base/bespoke 美術(目前色塊 placeholder)；③ 6 新小怪 SO/prefab；④ PartStateSystem ArmorRegen+PartGate(6c)；⑤ minion-spawner(BROODCORE 卵囊生 spore_mite)；⑥ 頭目 emitter cadence 針對 boss 調(目前沿用小怪值)；⑦ 音樂方向規格。
+- **✅ 導演加點 1/3/4/5 全完成**（2026-07-09，程序化 execute_code）：
+  - **① 部位移動**（`e5ada5a`）：利刃獸四肢 SweepArc/稜殼晶面 Orbit/虛尖盾 Spin+衛星 Orbit/雷龍頸 Spin。TickPartMotion 驅動、邊動邊射。
+  - **⑤ boss 專屬彈幕**（`c2c3bee`）：Emitter_BossSpiral(旋轉臂)/BossAimed(密扇)/BossWall(寬牆)，8 頭目 42 部位依角色重指向(Radial→Spiral/Linear→Wall/Aimed→Aimed)。引入旋轉螺旋。
+  - **③ 6 新小怪**（`e4902f0`）：spore_mite/spiral_turret/diver/prism_drone/bubbler/void_lancer + Movement_DiveSwoop/HoverStrafe + Emitter_MobSpiral，加進 5 段落池。EnemyController 加 spin 相位讓 Spiral 真旋轉。
+  - **④a 破甲回填**（`cd14b8b`）：PartStateSystem.TickArmorRegen(grace 後衰退 BCurrent，飛彈重置/雷射不重置，不復活已破，預設關)。TIDEMAW 三顎啟用(5s/6BU)。+3 測試 → **466 EditMode GREEN**。
+  - **④b 巢母生小怪**（`e7f5bdf`）：BossController spawner emitter(SpawnEnemyId 生 EnemyDef，全域上限 8，戰鬥始/勝清理)。巢母 5 卵囊同放螺旋彈+生 spore_mite；破卵囊兩者停。指定 _minionPrefab=Enemy/_minionDef=spore_mite。
+  - EXE 116.8MB+APK 47MB 重建含全部。
+  - **★踩雷**：build 前 Unity 若有未存場景會跳「save scene」模態對話框**卡住 MCP build**(build/status 全 timeout、telemetry 可回)；且 domain reload 後作用場景可能變成 Untitled 空場景(Bootstrap 被卸)。**修法/守則**：build 前先 `manage_scene save`；若場景變 Untitled→`manage_scene load Bootstrap`(它已含磁碟上存好的改動)再存再 build。見 memory [[save-scene-before-build]]。
+- **下一步(續作)**：5 新頭目 body-base/bespoke 美術(目前色塊)；PartGate 執行(6c 跨部位 hittable/breakable)；頭目 emitter cadence 微調；音樂方向規格；per-part 移動的場景 pivot 微調(新頭目 Orbit t=0 可能有小跳)。
 - **YAML 手改 KaijuDef emitter 的方法**：`_emitters` 陣列加在 part 的 `_dropTableId` 後；每項 `_pattern:{fileID:11400000,guid:<emitterGUID>,type:2}` + `_gate:0`(AliveOnly)。emitter GUID：AimedShot 749e…/TriFan 2693…/Wall 7073…/Ring c713…。refresh assets→execute_code 載入驗證。
 - **~~⏳ 下一步 = task #6 執行層接線~~（已完成 6a/6b）**（schema spec §7 其餘）：
   1. `EnemyEmission`/`EnemyMovement` 純函式加 Spiral/DiveSwoop/HoverStrafe 分支(+EditMode 測試)。
