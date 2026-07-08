@@ -251,7 +251,7 @@ namespace KaijuBreaker.App.Gameplay
             else if (_showBossSelect) DrawBossSelect(w, h);
             else if (_showLoadout) DrawLoadout(w, h);
             else if (_showResults) DrawResults(w, h);
-            else DrawHud(w, h);
+            else DrawHud(w, h, s);
 
             GUI.matrix = prev;
         }
@@ -296,7 +296,7 @@ namespace KaijuBreaker.App.Gameplay
             if (blink) GUI.Label(new Rect(panel.x, panel.y + 150f, panel.width, 30f), "點擊開始  ·  TAP TO START", GameUiSkin.SmallStyle);
         }
 
-        private void DrawHud(float w, float h)
+        private void DrawHud(float w, float h, float s)
         {
             // HP bar (bottom-centre, above the touch controls) + phase tag (top-centre).
             if (_player != null)
@@ -316,6 +316,8 @@ namespace KaijuBreaker.App.Gameplay
                     GUI.Label(ar, arsenal, GameUiSkin.SmallStyle);
                 }
             }
+            DrawPodLabels(s);
+
             string phase = _runState == RunState.Boss ? "頭目戰  BOSS" : _runState == RunState.Stage ? "道中  STAGE" : "";
             if (phase.Length > 0)
             {
@@ -324,6 +326,28 @@ namespace KaijuBreaker.App.Gameplay
                 var st = _runState == RunState.Boss ? GameUiSkin.HeadingStyle : GameUiSkin.LabelStyle;
                 var pc = st.normal.textColor; st.normal.textColor = _runState == RunState.Boss ? GameUiSkin.Warm : GameUiSkin.Ink;
                 GUI.Label(tag, phase, st); st.normal.textColor = pc;
+            }
+        }
+
+        // Float each active weapon pod's currently-offered weapon code over it (so the player can wait for
+        // the one they want), tinted by pool (laser = cyan, missile = gold).
+        private void DrawPodLabels(float s)
+        {
+            var cam = Camera.main;
+            if (cam == null) return;
+            var pods = FindObjectsByType<WeaponPodController>(FindObjectsSortMode.None);
+            for (int i = 0; i < pods.Length; i++)
+            {
+                var pod = pods[i];
+                Vector3 sp = cam.WorldToScreenPoint(pod.transform.position);
+                if (sp.z < 0f) continue;
+                var box = new Rect(sp.x / s - 26f, (Screen.height - sp.y) / s - 34f, 52f, 20f);
+                GUI.Box(box, GUIContent.none, GameUiSkin.PanelStyle);
+                var st = GameUiSkin.SmallStyle;
+                var pc = st.normal.textColor;
+                st.normal.textColor = pod.PodType == PodType.Primary ? GameUiSkin.Cyan : new Color(1f, 0.82f, 0.35f);
+                GUI.Label(box, pod.CurrentWeapon.ToString(), st);
+                st.normal.textColor = pc;
             }
         }
 
