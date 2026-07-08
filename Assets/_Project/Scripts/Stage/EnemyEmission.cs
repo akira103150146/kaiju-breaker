@@ -17,7 +17,8 @@ namespace KaijuBreaker.Stage
         /// (unnormalised) direction to the player for <see cref="EmitterPatternType.Aimed"/>; ignored by the
         /// fixed-direction and radial shapes.
         /// </summary>
-        public static Vector2[] Velocities(EmitterPatternType type, int count, float spreadDeg, float speed, Vector2 aimDir)
+        public static Vector2[] Velocities(EmitterPatternType type, int count, float spreadDeg, float speed, Vector2 aimDir,
+                                           float spinPhaseDeg = 0f)
         {
             count = Mathf.Max(1, count);
             switch (type)
@@ -26,6 +27,9 @@ namespace KaijuBreaker.Stage
                     return Fan(AngleDeg(aimDir), spreadDeg, count, speed);
                 case EmitterPatternType.Linear:
                     return Fan(-90f, spreadDeg, count, speed); // -90° = straight down (a fixed wall)
+                case EmitterPatternType.Spiral:
+                    // Rotating radial arms: a ring whose start angle advances by the caller-accumulated phase.
+                    return Ring(count, speed, spinPhaseDeg);
                 case EmitterPatternType.Radial:
                 case EmitterPatternType.RingBurst:
                 default:
@@ -44,12 +48,12 @@ namespace KaijuBreaker.Stage
             return result;
         }
 
-        // Evenly spaced full-circle ring.
-        private static Vector2[] Ring(int count, float speed)
+        // Evenly spaced full-circle ring, optionally rotated by startDeg (Spiral uses the accumulated phase).
+        private static Vector2[] Ring(int count, float speed, float startDeg = 0f)
         {
             var result = new Vector2[count];
             float step = 360f / count;
-            for (int i = 0; i < count; i++) result[i] = Dir(i * step) * speed;
+            for (int i = 0; i < count; i++) result[i] = Dir(startDeg + i * step) * speed;
             return result;
         }
 

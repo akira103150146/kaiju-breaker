@@ -82,6 +82,28 @@ namespace KaijuBreaker.Stage
                     pos.x = st.SpawnX + Mathf.Sin(st.Elapsed * 2f * Mathf.PI * m.FrequencyHz) * amp;
                     break;
                 }
+                case MovementType.DiveSwoop:
+                {
+                    // Arc in at EntryAngleDeg, then curve away: vertical eases off as horizontal grows.
+                    float ang = m.EntryAngleDeg * Mathf.Deg2Rad;
+                    float dir = st.SpawnX <= 0f ? 1f : -1f;              // sweep toward the far side
+                    float t = Mathf.Clamp01(st.Elapsed / 1.6f);
+                    pos.y -= speed * Mathf.Cos(ang) * (1f - 0.5f * t) * dt;
+                    pos.x += dir * speed * Mathf.Sin(ang) * (0.4f + t) * dt;
+                    break;
+                }
+                case MovementType.HoverStrafe:
+                {
+                    // Descend to the station line, then strafe laterally across ±StrafeHalfWidth about entry X.
+                    if (!st.HoverReached && pos.y > HoverStationY) pos.y -= speed * dt;
+                    else
+                    {
+                        st.HoverReached = true;
+                        float amp = m.StrafeHalfWidthPx * PxToWorld;
+                        pos.x = st.SpawnX + Mathf.Sin(st.Elapsed * 1.5f) * amp;
+                    }
+                    break;
+                }
             }
             return pos;
         }
