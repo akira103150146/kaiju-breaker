@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using KaijuBreaker.Core;
+using KaijuBreaker.Meta;
 using KaijuBreaker.Stage;
 using UnityEngine;
 
@@ -59,6 +60,8 @@ namespace KaijuBreaker.App.Gameplay
         private bool _defeated;
         private bool _showTitle;
         private bool _showBossSelect;
+        private bool _showUpgrades;
+        private UtilityUpgrades _utility;
         private int _selBossIndex;
         private bool _showLoadout;
         private WeaponId _selPrimary = WeaponId.L1;
@@ -83,6 +86,7 @@ namespace KaijuBreaker.App.Gameplay
             _comp.Bus.Subscribe(_onRunStateChanged);
             _onWeaponPodGrabbed = evt => _playerWeapon?.SetWeapon(evt.Weapon); // pod pickup switches weapon type
             _comp.Bus.Subscribe(_onWeaponPodGrabbed);
+            _utility = new UtilityUpgrades(_comp.Meta); // meta utility upgrades (fire rate / drop rate)
 
             SpawnPlayer();
             _playerWeapon?.SetFiring(false); // hold fire on the title screen
@@ -152,6 +156,7 @@ namespace KaijuBreaker.App.Gameplay
 
             var content = _bootstrap.Content;
             _playerWeapon?.ResetArsenal(_selPrimary, _selSecondary); // in-run firepower starts at level 1
+            _playerWeapon?.SetFireIntervalMult(_utility != null ? _utility.FireIntervalMult : 1f); // meta faster-fire
 
             // Shared enemy-bullet pool + the drop callback (enemies roll in-run power-ups on death).
             EnemyBulletPool pool = null;
@@ -183,9 +188,10 @@ namespace KaijuBreaker.App.Gameplay
                 Spawn(pos + Vector3.right * 0.5f, PowerUpKind.Power);
                 return;
             }
+            float mult = _utility != null ? _utility.DropRateMult : 1f; // meta drop-rate upgrade
             float r = UnityEngine.Random.value;
-            if (r < 0.16f) Spawn(pos, PowerUpKind.Power);
-            else if (r < 0.26f) Spawn(pos, PowerUpKind.Missile);
+            if (r < 0.16f * mult) Spawn(pos, PowerUpKind.Power);
+            else if (r < 0.26f * mult) Spawn(pos, PowerUpKind.Missile);
         }
 
         private void Spawn(Vector3 pos, PowerUpKind kind)
@@ -248,6 +254,7 @@ namespace KaijuBreaker.App.Gameplay
             float w = Screen.width / s, h = Screen.height / s;
 
             if (_showTitle) DrawTitle(w, h);
+            else if (_showUpgrades) DrawUpgrades(w, h);
             else if (_showBossSelect) DrawBossSelect(w, h);
             else if (_showLoadout) DrawLoadout(w, h);
             else if (_showResults) DrawResults(w, h);
@@ -388,6 +395,36 @@ namespace KaijuBreaker.App.Gameplay
 
             var confirm = new Rect(panel.x + panel.width * 0.5f - 95f, panel.y + 296f, 190f, 42f);
             if (GUI.Button(confirm, "確定  ▶  裝備", GameUiSkin.ButtonStyle)) ConfirmBossSelect();
+
+            var upg = new Rect(panel.xMax - 118f, panel.y + 14f, 104f, 28f);
+            if (GUI.Button(upg, "強化 ⚙", GameUiSkin.ButtonStyle)) { _showBossSelect = false; _showUpgrades = true; }
+        }
+
+        // Meta utility upgrade shop (spend shards on faster fire / higher drop rate — killing power is in-run).
+        private void DrawUpgrades(float w, float h)
+        {
+            var panel = new Rect(w * 0.5f - 210f, h * 0.5f - 160f, 420f, 320f);
+            GUI.Box(panel, GUIContent.none, GameUiSkin.PanelStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 16f, panel.width, 32f), "強化 · UPGRADE", GameUiSkin.HeadingStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 52f, panel.width, 18f), "碎片 Shards：" + (_utility != null ? _utility.Shards : 0), GameUiSkin.SmallStyle);
+
+            if (_utility != null)
+            {
+                UpgradeRow(panel, 86f, "開火速度  FIRE RATE", _utility.FireRateLevel, _utility.CostFor(_utility.FireRateLevel), _utility.BuyFireRate);
+                UpgradeRow(panel, 158f, "掉落率  DROP RATE", _utility.DropRateLevel, _utility.CostFor(_utility.DropRateLevel), _utility.BuyDropRate);
+            }
+
+            var back = new Rect(panel.x + panel.width * 0.5f - 90f, panel.y + 262f, 180f, 42f);
+            if (GUI.Button(back, "返回 BACK", GameUiSkin.ButtonStyle)) { _showUpgrades = false; _showBossSelect = true; }
+        }
+
+        private void UpgradeRow(Rect panel, float y, string title, int level, int cost, System.Func<bool> buy)
+        {
+            GUI.Label(new Rect(panel.x + 22f, panel.y + y, 240f, 20f), title, GameUiSkin.LabelStyle);
+            GUI.Label(new Rect(panel.x + 22f, panel.y + y + 22f, 200f, 16f), "Lv " + level + " / " + UtilityUpgrades.MaxLevel, GameUiSkin.SmallStyle);
+            var btn = new Rect(panel.xMax - 150f, panel.y + y + 4f, 130f, 40f);
+            if (level >= UtilityUpgrades.MaxLevel) GUI.Label(btn, "MAX", GameUiSkin.SmallStyle);
+            else if (GUI.Button(btn, "升級 (" + cost + ")", GameUiSkin.ButtonStyle)) buy();
         }
 
         private void DrawResults(float w, float h)

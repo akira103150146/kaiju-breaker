@@ -28,7 +28,11 @@ namespace KaijuBreaker.App.Gameplay
         private IPlayerInput _input;
         private float _primaryCooldown;
         private float _secondaryCooldown;
+        private float _fireIntervalMult = 1f; // meta utility upgrade (lower = faster)
         private bool _firing = true;
+
+        /// <summary>Apply the meta faster-fire upgrade multiplier to the primary interval (1 = none).</summary>
+        public void SetFireIntervalMult(float mult) => _fireIntervalMult = Mathf.Max(0.2f, mult);
 
         // ── In-run arsenal (resets each run) ──────────────────────────────────────────
         private int _weaponPower = 1;
@@ -77,7 +81,7 @@ namespace KaijuBreaker.App.Gameplay
             float dt = Time.deltaTime;
 
             _primaryCooldown -= dt;
-            if (_primaryCooldown <= 0f) { FirePrimary(); _primaryCooldown = _config.PrimaryFireInterval; }
+            if (_primaryCooldown <= 0f) { FirePrimary(); _primaryCooldown = _config.PrimaryFireInterval * _fireIntervalMult; }
 
             _secondaryCooldown -= dt;
             if (_secondaryCooldown <= 0f && _input != null && _input.SecondaryPressedThisFrame)
