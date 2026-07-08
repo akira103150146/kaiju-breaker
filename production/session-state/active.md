@@ -13,9 +13,19 @@
   - `per-part-firing-schema.md`（`f89dbe1`）：權威 schema 規格 — PartDef 加 Emitters[]/PartMovement/PartGate/ArmorRegen；KaijuDef 加 BodyMovement；enums KaijuTheme+5/MaterialId+5核心/EmitterPatternType+Spiral/MovementType+DiveSwoop·HoverStrafe/EnemyTier. 向後相容.
   - `systems-index` C1 更新為 8 隻 + C2 敵人擴充.
 - **⚠️ 待導演定案（非阻擋）**：**經濟 sink** — 5 新核心(core_swarm/crystal/abyss/ember/void)「升級什麼」？現 8 武器升級綁 3 原始核心。選項 A 新養成軸 / B 擴武器成本池 / C 只計圖鑑。實作先讓每部位正確掉新核心不 crash.
-- **⏳ 進行中**：unity-specialist 實作 schema §1–6（enums+PartDef/KaijuDef 欄位+EconomyConfig 對映+EditMode 測試，純加法）。完成後我 MCP 編譯+跑測試驗證→再接 §7 執行（BossController per-part 發射+部位移動，task #6）.
-- **TaskList**：#1 build✅ #2 骨幹✅ #3 GDD✅ #4 敵人✅ #5 schema(進行) #6 wiring(待).
-- **下一步(續作)**：等 schema agent→MCP run_tests EditMode 驗綠→commit→task#6 BossController 接 per-part 發射(用 EnemyBulletPool)+部位移動+新小怪 SO/prefab→可玩驗證→重建 build.
+- **✅ schema 實作完成 + 驗綠**（`8a81a08`，task #5）：per-part-firing-schema §1–6 全實作。**459 EditMode GREEN**（448→459，+12 新測試，0 fail）。
+  - enums：KaijuTheme+5(Swarm/Crystal/Abyss/Ember/Void)、MaterialId+5 core、EmitterPatternType+Spiral(+SpinRate)、MovementType+DiveSwoop/HoverStrafe(+EntryAngle/StrafeHalf)、新 EnemyTier + EnemyDef.Tier。
+  - **修好潛在 crash**：unity-specialist 只做了 1/3(3 enum)就停，加了 KaijuTheme 值卻沒補 `EconomyConfig.GetCoreForTheme` case→新主題會拋例外。我補上 5 core 欄位+5 case+其餘全部。
+  - `PartFiringSchema.cs`：PartMovement/PartEmitter(+spawner)/PartGate/ArmorRegen/BodyMovement 結構。PartDef 加 Emitters[]/Movement/ArmorRegen/跨部位 Gate；KaijuDef 加 Body。全可選、向後相容。
+  - **經濟 sink 定案**：新 5 核心=**機體/utility 養成軸**（與武器殺傷力升級分開，延續 meta utility）。
+  - **導演指示**：新頭目實作先用**簡易 placeholder sprite**（memory [[new-bosses-placeholder-sprites]]）。
+- **TaskList**：#1 build✅ #2 骨幹✅ #3 GDD✅ #4 敵人✅ #5 schema✅ **#6 wiring(待/下一步)**.
+- **⏳ 下一步 = task #6 執行層接線**（schema spec §7）：
+  1. `EnemyEmission`/`EnemyMovement` 純函式加 Spiral/DiveSwoop/HoverStrafe 分支(+EditMode 測試)。
+  2. `BossController`/`BossPart` 依 PartDef.Emitters[] 用 `EnemyBulletPool` 週期發射暖色彈、依 PartFireGate+break/armor/heat 閘門；SpawnEnemyId 者生小怪；依 PartMovement 每幀更新部位位置；BodyMovement 取代硬編 IdleMotion。
+  3. `PartStateSystem` 加 ArmorRegen 回填 + PartGate 破壞/命中閘門。
+  4. 資產化：8 隻 KaijuDef .asset 填 per-part emitter/movement(既有 3 補+新 5 建，**placeholder sprite**)；6 新小怪 SO+prefab。
+  5. 可玩驗證 + 重建 EXE/APK。
 
 ---
 *(以下為 session 8 及更早，保留供追溯)*
