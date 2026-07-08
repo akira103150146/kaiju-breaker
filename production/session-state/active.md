@@ -12,6 +12,7 @@
 - **✅ session 8 已完成**：首個「正式系統可玩 run」A→E + 介面美術/選單 + **雷電3式強化 + 循環武器莢艙 + meta utility 升級 + 三頭目**。完整體驗＝**標題 → 選頭目(洛克人X4風,三隻可打) → 強化⚙(花碎片升開火速度/掉落率) → 選裝備 → 出擊 → 道中(撿P火力/M飛彈/W莢艙) → Boss(CARAPEX/LACERA/VOLTWYRM 真戰) → 勝負結算**，PC+手機。UI=Ark Pixel+程序化冷色貼圖。**已 push HEAD `65a83e8`**；**EXE+APK 重建中/已含全部**。
 - **雷電3式強化（in-run，每run重置，只加殺傷力）**：P綠(火力↑散彈加彈數) / M藍(飛彈↑) / W莢艙(徘徊循環顯示當前武器→切型)；小怪掉P/M、菁英掉莢艙+P。**meta（跨run）只升 utility**（開火速度/掉落率，花碎片，`UtilityUpgrades` 6測試）——兩層不重疊。武器型4味(散/集/廣/穿)。
 - **三頭目**：BossController 改 roster(BossEntry[])，選頭目 index 選誰打；Kaiju_Lacera(肢/5部件)+Kaiju_Voltwyrm(能量/核+2裝甲+2頸)；場景 Boss_Lacera/Boss_Voltwyrm，部件綁定驗證 5/5。
+- **美術/輸入修正+頭目細節（`af2f55c`,`011694c`）**：玩家=藍色 Kenney 船(ship_0000)；三頭目換上**真 Gemini kaiju 美術**(`Art/Resources/Kaiju/`)；手機副武器改**按住即發**(原本只吃 Began)。頭目細節：**受擊閃白圖 + 裝甲剝除換圖(intact↔stripped) + 軟化暖色 + 待機呼吸擺動**(BossPart 視覺狀態機 + BossController 每幀讀 ArmorState/HeatState)。素材都在 `Art/Resources/`(kaiju+Kenney船)。**EXE+APK 已重建含全部**。
 - **★ 工作習慣**：MCP 進 Play/截圖會把 Unity 切前景打斷導演 → 預設用 **EditMode 測試+反射驗證**，視覺確認集中並先告知（[[verify-without-stealing-focus]]）。本輪 B/C/D 全程沒進 Play。**448 EditMode GREEN**。
 - **TODO（下次）**: ① 武器選擇/型號真正驅動玩家開火(接真 WeaponBehaviour，目前 placeholder 每型參數) ② 新兩頭目的 per-part 開火/移動 + bespoke kaiju 美術 + 頭目頭像 ③ Boss 進場走真 PreBossLull ④ UI 改 UGUI+TMP(ADR-0006) ⑤ upgrade 等級移進 SaveData(目前 flag 編碼) ⑥ composable emitter ⑦ Game view 直向。
 - **關鍵路徑**: `Scripts/App/*` 組合根 · `Scenes/Bootstrap.unity` · `Data/*` assets · MCP `run_tests` EditMode/PlayMode。
