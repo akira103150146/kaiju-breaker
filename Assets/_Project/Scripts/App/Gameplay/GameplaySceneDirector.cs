@@ -65,6 +65,7 @@ namespace KaijuBreaker.App.Gameplay
         private UtilityUpgrades _utility;
         private int _selBossIndex;
         private bool _showLoadout;
+        private bool _skipToBoss; // DEV: skip the 道中 wave sequence and go straight to the boss
         private WeaponId _selPrimary = WeaponId.L1;
         private WeaponId _selSecondary = WeaponId.M1;
         private DifficultyTier _selDifficulty = DifficultyTier.D1;
@@ -169,13 +170,22 @@ namespace KaijuBreaker.App.Gameplay
             }
             var combat = new EnemyCombatContext(_bulletPool, _player != null ? _player.transform : null, SpawnDrop);
 
-            var runnerGo = new GameObject("WaveRunner");
-            _waveRunner = runnerGo.AddComponent<SegmentSequenceRunner>();
-            _waveRunner.Run(sequence, _comp.Difficulty, content.WaveTiming, _enemyPrefab,
-                            new System.Random(), OnWavesCleared, combat);
+            if (_skipToBoss)
+            {
+                // DEV shortcut: no wave runner — jump straight to the boss (pool/combat already set up for it).
+                Debug.Log("[GameplaySceneDirector] DEV: skipping 道中 — straight to boss.");
+                OnWavesCleared();
+            }
+            else
+            {
+                var runnerGo = new GameObject("WaveRunner");
+                _waveRunner = runnerGo.AddComponent<SegmentSequenceRunner>();
+                _waveRunner.Run(sequence, _comp.Difficulty, content.WaveTiming, _enemyPrefab,
+                                new System.Random(), OnWavesCleared, combat);
+                Debug.Log($"[GameplaySceneDirector] Run started — {sequence.EscalatingSegments.Count} segments queued.");
+            }
 
             _playerWeapon?.SetFiring(true);
-            Debug.Log($"[GameplaySceneDirector] Run started — {sequence.EscalatingSegments.Count} segments queued.");
         }
 
         // Enemy death → roll an in-run power-up drop. Rates are placeholder (a meta upgrade tunes drop rate).
@@ -279,6 +289,11 @@ namespace KaijuBreaker.App.Gameplay
             Row(panel, 62f, "主武器 · 雷射", PrimaryLabels, (int)_selPrimary, i => _selPrimary = (WeaponId)i);
             Row(panel, 138f, "副武器 · 飛彈", SecondaryLabels, (int)_selSecondary - 4, i => _selSecondary = (WeaponId)(i + 4));
             Row(panel, 214f, "難度 · 彈幕密度", DiffLabels, (int)_selDifficulty, i => _selDifficulty = (DifficultyTier)i);
+
+            // DEV: skip the 道中 and drop straight into the boss fight (fast boss iteration).
+            var skip = new Rect(panel.x + 22f, panel.y + 266f, panel.width - 44f, 26f);
+            var skipStyle = _skipToBoss ? GameUiSkin.SelectedButtonStyle : GameUiSkin.ButtonStyle;
+            if (GUI.Button(skip, (_skipToBoss ? "☑" : "☐") + "  跳過道中 · 直達 BOSS (測試)", skipStyle)) _skipToBoss = !_skipToBoss;
 
             var start = new Rect(panel.x + panel.width * 0.5f - 95f, panel.y + 300f, 190f, 44f);
             if (GUI.Button(start, "出擊  START", GameUiSkin.ButtonStyle)) ConfirmLoadout();
