@@ -1,8 +1,31 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-07 (session 8 — 首個「正式系統可玩 run」A→E 全完成: 玩家/道中/敵人移動+彈幕多樣化/Boss真戰/手機控制+勝負結算, 442 EditMode GREEN, 5 commits 未 push)*
+*Last updated: 2026-07-08 (session 8 FINAL — 可玩 run A→E + 選單 + 雷電3強化 + 循環莢艙 + meta utility + 三頭目 + 真美術 + 頭目細節. 448 EditMode GREEN. 全 push, HEAD `6d98f31`. EXE+APK 重建含全部.)*
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
-*Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full session-7 done/todo in `進度結算-2026-07-07.md`.*
+*Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full session-8 done/todo in `進度結算-2026-07-08.md`.*
+
+## ✅ 已辦 / ⬜ 待辦 (session 8 收尾快照)
+**✅ 已辦（session 8 全部完成、驗證、push、備份、EXE+APK 重建）：**
+1. ✅ 首個「正式系統可玩 run」A→E：玩家機體+移動+開火+碰撞+勝負 / 道中成群小怪 / 敵人 5 種移動 + 4 種彈幕(Mono 池化) / Boss 真 PartStateSystem 蓄熱→軟化→擊破→勝利 / 手機虛擬搖桿+副武器鈕 + 勝負結算。
+2. ✅ 介面美術頂一下：Ark Pixel 字體(中文OK) + `GameUiSkin` 冷色貼圖(標題/HUD/結算/搖桿)。
+3. ✅ 選單流程：**標題 → 選頭目(洛克人X4風 hub) → 強化⚙商店 → 選裝備(L/M/難度) → 出擊 → 結算**。
+4. ✅ 雷電3式 in-run 火力強化：P火力/M飛彈/W循環莢艙(顯示當前武器)，每 run 重置、只加殺傷力。
+5. ✅ meta utility 升級：花碎片升「開火速度/掉落率」(不重疊殺傷力)，`UtilityUpgrades` +6 測試。
+6. ✅ 三頭目 CARAPEX/LACERA/VOLTWYRM 可選可打(BossController roster)。
+7. ✅ 美術/輸入修正：藍色 Kenney 船玩家 + 真 Gemini kaiju 頭目美術 + 手機副武器**按住即發**。
+8. ✅ 頭目細節：受擊閃白圖 + 裝甲剝除換圖(intact↔stripped) + 軟化暖色 + 待機呼吸擺動。
+- **狀態**：448 EditMode GREEN；全 push `origin/main` HEAD `6d98f31`；EXE(116.7MB)+APK(47MB) 重建含全部；Obsidian 已備份。
+
+**⬜ 待辦（下次，非急，已按價值排序）：**
+1. ⬜ 武器接**真 WeaponBehaviour**(目前 8 型是 placeholder 每型參數散/集/廣/穿)。
+2. ⬜ 每隻頭目**專屬待機動作**(雷龍旋轉/利刃獸肢擺) + **軟化 glow 幾何/粒子** + **擊破碎屑**。
+3. ⬜ 新兩頭目(Lacera/Voltwyrm)的 **per-part 開火/移動**(目前只有靜態部件)。
+4. ⬜ Boss 進場走**真 PreBossLull/場景載入**(目前道中清空→直接 BeginBossFight)。
+5. ⬜ UI 改 **UGUI+TMP**(ADR-0006；目前 IMGUI placeholder)。
+6. ⬜ upgrade 等級移進 **SaveData**(目前 ISaveService flag 編碼)。
+7. ⬜ **composable emitter**(DiveSwoop/Spiral/Zigzag/多 emitter — 設計已凍結)。
+8. ⬜ Game view 設**直向解析度**；材料/UI 圖示 + 頭目頭像。
+- **工作習慣**：MCP 進 Play/截圖會搶 Unity 焦點打斷導演 → 預設用 EditMode 測試 + 反射驗證([[verify-without-stealing-focus]])。
 
 ## ⚡ RESUME SNAPSHOT (2026-07-07, session 7 final)
 - **DONE**: meta-save(7) + stage(7) + game-feel(7) epics 全完成；**App 組合根接線**(`GameComposition`/`GameBootstrap`/`StageDirector`/`BreakPayoffSequencer`/`KaijuThemeRegistry` + Unity adapters)；**placeholder assets** `Assets/_Project/Data/`(ContentRegistry+configs)；**`Bootstrap.unity`** 場景 + `SegmentSequenceRunner`(場景生敵人) + flash 疊層。
