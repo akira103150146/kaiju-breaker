@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a04b7802ffaac604eaf50e0094514a21, type: 3}
+  m_Name: Enemy_diver
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EnemyDef
+  _enemyId: diver
+  _hpTier: 0
+  _contactDamage: 12
+  _pointValue: 10
+  _tier: 0
+  _isElite: 0
+  _eliteHpMult: 1
+  _eliteDensityMult: 1
+  _eliteShardBonus: 0
+  _eliteAuraColor: {r: 1, g: 0.6667, b: 0.2, a: 1}
+  _movementPattern: {fileID: 11400000, guid: 1a1c5151bb2df304bb969ce5f16754c4, type: 2}
+  _emitterPattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}

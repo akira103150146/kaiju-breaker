@@ -42,6 +42,7 @@ namespace KaijuBreaker.Stage
         private float _fireCooldown;
         private float _telegraphRemaining;
         private bool _telegraphing;
+        private float _spinPhase; // Spiral emitters: accumulated rotation so the ring sweeps over time
         private const float TelegraphSeconds = 0.3f; // telegraph floor (bullet-system.md readability)
 
         /// <summary>Raised once when this enemy is destroyed by damage (not when it flies off-screen).</summary>
@@ -141,6 +142,7 @@ namespace KaijuBreaker.Stage
         {
             if (Emitter == null || _bulletPool == null) return;
             if (Emitter.PatternType == EmitterPatternType.RingBurst) return;
+            if (Emitter.PatternType == EmitterPatternType.Spiral) _spinPhase += Emitter.SpinRateDegPerSec * dt;
 
             if (_telegraphing)
             {
@@ -166,7 +168,7 @@ namespace KaijuBreaker.Stage
             Vector2 aim = _playerTarget != null
                 ? ((Vector2)_playerTarget.position - (Vector2)transform.position)
                 : Vector2.down;
-            var vels = EnemyEmission.Velocities(type, count, Emitter.SpreadAngleDeg, speed, aim);
+            var vels = EnemyEmission.Velocities(type, count, Emitter.SpreadAngleDeg, speed, aim, _spinPhase);
             float dmg = Def != null ? Def.ContactDamage : 10f;
             for (int i = 0; i < vels.Length; i++)
                 _bulletPool.Spawn(transform.position, vels[i], dmg, Emitter.BulletLifetimeSeconds);

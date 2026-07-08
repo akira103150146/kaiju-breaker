@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a04b7802ffaac604eaf50e0094514a21, type: 3}
+  m_Name: Enemy_prism_drone
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EnemyDef
+  _enemyId: prism_drone
+  _hpTier: 1
+  _contactDamage: 10
+  _pointValue: 20
+  _tier: 0
+  _isElite: 0
+  _eliteHpMult: 1
+  _eliteDensityMult: 1
+  _eliteShardBonus: 0
+  _eliteAuraColor: {r: 1, g: 0.6667, b: 0.2, a: 1}
+  _movementPattern: {fileID: 11400000, guid: 519fa3ca8e299d04c9e4fa5b083c1d36, type: 2}
+  _emitterPattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
