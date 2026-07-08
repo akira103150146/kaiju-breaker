@@ -220,7 +220,7 @@ namespace KaijuBreaker.App.Gameplay
         private void OnWavesCleared()
         {
             Debug.Log("[GameplaySceneDirector] 道中 CLEAR — entering boss fight.");
-            if (_bossController != null) _bossController.BeginBossFight(_comp);
+            if (_bossController != null) _bossController.BeginBossFight(_comp, _selBossIndex);
             else Debug.Log("[GameplaySceneDirector] No BossController assigned — run ends after 道中.");
         }
 
@@ -360,7 +360,7 @@ namespace KaijuBreaker.App.Gameplay
 
         private static readonly string[] BossNames = { "甲殼獸", "利刃獸", "雷龍" };
         private static readonly string[] BossCodes = { "CARAPEX", "LACERA", "VOLTWYRM" };
-        private static readonly bool[] BossUnlocked = { true, false, false };
+        private static readonly bool[] BossUnlocked = { true, true, true };
         private static readonly Color[] BossColors =
         {
             new Color(1f, 0.40f, 0.34f), new Color(0.72f, 0.45f, 1f), new Color(0.40f, 0.90f, 1f)
