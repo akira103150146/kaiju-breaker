@@ -36,6 +36,25 @@ namespace KaijuBreaker.App.Gameplay
         private bool _stripped;
         private bool _softened;
 
+        // Per-part gauges (heat = orange soften track / break = red destroy track), like the prototype meters.
+        private SpriteRenderer _heatFill, _breakFill;
+        private const float BarW = 1.15f, BarH = 0.13f;
+        // Hit juice: a quick scale pop on every hit (works even for placeholder parts with no white silhouette).
+        private float _popRemaining;
+        private Vector3 _popBaseScale = Vector3.one;
+        private const float PopSeconds = 0.12f;
+
+        private static Sprite _barSprite;
+        private static Sprite BarSprite()
+        {
+            if (_barSprite == null)
+            {
+                var t = new Texture2D(1, 1); t.SetPixel(0, 0, Color.white); t.Apply();
+                _barSprite = Sprite.Create(t, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+            }
+            return _barSprite;
+        }
+
         /// <summary>Authored part-id string (matches a PartDef.PartId in the boss's KaijuDef).</summary>
         public string PartName => _partName;
 
@@ -55,6 +74,46 @@ namespace KaijuBreaker.App.Gameplay
                 if (_intactSprite == null) _intactSprite = _sr.sprite;
                 _baseColor = _sr.color;
             }
+            _popBaseScale = transform.localScale;
+            BuildGauges();
+        }
+
+        // Two stacked gauge bars above the part: heat (orange, soften) + break (red, destroy), left-anchored.
+        private void BuildGauges()
+        {
+            int order = (_sr != null ? _sr.sortingOrder : 0) + 10;
+            MakeBar("gauge_heat_bg", 0.90f, order, new Color(0f, 0f, 0f, 0.5f));
+            _heatFill = MakeBar("gauge_heat", 0.90f, order + 1, new Color(1f, 0.6f, 0.15f, 0.95f));
+            MakeBar("gauge_break_bg", 0.75f, order, new Color(0f, 0f, 0f, 0.5f));
+            _breakFill = MakeBar("gauge_break", 0.75f, order + 1, new Color(1f, 0.25f, 0.2f, 0.95f));
+            SetFill(_heatFill, 0f); SetFill(_breakFill, 0f);
+        }
+
+        private SpriteRenderer MakeBar(string n, float y, int order, Color c)
+        {
+            var go = new GameObject(n);
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(0f, y, 0f);
+            go.transform.localScale = new Vector3(BarW, BarH, 1f);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = BarSprite(); sr.color = c; sr.sortingOrder = order;
+            return sr;
+        }
+
+        // Left-anchor a fill bar to fraction f (0..1).
+        private static void SetFill(SpriteRenderer fill, float f)
+        {
+            if (fill == null) return;
+            f = Mathf.Clamp01(f);
+            fill.transform.localScale = new Vector3(BarW * f, BarH, 1f);
+            fill.transform.localPosition = new Vector3(-BarW * 0.5f * (1f - f), fill.transform.localPosition.y, 0f);
+        }
+
+        /// <summary>Update the heat + break gauge fractions (0..1). Called each frame by <see cref="BossController"/>.</summary>
+        public void SetGauge(float heatFrac, float breakFrac)
+        {
+            SetFill(_heatFill, heatFrac);
+            SetFill(_breakFill, breakFrac);
         }
 
         /// <summary>Bind this scene part to its runtime part id + the bus (called by <see cref="BossController"/>).</summary>
@@ -73,6 +132,7 @@ namespace KaijuBreaker.App.Gameplay
         {
             if (_bus != null && _partId >= 0) _bus.Publish(new LaserHit(_partId, _kaijuId, heatDelta));
             _flashRemaining = _hitFlashSeconds;
+            _popRemaining = PopSeconds;
         }
 
         /// <summary>Report a missile hit (break track). The system's armor/heat gate decides if it lands.</summary>
@@ -80,6 +140,7 @@ namespace KaijuBreaker.App.Gameplay
         {
             if (_bus != null && _partId >= 0) _bus.Publish(new MissileHit(_partId, _kaijuId, breakDeltaBase, weapon));
             _flashRemaining = _hitFlashSeconds;
+            _popRemaining = PopSeconds;
         }
 
         /// <summary>Swap intact↔stripped art (armored parts) — called by the controller from the armor state.</summary>
@@ -104,10 +165,22 @@ namespace KaijuBreaker.App.Gameplay
         private void Update()
         {
             if (_sr == null) return;
+
+            // Hit juice: a quick scale pop on every hit (decays back to the authored scale).
+            if (_popRemaining > 0f)
+            {
+                _popRemaining -= Time.deltaTime;
+                float k = Mathf.Clamp01(_popRemaining / PopSeconds);
+                transform.localScale = _popBaseScale * (1f + 0.20f * k);
+                if (_popRemaining <= 0f) transform.localScale = _popBaseScale;
+            }
+
             if (_flashRemaining > 0f)
             {
                 _flashRemaining -= Time.deltaTime;
+                // White silhouette if provided (real art); otherwise brighten the tint (placeholder blocks).
                 if (_hitWhiteSprite != null) { _sr.sprite = _hitWhiteSprite; _sr.color = Color.white; }
+                else _sr.color = Color.Lerp(_baseColor, Color.white, 0.8f);
                 if (_flashRemaining <= 0f) RestoreVisual();
             }
         }

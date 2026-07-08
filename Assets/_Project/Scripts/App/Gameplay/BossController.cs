@@ -278,7 +278,10 @@ namespace KaijuBreaker.App.Gameplay
 
         private void FireVolley(ActiveEmitter e, Vector3 muzzle)
         {
-            int count = Mathf.Max(1, e.Pattern.BulletCountBase);
+            // Difficulty scales bullet DENSITY (D1 easiest). Applied here so bosses respect the tier — previously
+            // only enemy count scaled, so every tier fired the same boss density (way too dense on many-part bosses).
+            float densityMult = _comp != null && _comp.Difficulty != null ? _comp.Difficulty.BulletDensityMult : 1f;
+            int count = Mathf.Max(1, Mathf.CeilToInt(e.Pattern.BulletCountBase * densityMult));
             float speed = e.Pattern.BulletSpeedPxPerSec * EnemyMovement.PxToWorld;
             Vector2 aim = _playerTarget != null ? (Vector2)(_playerTarget.position - muzzle) : Vector2.down;
             var vels = EnemyEmission.Velocities(e.Pattern.PatternType, count, e.Pattern.SpreadAngleDeg, speed, aim, e.SpinPhaseDeg);
@@ -296,6 +299,12 @@ namespace KaijuBreaker.App.Gameplay
                 if (part == null) continue;
                 part.SetArmorStripped(_comp.Parts.GetArmorState(kv.Key) == ArmorState.Stripped);
                 part.SetSoftened(_comp.Parts.GetHeatState(kv.Key) == HeatState.Softened);
+                if (_comp.Parts.Parts.TryGetValue(kv.Key, out var bp))
+                {
+                    float heatFrac = bp.HMax > 0f ? bp.HCurrent / bp.HMax : 0f;
+                    float breakFrac = bp.BMax > 0f ? bp.BCurrent / bp.BMax : 0f;
+                    part.SetGauge(heatFrac, breakFrac);
+                }
             }
         }
 

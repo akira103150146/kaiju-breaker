@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Emitter_BossSpiral
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EmitterPatternSO
   _patternType: 4
-  _bulletCountBase: 5
-  _fireIntervalSeconds: 1
-  _bulletSpeedPxPerSec: 115
+  _bulletCountBase: 4
+  _fireIntervalSeconds: 2.8
+  _bulletSpeedPxPerSec: 110
   _spreadAngleDeg: 0
   _bulletLifetimeSeconds: 6
   _spinRateDegPerSec: 80

@@ -48,22 +48,24 @@ namespace KaijuBreaker.App.Gameplay
         // even which laser type is equipped. All stay in the COLD family (enemy bullets are warm — readability rule).
         private static Color TintFor(bool isMissile, WeaponId w)
         {
+            // Missiles = GREEN family (chunky), lasers = CYAN/BLUE family (slim) — a strong, unmistakable split
+            // while both stay cold (enemy bullets are warm — readability rule).
             if (isMissile)
             {
                 switch (w)
                 {
-                    case WeaponId.M2: return new Color(0.55f, 0.85f, 1f);   // swarm — pale sky
-                    case WeaponId.M3: return new Color(0.75f, 0.80f, 1f);   // AP torpedo — steel violet-blue
-                    case WeaponId.M4: return new Color(0.60f, 0.70f, 1f);   // cluster — indigo-white
-                    default:          return new Color(0.68f, 0.80f, 1f);   // M1 homing — blue-white
+                    case WeaponId.M2: return new Color(0.55f, 1f, 0.35f);   // swarm — bright lime
+                    case WeaponId.M3: return new Color(0.20f, 0.95f, 0.45f); // AP torpedo — emerald
+                    case WeaponId.M4: return new Color(0.70f, 1f, 0.20f);   // cluster — yellow-green
+                    default:          return new Color(0.35f, 1f, 0.45f);   // M1 homing — spring green
                 }
             }
             switch (w)
             {
-                case WeaponId.L2: return new Color(0.85f, 1f, 1f);          // focus — near-white hot
-                case WeaponId.L3: return new Color(0.30f, 1f, 0.85f);       // wave — teal
-                case WeaponId.L4: return new Color(0.55f, 0.90f, 1f);       // pierce — bright azure
-                default:          return new Color(0.25f, 0.97f, 1f);       // L1 spread — cyan
+                case WeaponId.L2: return new Color(0.75f, 0.95f, 1f);       // focus — pale blue-white
+                case WeaponId.L3: return new Color(0.20f, 0.85f, 1f);       // wave — sky blue
+                case WeaponId.L4: return new Color(0.45f, 0.70f, 1f);       // pierce — deep blue
+                default:          return new Color(0.20f, 0.97f, 1f);       // L1 spread — cyan
             }
         }
 
@@ -86,7 +88,7 @@ namespace KaijuBreaker.App.Gameplay
             // Colour + size the shot so primary (laser) and secondary (missile) read differently: missiles are
             // chunkier and blue-white, lasers slimmer and cyan/teal (cold family — enemy bullets are warm).
             if (_sr != null) _sr.color = TintFor(isMissile, weaponId);
-            transform.localScale = isMissile ? _baseScale * 1.5f : _baseScale;
+            transform.localScale = isMissile ? _baseScale * 2.0f : _baseScale; // missiles are visibly chunkier
 
             gameObject.SetActive(true);
         }

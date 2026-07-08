@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.DifficultyConfig
   _enemyCountMult:
   - 1
-  - 1.25
-  - 1.5
-  - 1.75
+  - 1.2
+  - 1.4
+  - 1.6
   _bulletDensityMult:
   - 1
   - 1.25
   - 1.5
-  - 2
+  - 1.8
   _defaultDifficultyOnFirstLaunch: 0
   _rememberLastDifficulty: 1
   _midRunDifficultyChangeAllowed: 0
