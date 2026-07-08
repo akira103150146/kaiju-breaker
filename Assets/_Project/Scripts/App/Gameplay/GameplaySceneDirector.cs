@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using KaijuBreaker.Core;
 using KaijuBreaker.Stage;
 using UnityEngine;
@@ -40,6 +41,9 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("In-run power-up item prefab (PowerUpItem) that enemies drop. Optional — no drops if unassigned.")]
         [SerializeField] private PowerUpItem _powerUpPrefab;
 
+        [Tooltip("Dwell-cycle weapon pod prefab (WeaponPodController) that elites drop. Optional.")]
+        [SerializeField] private WeaponPodController _weaponPodPrefab;
+
         [Tooltip("Skip the title screen and begin immediately on Play (e.g. for tests).")]
         [SerializeField] private bool _autoStart = false;
 
@@ -51,6 +55,7 @@ namespace KaijuBreaker.App.Gameplay
         private PlayerWeaponController _playerWeapon;
         private SegmentSequenceRunner _waveRunner;
         private Action<RunStateChanged> _onRunStateChanged;
+        private Action<WeaponPodGrabbed> _onWeaponPodGrabbed;
         private bool _defeated;
         private bool _showTitle;
         private bool _showBossSelect;
@@ -76,6 +81,8 @@ namespace KaijuBreaker.App.Gameplay
 
             _onRunStateChanged = OnRunStateChanged;
             _comp.Bus.Subscribe(_onRunStateChanged);
+            _onWeaponPodGrabbed = evt => _playerWeapon?.SetWeapon(evt.Weapon); // pod pickup switches weapon type
+            _comp.Bus.Subscribe(_onWeaponPodGrabbed);
 
             SpawnPlayer();
             _playerWeapon?.SetFiring(false); // hold fire on the title screen
@@ -113,7 +120,9 @@ namespace KaijuBreaker.App.Gameplay
 
         private void OnDestroy()
         {
-            if (_comp != null && _onRunStateChanged != null) _comp.Bus.Unsubscribe(_onRunStateChanged);
+            if (_comp == null) return;
+            if (_onRunStateChanged != null) _comp.Bus.Unsubscribe(_onRunStateChanged);
+            if (_onWeaponPodGrabbed != null) _comp.Bus.Unsubscribe(_onWeaponPodGrabbed);
         }
 
         private void SpawnPlayer()
@@ -169,9 +178,9 @@ namespace KaijuBreaker.App.Gameplay
             if (_powerUpPrefab == null) return;
             if (isElite)
             {
-                // Elites always yield: a weapon-switch pod + a firepower chip.
-                Spawn(pos + Vector3.left * 0.4f, UnityEngine.Random.value < 0.5f ? PowerUpKind.WeaponLaser : PowerUpKind.WeaponMissile);
-                Spawn(pos + Vector3.right * 0.4f, PowerUpKind.Power);
+                // Elites yield a dwell-cycle weapon pod (the pool-typed target of §F.1) + a firepower chip.
+                SpawnPod(pos);
+                Spawn(pos + Vector3.right * 0.5f, PowerUpKind.Power);
                 return;
             }
             float r = UnityEngine.Random.value;
@@ -183,6 +192,23 @@ namespace KaijuBreaker.App.Gameplay
         {
             var item = Instantiate(_powerUpPrefab, pos, Quaternion.identity);
             item.Init(kind);
+        }
+
+        // Elite drop: a dwell-cycle weapon pod that descends into the reachable band, cycles the pool (so the
+        // player waits for the weapon they want), and on pickup switches the weapon type (WeaponPodGrabbed).
+        private void SpawnPod(Vector3 pos)
+        {
+            if (_weaponPodPrefab == null || _comp == null || _bootstrap.Content?.PodDrop == null)
+            {
+                if (_powerUpPrefab != null) Spawn(pos, PowerUpKind.WeaponLaser); // fallback: simple switch item
+                return;
+            }
+            bool laser = UnityEngine.Random.value < 0.5f;
+            var poolL = new List<WeaponId> { WeaponId.L1, WeaponId.L2, WeaponId.L3, WeaponId.L4 };
+            var poolM = new List<WeaponId> { WeaponId.M1, WeaponId.M2, WeaponId.M3, WeaponId.M4 };
+            var pod = Instantiate(_weaponPodPrefab, pos, Quaternion.identity);
+            pod.Init(_comp.Bus, _bootstrap.Content.PodDrop, laser ? poolL : poolM,
+                     laser ? PodType.Primary : PodType.Secondary, bandMinY: -2f, bandMaxY: 1f);
         }
 
         private void OnWavesCleared()

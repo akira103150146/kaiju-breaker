@@ -68,6 +68,9 @@ namespace KaijuBreaker.App.Gameplay
         /// <summary>Collect a missile W pod: cycle the secondary among M1→M4.</summary>
         public void CycleSecondary() => _secondaryType = (WeaponId)(4 + (((int)_secondaryType - 4 + 1) % 4));
 
+        /// <summary>Equip the exact weapon a dwell-cycle pod granted (laser id → primary, missile id → secondary).</summary>
+        public void SetWeapon(WeaponId w) { if ((int)w < 4) _primaryType = w; else _secondaryType = w; }
+
         private void Update()
         {
             if (_config == null || _projectilePrefab == null || !_firing) return;

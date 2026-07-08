@@ -17,8 +17,8 @@ MonoBehaviour:
   _preBossLullPodCount: 1
   _podCarrierFlashIntervalSeconds: 0.5
   _podCycleIntervalSeconds: 3
-  _podDwellTimeSeconds: 12
-  _podDescendSpeedPxPerSec: 200
+  _podDwellTimeSeconds: 10
+  _podDescendSpeedPxPerSec: 5
   _podReachableBandYPct: 0.5
-  _podBobAmplitudePx: 8
+  _podBobAmplitudePx: 0.25
   _podDespawnAfterSeconds: 20
