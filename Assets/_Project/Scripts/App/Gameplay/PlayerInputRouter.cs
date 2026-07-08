@@ -13,8 +13,17 @@ namespace KaijuBreaker.App.Gameplay
     [DisallowMultipleComponent]
     public sealed class PlayerInputRouter : MonoBehaviour, IPlayerInput
     {
-        [Tooltip("Show the on-screen joystick + fire button. Leave on for touch; harmless on PC (mouse-usable).")]
+        [Tooltip("Master switch for the on-screen joystick + fire button. Only takes effect on a mobile platform " +
+                 "(or when _forceTouchControlsInEditor is on); PC/desktop always uses keyboard/mouse only.")]
         [SerializeField] private bool _showTouchControls = true;
+
+        [Tooltip("Editor-only: force the touch controls on in the editor for testing (ignored in real builds).")]
+        [SerializeField] private bool _forceTouchControlsInEditor = false;
+
+        // Touch UI is a MOBILE-only affordance (director: PC needs no virtual joystick). isMobilePlatform is true
+        // on iOS/Android builds and false on desktop + editor; the editor flag lets us still test the layout.
+        private bool TouchUiActive =>
+            _showTouchControls && (Application.isMobilePlatform || (Application.isEditor && _forceTouchControlsInEditor));
 
         [Tooltip("Finger travel (in joystick radii) needed to reach full speed. Higher = LESS sensitive / more precise. 1 = old twitchy behaviour.")]
         [Range(1f, 3f)]
@@ -31,12 +40,14 @@ namespace KaijuBreaker.App.Gameplay
 
         private void Update()
         {
-            LayoutControls();
             _joyAxis = Vector2.zero;
-            // Hold-to-fire: true while the secondary input is HELD (the weapon's own cooldown rate-limits it).
+            // Hold-to-fire: true while the secondary input is HELD (keyboard/mouse on PC; the on-screen button on mobile).
             _secondaryHeld = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(1);
 
-            // Touch first (mobile); fall back to mouse (editor/PC) so the same controls verify with a cursor.
+            if (!TouchUiActive) return; // PC: keyboard/mouse only — no on-screen joystick polling.
+
+            LayoutControls();
+            // Touch first (mobile); mouse fallback lets the layout be tested in-editor when forced on.
             if (Input.touchCount > 0)
             {
                 for (int i = 0; i < Input.touchCount; i++)
@@ -98,7 +109,7 @@ namespace KaijuBreaker.App.Gameplay
         private Texture2D _tex;
         private void OnGUI()
         {
-            if (!_showTouchControls) return;
+            if (!TouchUiActive) return;
             if (_tex == null) { _tex = new Texture2D(1, 1); _tex.SetPixel(0, 0, Color.white); _tex.Apply(); }
             var disc = GameUiSkin.Ring != null ? GameUiSkin.Ring : _tex; // soft radial disc from the shared skin
             // IMGUI y is top-down; screen coords are bottom-up.

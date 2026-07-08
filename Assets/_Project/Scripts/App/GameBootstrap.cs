@@ -19,6 +19,17 @@ namespace KaijuBreaker.App
         [Tooltip("Optional camera the screen-shake offset is applied to. Defaults to Camera.main.")]
         [SerializeField] private Camera _shakeCamera;
 
+        [Header("Camera Field Fit (keeps the whole vertical play field on-screen at any aspect)")]
+        [Tooltip("Auto-size the orthographic camera so the full play field is always visible — fixes off-screen " +
+                 "enemies on portrait phones vs a landscape-authored view.")]
+        [SerializeField] private bool _fitCameraToField = true;
+
+        [Tooltip("Half-width of the play field to guarantee visible (world units). Field is ±4; margin -> 4.5.")]
+        [SerializeField] private float _fieldHalfWidth = 4.5f;
+
+        [Tooltip("Half-height of the play field to guarantee visible (world units). Enemies spawn y=6, player to y=-6.")]
+        [SerializeField] private float _fieldHalfHeight = 7.0f;
+
         private GameComposition _composition;
         private UnityTimeScaleControl _timeScale;
         private Vector3 _cameraBasePosition;
@@ -52,7 +63,19 @@ namespace KaijuBreaker.App
             if (_composition == null) return;
             _composition.TickGameFeel(Time.unscaledDeltaTime); // feel on real time
             _composition.Stage?.Tick(Time.deltaTime);          // pre-boss lull on game time
+            FitCameraToField();
             ApplyShake();
+        }
+
+        // Size the orthographic camera so the whole vertical play field fits on ANY aspect ratio: portrait phones
+        // get a tall view, landscape PC pillarboxes the field. Guarantees enemies (spawn y=6) and the player
+        // (down to y=-6, ±4 wide) are always on-screen + reachable — fixes off-screen enemies firing unanswerably.
+        private void FitCameraToField()
+        {
+            if (!_fitCameraToField) return;
+            var cam = _shakeCamera != null ? _shakeCamera : Camera.main;
+            if (cam == null || !cam.orthographic || cam.aspect <= 0f) return;
+            cam.orthographicSize = Mathf.Max(_fieldHalfHeight, _fieldHalfWidth / cam.aspect);
         }
 
         private void ApplyShake()

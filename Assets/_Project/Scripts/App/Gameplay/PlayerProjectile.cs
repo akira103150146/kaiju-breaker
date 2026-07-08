@@ -30,12 +30,41 @@ namespace KaijuBreaker.App.Gameplay
         /// <summary>Heat contribution this projectile carries to a boss part (soften track).</summary>
         public float HeatDelta => _heatDelta;
 
+        private SpriteRenderer _sr;
+        private Vector3 _baseScale;
+
         private void Awake()
         {
             var rb = GetComponent<Rigidbody2D>();
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.gravityScale = 0f;
             rb.useFullKinematicContacts = true;
+
+            _sr = GetComponent<SpriteRenderer>();
+            _baseScale = transform.localScale;
+        }
+
+        // Cold-palette tints so the player can tell primary (laser) from secondary (missile) at a glance, and
+        // even which laser type is equipped. All stay in the COLD family (enemy bullets are warm — readability rule).
+        private static Color TintFor(bool isMissile, WeaponId w)
+        {
+            if (isMissile)
+            {
+                switch (w)
+                {
+                    case WeaponId.M2: return new Color(0.55f, 0.85f, 1f);   // swarm — pale sky
+                    case WeaponId.M3: return new Color(0.75f, 0.80f, 1f);   // AP torpedo — steel violet-blue
+                    case WeaponId.M4: return new Color(0.60f, 0.70f, 1f);   // cluster — indigo-white
+                    default:          return new Color(0.68f, 0.80f, 1f);   // M1 homing — blue-white
+                }
+            }
+            switch (w)
+            {
+                case WeaponId.L2: return new Color(0.85f, 1f, 1f);          // focus — near-white hot
+                case WeaponId.L3: return new Color(0.30f, 1f, 0.85f);       // wave — teal
+                case WeaponId.L4: return new Color(0.55f, 0.90f, 1f);       // pierce — bright azure
+                default:          return new Color(0.25f, 0.97f, 1f);       // L1 spread — cyan
+            }
         }
 
         /// <summary>Arm this projectile for flight along <paramref name="velocity"/>. Called by the pool on spawn.</summary>
@@ -53,6 +82,12 @@ namespace KaijuBreaker.App.Gameplay
             _life = 3f;
             _onDespawn = onDespawn;
             _active = true;
+
+            // Colour + size the shot so primary (laser) and secondary (missile) read differently: missiles are
+            // chunkier and blue-white, lasers slimmer and cyan/teal (cold family — enemy bullets are warm).
+            if (_sr != null) _sr.color = TintFor(isMissile, weaponId);
+            transform.localScale = isMissile ? _baseScale * 1.5f : _baseScale;
+
             gameObject.SetActive(true);
         }
 
