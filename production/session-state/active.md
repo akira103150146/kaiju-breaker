@@ -30,7 +30,11 @@
   6. PC 不該有搖桿→PlayerInputRouter 只在 isMobilePlatform 顯示+輪詢觸控。
 - **⏳ 重建 EXE+APK 中**（含全部 bug 修復 + schema + 6b）。
 - **TaskList**：#1–#11 全 ✅（#5 schema、#6 wiring、#7-11 六個 bug）。
-- **下一步(續作)**：資產化 8 KaijuDef 填 per-part emitter/movement(placeholder sprite [[new-bosses-placeholder-sprites]])→新頭目真的射不同彈；6 新小怪 SO/prefab；PartStateSystem ArmorRegen+PartGate(6c)；minion-spawner；LACERA/VOLTWYRM body-base；音樂方向規格(晚點)。
+- **✅ 6d 資產化（既有 3 頭目 per-part 發射）**（`7ba9521` 場景 + CARAPEX `<hash>` + `0a2c59e` L/V）：手改 KaijuDef .asset YAML 加各部位 `_emitters`（現有 Emitter SO：AimedShot/TriFan/Wall/Ring）。CARAPEX 核心瞄準/雙下顎三扇/背甲炮牆；LACERA 核心+四肢瞄準；VOLTWYRM 核心瞄準/雙盾牆/雙頸放射。全 AliveOnly（破部位消音）。**execute_code 載入驗證所有 emitter ref 解析成功**。**三頭目現在都不同部位射不同彈**。
+- **✅ CARAPEX 視覺修正**：背甲炮 y=4.4(核心上)→1.75(底部朝玩家，解碼原型 ToWorld=(IH/2-By) 確認)；body-base 0.72；場景截圖驗證。
+- **⏳ 重建 EXE(116.7MB)+APK(47MB) 完成**（含三頭目 per-part 發射 + CARAPEX 視覺）。
+- **下一步(續作)**：① 5 新頭目要建 KaijuDef .asset + 場景 BossPart 階層(placeholder sprite [[new-bosses-placeholder-sprites]]) + BossController roster 註冊；② 部位移動資料(Lacera 四肢 SweepArc/Voltwyrm 頸旋轉—需場景 pivot)；③ 6 新小怪 SO/prefab；④ PartStateSystem ArmorRegen+PartGate(6c)；⑤ minion-spawner(BROODCORE)；⑥ LACERA/VOLTWYRM body-base；⑦ 音樂方向規格。
+- **YAML 手改 KaijuDef emitter 的方法**：`_emitters` 陣列加在 part 的 `_dropTableId` 後；每項 `_pattern:{fileID:11400000,guid:<emitterGUID>,type:2}` + `_gate:0`(AliveOnly)。emitter GUID：AimedShot 749e…/TriFan 2693…/Wall 7073…/Ring c713…。refresh assets→execute_code 載入驗證。
 - **~~⏳ 下一步 = task #6 執行層接線~~（已完成 6a/6b）**（schema spec §7 其餘）：
   1. `EnemyEmission`/`EnemyMovement` 純函式加 Spiral/DiveSwoop/HoverStrafe 分支(+EditMode 測試)。
   2. `BossController`/`BossPart` 依 PartDef.Emitters[] 用 `EnemyBulletPool` 週期發射暖色彈、依 PartFireGate+break/armor/heat 閘門；SpawnEnemyId 者生小怪；依 PartMovement 每幀更新部位位置；BodyMovement 取代硬編 IdleMotion。
