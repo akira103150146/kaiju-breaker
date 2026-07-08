@@ -19,8 +19,19 @@
   - `PartFiringSchema.cs`：PartMovement/PartEmitter(+spawner)/PartGate/ArmorRegen/BodyMovement 結構。PartDef 加 Emitters[]/Movement/ArmorRegen/跨部位 Gate；KaijuDef 加 Body。全可選、向後相容。
   - **經濟 sink 定案**：新 5 核心=**機體/utility 養成軸**（與武器殺傷力升級分開，延續 meta utility）。
   - **導演指示**：新頭目實作先用**簡易 placeholder sprite**（memory [[new-bosses-placeholder-sprites]]）。
-- **TaskList**：#1 build✅ #2 骨幹✅ #3 GDD✅ #4 敵人✅ #5 schema✅ **#6 wiring(待/下一步)**.
-- **⏳ 下一步 = task #6 執行層接線**（schema spec §7）：
+- **✅ task #6a**（`2049ada`）：`EnemyEmission.Spiral`(相位旋轉環) + `EnemyMovement.DiveSwoop/HoverStrafe` 純邏輯 + 4 測試。**463 EditMode GREEN**。
+- **✅ task #6b**（`4b2ca07`）：`BossController` 依 PartDef.Emitters[] 用 `EnemyBulletPool` 真的 per-part 發射（瞄準玩家、依 PartFireGate 閘門、破部位消音）+ 部位移動(`PartMotion`: Orbit/SweepArc/Spin) + `KaijuDef.Body` idle；`GameplaySceneDirector` 把 pool+player 傳進 BeginBossFight。minion-spawner + PartStateSystem 跨部位 gate = 後續。
+- **✅ 導演 playtest 6 bug 全修**（`6ae767e` 程式 + `660952b` 場景）：
+  1. 炮口方向→CARAPEX 下顎旋轉補回原型值(l=-80/r=+80+flipX)。
+  2. 主副武器同色→PlayerProjectile 依主/副+武器型上冷色(雷射青系/飛彈藍白+1.5x)。
+  3. 底圖消失→Boss 缺 body-base，補回 CARAPEX `kaiju_carapex_body_base`(sortingOrder -1)；LACERA 有art可後補、VOLTWYRM 無。
+  4. 畫面外怪一直射→`GameBootstrap.FitCameraToField` 正交相機自動框住整個直式場地(±4.5×±7)不論 aspect。
+  5. 手機應豎版→ProjectSettings 手機鎖 Portrait(關橫向自轉)，PC standalone 維持橫版。
+  6. PC 不該有搖桿→PlayerInputRouter 只在 isMobilePlatform 顯示+輪詢觸控。
+- **⏳ 重建 EXE+APK 中**（含全部 bug 修復 + schema + 6b）。
+- **TaskList**：#1–#11 全 ✅（#5 schema、#6 wiring、#7-11 六個 bug）。
+- **下一步(續作)**：資產化 8 KaijuDef 填 per-part emitter/movement(placeholder sprite [[new-bosses-placeholder-sprites]])→新頭目真的射不同彈；6 新小怪 SO/prefab；PartStateSystem ArmorRegen+PartGate(6c)；minion-spawner；LACERA/VOLTWYRM body-base；音樂方向規格(晚點)。
+- **~~⏳ 下一步 = task #6 執行層接線~~（已完成 6a/6b）**（schema spec §7 其餘）：
   1. `EnemyEmission`/`EnemyMovement` 純函式加 Spiral/DiveSwoop/HoverStrafe 分支(+EditMode 測試)。
   2. `BossController`/`BossPart` 依 PartDef.Emitters[] 用 `EnemyBulletPool` 週期發射暖色彈、依 PartFireGate+break/armor/heat 閘門；SpawnEnemyId 者生小怪；依 PartMovement 每幀更新部位位置；BodyMovement 取代硬編 IdleMotion。
   3. `PartStateSystem` 加 ArmorRegen 回填 + PartGate 破壞/命中閘門。
