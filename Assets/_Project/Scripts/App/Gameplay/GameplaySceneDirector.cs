@@ -361,45 +361,54 @@ namespace KaijuBreaker.App.Gameplay
             }
         }
 
-        private static readonly string[] BossNames = { "甲殼獸", "利刃獸", "雷龍" };
-        private static readonly string[] BossCodes = { "CARAPEX", "LACERA", "VOLTWYRM" };
-        private static readonly bool[] BossUnlocked = { true, true, true };
+        private static readonly string[] BossNames = { "甲殼獸", "利刃獸", "雷龍", "巢母", "稜殼獸", "潮顎", "燼使", "虛尖" };
+        private static readonly string[] BossCodes = { "CARAPEX", "LACERA", "VOLTWYRM", "BROODCORE", "PRISMSHELL", "TIDEMAW", "EMBERWING", "NULLSPIRE" };
+        private static readonly bool[] BossUnlocked = { true, true, true, true, true, true, true, true };
         private static readonly Color[] BossColors =
         {
-            new Color(1f, 0.40f, 0.34f), new Color(0.72f, 0.45f, 1f), new Color(0.40f, 0.90f, 1f)
+            new Color(1f, 0.40f, 0.34f), new Color(0.72f, 0.45f, 1f), new Color(0.40f, 0.90f, 1f),
+            new Color(1f, 0.70f, 0.30f), new Color(0.55f, 0.85f, 1f), new Color(0.30f, 0.72f, 0.72f),
+            new Color(1f, 0.50f, 0.25f), new Color(0.62f, 0.40f, 0.85f)
         };
 
         // MMX-style target-select hub: pick which kaiju to hunt before choosing a loadout.
         private void DrawBossSelect(float w, float h)
         {
-            var panel = new Rect(w * 0.5f - 236f, h * 0.5f - 176f, 472f, 352f);
+            // Dynamic grid (MMX-style): up to 4 per row, as many rows as the roster needs.
+            int count = BossNames.Length;
+            int cols = Mathf.Min(4, count);
+            int rows = (count + cols - 1) / cols;
+            float cw = 118f, ch = 142f, gap = 12f;
+            float pw = cols * cw + (cols - 1) * gap + 40f;
+            float ph2 = 66f + rows * (ch + gap) + 52f;
+            var panel = new Rect(w * 0.5f - pw * 0.5f, h * 0.5f - ph2 * 0.5f, pw, ph2);
             GUI.Box(panel, GUIContent.none, GameUiSkin.PanelStyle);
-            GUI.Label(new Rect(panel.x, panel.y + 16f, panel.width, 32f), "選擇獵物  SELECT TARGET", GameUiSkin.HeadingStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 14f, panel.width, 30f), "選擇獵物  SELECT TARGET", GameUiSkin.HeadingStyle);
 
-            float cw = 138f, ch = 168f, gap = 16f;
-            float x0 = panel.x + (panel.width - (cw * 3 + gap * 2)) * 0.5f;
-            for (int i = 0; i < 3; i++)
+            float gx = panel.x + (panel.width - (cw * cols + gap * (cols - 1))) * 0.5f;
+            float gy = panel.y + 52f;
+            for (int i = 0; i < count; i++)
             {
-                var cell = new Rect(x0 + i * (cw + gap), panel.y + 58f, cw, ch);
+                var cell = new Rect(gx + (i % cols) * (cw + gap), gy + (i / cols) * (ch + gap), cw, ch);
                 bool unlocked = BossUnlocked[i];
                 var style = !unlocked ? GameUiSkin.ButtonStyle
                           : i == _selBossIndex ? GameUiSkin.SelectedButtonStyle : GameUiSkin.ButtonStyle;
                 if (GUI.Button(cell, GUIContent.none, style) && unlocked) _selBossIndex = i;
 
                 // portrait block (theme colour; greyed when locked) + names, drawn over the cell.
-                var port = new Rect(cell.x + 20f, cell.y + 16f, cw - 40f, 84f);
+                var port = new Rect(cell.x + 16f, cell.y + 12f, cw - 32f, 72f);
                 var pc = GUI.color;
                 GUI.color = unlocked ? BossColors[i] : new Color(0.28f, 0.30f, 0.36f, 1f);
                 GUI.DrawTexture(port, GameUiSkin.White);
                 GUI.color = pc;
-                GUI.Label(new Rect(cell.x, cell.y + 106f, cw, 22f), BossNames[i], GameUiSkin.LabelStyle);
-                GUI.Label(new Rect(cell.x, cell.y + 128f, cw, 16f), unlocked ? BossCodes[i] : "開發中 LOCKED", GameUiSkin.SmallStyle);
+                GUI.Label(new Rect(cell.x, cell.y + 90f, cw, 20f), BossNames[i], GameUiSkin.LabelStyle);
+                GUI.Label(new Rect(cell.x, cell.y + 110f, cw, 16f), unlocked ? BossCodes[i] : "開發中 LOCKED", GameUiSkin.SmallStyle);
             }
 
-            var confirm = new Rect(panel.x + panel.width * 0.5f - 95f, panel.y + 296f, 190f, 42f);
+            var confirm = new Rect(panel.x + panel.width * 0.5f - 95f, panel.yMax - 46f, 190f, 40f);
             if (GUI.Button(confirm, "確定  ▶  裝備", GameUiSkin.ButtonStyle)) ConfirmBossSelect();
 
-            var upg = new Rect(panel.xMax - 118f, panel.y + 14f, 104f, 28f);
+            var upg = new Rect(panel.xMax - 118f, panel.y + 12f, 104f, 28f);
             if (GUI.Button(upg, "強化 ⚙", GameUiSkin.ButtonStyle)) { _showBossSelect = false; _showUpgrades = true; }
         }
 

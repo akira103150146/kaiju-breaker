@@ -1,0 +1,261 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47686b1b4d9075c4588bace507fecd7e, type: 3}
+  m_Name: Kaiju_Nullspire
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.KaijuDef
+  _kaijuId: nullspire
+  _theme: 7
+  _parts:
+  - _partId: singularity_core
+    _partType: 2
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency: []
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  - _partId: spine_seg_1
+    _partType: 0
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency:
+    - singularity_core
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  - _partId: spine_seg_2
+    _partType: 0
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency:
+    - singularity_core
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  - _partId: spine_seg_3
+    _partType: 0
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency:
+    - singularity_core
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  - _partId: void_shield_l
+    _partType: 1
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency:
+    - singularity_core
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 70739296f25c22842b7c8279c9b7f5e2, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  - _partId: void_shield_r
+    _partType: 1
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency:
+    - singularity_core
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 70739296f25c22842b7c8279c9b7f5e2, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  - _partId: satellite_1
+    _partType: 0
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency:
+    - singularity_core
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  - _partId: satellite_2
+    _partType: 0
+    _hMaxOverride: 0
+    _hMaxUseOverride: 0
+    _bMaxOverride: 0
+    _bMaxUseOverride: 0
+    _adjacency:
+    - singularity_core
+    _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: 
+      _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 0
+  _body:
+    _driftAmpX: 0
+    _driftAmpY: 0
+    _driftFreqX: 0
+    _driftFreqY: 0
