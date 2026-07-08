@@ -16,6 +16,14 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Show the on-screen joystick + fire button. Leave on for touch; harmless on PC (mouse-usable).")]
         [SerializeField] private bool _showTouchControls = true;
 
+        [Tooltip("Finger travel (in joystick radii) needed to reach full speed. Higher = LESS sensitive / more precise. 1 = old twitchy behaviour.")]
+        [Range(1f, 3f)]
+        [SerializeField] private float _joyTravelMult = 1.9f;
+
+        [Tooltip("Ignore joystick displacement below this fraction of full travel (kills centre jitter / drift). 0 = none.")]
+        [Range(0f, 0.3f)]
+        [SerializeField] private float _joyDeadzone = 0.12f;
+
         private Vector2 _joyBase, _fireCenter;
         private float _joyRadius, _fireRadius;
         private Vector2 _joyAxis;   // computed each frame
@@ -35,14 +43,14 @@ namespace KaijuBreaker.App.Gameplay
                 {
                     var t = Input.GetTouch(i);
                     if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) continue;
-                    if (InCircle(t.position, _joyBase, _joyRadius * 2.2f)) _joyAxis = AxisFrom(t.position);
+                    if (InCircle(t.position, _joyBase, _joyRadius * (_joyTravelMult + 0.4f))) _joyAxis = AxisFrom(t.position);
                     if (InCircle(t.position, _fireCenter, _fireRadius)) _secondaryHeld = true; // any phase = held
                 }
             }
             else if (Input.GetMouseButton(0))
             {
                 Vector2 m = Input.mousePosition;
-                if (InCircle(m, _joyBase, _joyRadius * 2.2f)) _joyAxis = AxisFrom(m);
+                if (InCircle(m, _joyBase, _joyRadius * (_joyTravelMult + 0.4f))) _joyAxis = AxisFrom(m);
                 else if (InCircle(m, _fireCenter, _fireRadius)) _secondaryHeld = true; // click-hold the on-screen button
             }
         }
@@ -58,8 +66,13 @@ namespace KaijuBreaker.App.Gameplay
 
         private Vector2 AxisFrom(Vector2 screenPos)
         {
-            Vector2 v = (screenPos - _joyBase) / _joyRadius;
-            return v.magnitude > 1f ? v.normalized : v;
+            // Full speed needs _joyTravelMult radii of finger travel (lower sensitivity than a raw 1-radius map).
+            Vector2 v = (screenPos - _joyBase) / (_joyRadius * _joyTravelMult);
+            float m = v.magnitude;
+            if (m <= _joyDeadzone) return Vector2.zero;             // centre deadzone: no drift
+            if (m > 1f) return v / m;                               // clamp to full speed
+            // Rescale so the axis ramps 0→1 across [deadzone, 1] (no speed jump at the deadzone edge).
+            return v * ((m - _joyDeadzone) / (1f - _joyDeadzone) / m);
         }
 
         private static bool InCircle(Vector2 p, Vector2 c, float r) => (p - c).sqrMagnitude <= r * r;
