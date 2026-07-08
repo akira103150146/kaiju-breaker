@@ -16,7 +16,8 @@
 | S2 | **可破壞部位系統 (Breakable Part System)** | `gdd/kaiju-part-system.md` | ✅ 草稿完整 | 熱量/破甲雙槽、狀態機、部位類型、相鄰圖、事件契約 |
 | S3 | **素材經濟與永久升級 (Material Economy)** | `gdd/material-economy.md` | ✅ 草稿完整 | 5 素材、巨獸主題綁定核心、淺養成曲線、跨輪永久 |
 | S4 | **關卡系統 (Stage System)** | `gdd/stage-system.md` | ✅ 草稿完整 | 手作波段池隨機重組、6 種雜兵、武器莢艙掉落、3 關、四難度密度 |
-| C1 | **巨獸內容 (Kaiju Roster)** | `gdd/kaiju/01–03` | ✅ 首批 3 隻 | CARAPEX(甲殼/教學) · LACERA(肢體/移動) · VOLTWYRM(能量/彈幕) |
+| C1 | **巨獸內容 (Kaiju Roster)** | `gdd/kaiju/00–08` | ✅ 全 8 隻設計完成 | 骨幹 `00-roster-overview`；CARAPEX(甲殼/L2·M3) · LACERA(肢體/M1) · VOLTWYRM(能量/L4) · **BROODCORE(蟲群/M4)** · **PRISMSHELL(晶簇/L2)** · **TIDEMAW(深淵/M2)** · **EMBERWING(餘燼/L3)** · **NULLSPIRE(虛空/綜合)**。per-part 射擊資料模型見 `per-part-firing-schema.md` |
+| C2 | **敵人 Roster 擴充** | `gdd/enemy-roster-expansion.md` | ✅ 草稿完整 | 既有 10 雜兵 + 新 6(spore_mite/spiral_turret/diver/prism_drone/bubbler/void_lancer)；EnemyTier 正式化；菁英=莢艙來源 |
 | S5 | **難度系統 (Difficulty System)** | `gdd/difficulty-system.md` | ✅ 草稿完整 | 四階(D1 普通/D2 困難/D3 極限/D4 惡夢)只縮放彈幕密度/雜兵數;TTB 與武器輸出跨難度不變(阻斷驗收) |
 | S6 | **輸入系統 (Input System)** | `gdd/input-system.md` | ✅ 草稿完整 | 雙輸入(觸控 Sky Force 拖曳偏移 + 鍵鼠/手柄);觸控手感仍待專屬原型驗證 |
 | S7 | **HUD / UI 系統** | `gdd/hud-ui-system.md` | ✅ 草稿完整 | world-space 部位血條、武器 HUD、素材計數、loadout/升級/難度三畫面、手機安全區 |

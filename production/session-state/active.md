@@ -1,6 +1,25 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-08 (session 8 FINAL — 可玩 run A→E + 選單 + 雷電3強化 + 循環莢艙 + meta utility + 三頭目 + 真美術 + 頭目細節. 448 EditMode GREEN. 全 push, HEAD `6d98f31`. EXE+APK 重建含全部.)*
+*Last updated: 2026-07-08 (SESSION 9 進行中 — 搖桿靈敏度修正 + EXE/APK 重建 + 8-頭目 roster 設計擴充 5 隻新頭目 + 敵人擴充 + per-part 射擊 schema 規格; schema 實作委派中.)*
+
+## ⚡ SESSION 9 (2026-07-08) — 搖桿修正 + 重建 + 頭目/敵人設計大擴充 + per-part 射擊 schema
+- **導演本輪指示**：① 手機搖桿太靈敏→調低。② 先「設計」剩餘頭目 + 更多小怪/菁英（含彈幕發射模式+移動模式）；頭目/菁英參考雷電「不同部位射不同子彈」。③ 用目前狀態重建 EXE+APK。④ 定案：+5 頭目（共 8）、**全部做完整**（設計→schema→實作）。
+- **✅ 搖桿修正**（`015fcd0`）：`PlayerInputRouter` 滿速行程 1×→**1.9× 半徑**（`_joyTravelMult` 可調）+ **0.12 中心死區**；捕捉區隨行程放大。編譯綠。
+- **✅ 重建 EXE+APK**（含搖桿修正）：APK 45MB、EXE 116.7MB(遊戲資料 18:15 全新)，0 錯。Unity MCP `manage_build`：Android 68s、Win 24s（IL2CPP 快取熱）。
+- **✅ 設計大擴充（全提交，未 push）**：
+  - `kaiju/00-roster-overview.md`（`c26314a`）：8 頭目骨幹，每隻教一種武器、8 武器剋制全覆蓋。
+  - `enemy-roster-expansion.md`（`dd72a3d`）：+6 新小怪(各預告一新頭目) + EnemyTier 正式化 + 菁英=莢艙來源。
+  - `kaiju/04-08`（`1d64963`）：5 份完整 10 段 GDD — BROODCORE(蟲群/M4,7部位卵囊)/PRISMSHELL(晶簇/L2,6部位公轉晶面+HitGate)/TIDEMAW(深淵/M2,6部位破甲回填grace5s+6BU/s)/EMBERWING(餘燼/L3,7部位橫跨80%寬+跨部位break_gate)/NULLSPIRE(虛空/綜合capstone,8部位旋轉盾+公轉衛星+終局齊射). 由 5 個 game-designer 平行撰寫.
+  - `per-part-firing-schema.md`（`f89dbe1`）：權威 schema 規格 — PartDef 加 Emitters[]/PartMovement/PartGate/ArmorRegen；KaijuDef 加 BodyMovement；enums KaijuTheme+5/MaterialId+5核心/EmitterPatternType+Spiral/MovementType+DiveSwoop·HoverStrafe/EnemyTier. 向後相容.
+  - `systems-index` C1 更新為 8 隻 + C2 敵人擴充.
+- **⚠️ 待導演定案（非阻擋）**：**經濟 sink** — 5 新核心(core_swarm/crystal/abyss/ember/void)「升級什麼」？現 8 武器升級綁 3 原始核心。選項 A 新養成軸 / B 擴武器成本池 / C 只計圖鑑。實作先讓每部位正確掉新核心不 crash.
+- **⏳ 進行中**：unity-specialist 實作 schema §1–6（enums+PartDef/KaijuDef 欄位+EconomyConfig 對映+EditMode 測試，純加法）。完成後我 MCP 編譯+跑測試驗證→再接 §7 執行（BossController per-part 發射+部位移動，task #6）.
+- **TaskList**：#1 build✅ #2 骨幹✅ #3 GDD✅ #4 敵人✅ #5 schema(進行) #6 wiring(待).
+- **下一步(續作)**：等 schema agent→MCP run_tests EditMode 驗綠→commit→task#6 BossController 接 per-part 發射(用 EnemyBulletPool)+部位移動+新小怪 SO/prefab→可玩驗證→重建 build.
+
+---
+*(以下為 session 8 及更早，保留供追溯)*
+*session 8 FINAL — 可玩 run A→E + 選單 + 雷電3強化 + 循環莢艙 + meta utility + 三頭目 + 真美術 + 頭目細節. 448 EditMode GREEN. 全 push, HEAD `6d98f31`. EXE+APK 重建含全部.*
 *Resume anchor: read THIS + `NEXT-STEPS.md` (same folder) first. Backlog entry point: `production/epics/index.md`.*
 *Obsidian mirror: `C:\Users\User\Documents\Note\Kaiju-Breaker\` — full session-8 done/todo in `進度結算-2026-07-08.md`.*
 
