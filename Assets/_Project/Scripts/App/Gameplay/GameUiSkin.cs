@@ -35,6 +35,7 @@ namespace KaijuBreaker.App.Gameplay
         public static GUIStyle SmallStyle { get; private set; }
         public static GUIStyle PanelStyle { get; private set; }
         public static GUIStyle ButtonStyle { get; private set; }
+        public static GUIStyle SelectedButtonStyle { get; private set; }
 
         /// <summary>Build the theme once. Safe to call every frame; rebuilds only if the font changed.</summary>
         public static void EnsureBuilt(Font font)
@@ -69,6 +70,11 @@ namespace KaijuBreaker.App.Gameplay
             ButtonStyle.normal.background = Button9; ButtonStyle.normal.textColor = Cyan;
             ButtonStyle.hover.background = ButtonHot9; ButtonStyle.hover.textColor = Color.white;
             ButtonStyle.active.background = ButtonHot9; ButtonStyle.active.textColor = Color.white;
+
+            // Persistently "hot" variant for the currently-selected option in a group.
+            SelectedButtonStyle = new GUIStyle(ButtonStyle);
+            SelectedButtonStyle.normal.background = ButtonHot9;
+            SelectedButtonStyle.normal.textColor = Color.white;
 
             _built = true;
         }

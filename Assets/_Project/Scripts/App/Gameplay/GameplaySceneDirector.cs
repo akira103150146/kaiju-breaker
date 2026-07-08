@@ -50,6 +50,12 @@ namespace KaijuBreaker.App.Gameplay
         private Action<RunStateChanged> _onRunStateChanged;
         private bool _defeated;
         private bool _showTitle;
+        private bool _showBossSelect;
+        private int _selBossIndex;
+        private bool _showLoadout;
+        private WeaponId _selPrimary = WeaponId.L1;
+        private WeaponId _selSecondary = WeaponId.M1;
+        private DifficultyTier _selDifficulty = DifficultyTier.D1;
         private RunState _runState = RunState.Loadout;
 
         /// <summary>The spawned player ship (null before BeginRun).</summary>
@@ -84,6 +90,21 @@ namespace KaijuBreaker.App.Gameplay
         {
             if (!_showTitle) return;
             _showTitle = false;
+            _showBossSelect = true; // title → boss select (MMX-style hub) → loadout → play
+        }
+
+        private void ConfirmBossSelect()
+        {
+            if (!BossUnlocked[_selBossIndex]) return; // locked target — stay on the select screen
+            _showBossSelect = false;
+            _showLoadout = true;
+            // (Only CARAPEX is wired to a KaijuDef today; future targets set the BossController's boss here.)
+        }
+
+        private void ConfirmLoadout()
+        {
+            _showLoadout = false;
+            _comp?.Difficulty.SetTier(_selDifficulty); // difficulty is real (scales enemy count / bullet density)
             BeginRun();
         }
 
@@ -108,7 +129,7 @@ namespace KaijuBreaker.App.Gameplay
 
             // Publishing LoadoutConfirmed drives BOTH RunController (→STAGE) and StageDirector (builds the
             // sequence). Both handlers run synchronously inside Publish, so CurrentSequence is ready on return.
-            _comp.Bus.Publish(new LoadoutConfirmed(default, default, default));
+            _comp.Bus.Publish(new LoadoutConfirmed(_selPrimary, _selSecondary, _selDifficulty));
 
             var sequence = _comp.Stage?.CurrentSequence;
             if (sequence == null)
@@ -175,10 +196,42 @@ namespace KaijuBreaker.App.Gameplay
             float w = Screen.width / s, h = Screen.height / s;
 
             if (_showTitle) DrawTitle(w, h);
+            else if (_showBossSelect) DrawBossSelect(w, h);
+            else if (_showLoadout) DrawLoadout(w, h);
             else if (_showResults) DrawResults(w, h);
             else DrawHud(w, h);
 
             GUI.matrix = prev;
+        }
+
+        private static readonly string[] PrimaryLabels = { "L1 散波", "L2 集束", "L3 波動", "L4 穿透" };
+        private static readonly string[] SecondaryLabels = { "M1 追蹤", "M2 蜂群", "M3 魚雷", "M4 叢集" };
+        private static readonly string[] DiffLabels = { "D1", "D2", "D3", "D4" };
+
+        private void DrawLoadout(float w, float h)
+        {
+            var panel = new Rect(w * 0.5f - 216f, h * 0.5f - 190f, 432f, 360f);
+            GUI.Box(panel, GUIContent.none, GameUiSkin.PanelStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 16f, panel.width, 34f), "選擇裝備  LOADOUT", GameUiSkin.HeadingStyle);
+
+            Row(panel, 62f, "主武器 · 雷射", PrimaryLabels, (int)_selPrimary, i => _selPrimary = (WeaponId)i);
+            Row(panel, 138f, "副武器 · 飛彈", SecondaryLabels, (int)_selSecondary - 4, i => _selSecondary = (WeaponId)(i + 4));
+            Row(panel, 214f, "難度 · 彈幕密度", DiffLabels, (int)_selDifficulty, i => _selDifficulty = (DifficultyTier)i);
+
+            var start = new Rect(panel.x + panel.width * 0.5f - 95f, panel.y + 300f, 190f, 44f);
+            if (GUI.Button(start, "出擊  START", GameUiSkin.ButtonStyle)) ConfirmLoadout();
+        }
+
+        private void Row(Rect panel, float y, string title, string[] labels, int selected, Action<int> onPick)
+        {
+            GUI.Label(new Rect(panel.x + 22f, panel.y + y, panel.width - 44f, 16f), title, GameUiSkin.SmallStyle);
+            float bw = (panel.width - 44f - 18f) / 4f;
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var r = new Rect(panel.x + 22f + i * (bw + 6f), panel.y + y + 20f, bw, 40f);
+                var style = i == selected ? GameUiSkin.SelectedButtonStyle : GameUiSkin.ButtonStyle;
+                if (GUI.Button(r, labels[i], style)) onPick(i);
+            }
         }
 
         private void DrawTitle(float w, float h)
@@ -211,6 +264,45 @@ namespace KaijuBreaker.App.Gameplay
                 var pc = st.normal.textColor; st.normal.textColor = _runState == RunState.Boss ? GameUiSkin.Warm : GameUiSkin.Ink;
                 GUI.Label(tag, phase, st); st.normal.textColor = pc;
             }
+        }
+
+        private static readonly string[] BossNames = { "甲殼獸", "利刃獸", "雷龍" };
+        private static readonly string[] BossCodes = { "CARAPEX", "LACERA", "VOLTWYRM" };
+        private static readonly bool[] BossUnlocked = { true, false, false };
+        private static readonly Color[] BossColors =
+        {
+            new Color(1f, 0.40f, 0.34f), new Color(0.72f, 0.45f, 1f), new Color(0.40f, 0.90f, 1f)
+        };
+
+        // MMX-style target-select hub: pick which kaiju to hunt before choosing a loadout.
+        private void DrawBossSelect(float w, float h)
+        {
+            var panel = new Rect(w * 0.5f - 236f, h * 0.5f - 176f, 472f, 352f);
+            GUI.Box(panel, GUIContent.none, GameUiSkin.PanelStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 16f, panel.width, 32f), "選擇獵物  SELECT TARGET", GameUiSkin.HeadingStyle);
+
+            float cw = 138f, ch = 168f, gap = 16f;
+            float x0 = panel.x + (panel.width - (cw * 3 + gap * 2)) * 0.5f;
+            for (int i = 0; i < 3; i++)
+            {
+                var cell = new Rect(x0 + i * (cw + gap), panel.y + 58f, cw, ch);
+                bool unlocked = BossUnlocked[i];
+                var style = !unlocked ? GameUiSkin.ButtonStyle
+                          : i == _selBossIndex ? GameUiSkin.SelectedButtonStyle : GameUiSkin.ButtonStyle;
+                if (GUI.Button(cell, GUIContent.none, style) && unlocked) _selBossIndex = i;
+
+                // portrait block (theme colour; greyed when locked) + names, drawn over the cell.
+                var port = new Rect(cell.x + 20f, cell.y + 16f, cw - 40f, 84f);
+                var pc = GUI.color;
+                GUI.color = unlocked ? BossColors[i] : new Color(0.28f, 0.30f, 0.36f, 1f);
+                GUI.DrawTexture(port, GameUiSkin.White);
+                GUI.color = pc;
+                GUI.Label(new Rect(cell.x, cell.y + 106f, cw, 22f), BossNames[i], GameUiSkin.LabelStyle);
+                GUI.Label(new Rect(cell.x, cell.y + 128f, cw, 16f), unlocked ? BossCodes[i] : "開發中 LOCKED", GameUiSkin.SmallStyle);
+            }
+
+            var confirm = new Rect(panel.x + panel.width * 0.5f - 95f, panel.y + 296f, 190f, 42f);
+            if (GUI.Button(confirm, "確定  ▶  裝備", GameUiSkin.ButtonStyle)) ConfirmBossSelect();
         }
 
         private void DrawResults(float w, float h)
