@@ -37,8 +37,11 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Boss encounter controller (hidden until the 道中 clears). Optional — no boss if unassigned.")]
         [SerializeField] private BossController _bossController;
 
-        [Tooltip("Begin the run automatically on Play. Off = call BeginRun() from a menu/START button.")]
-        [SerializeField] private bool _autoStart = true;
+        [Tooltip("Skip the title screen and begin immediately on Play (e.g. for tests).")]
+        [SerializeField] private bool _autoStart = false;
+
+        [Tooltip("Ark Pixel font for the placeholder UI (menus/HUD/results). Assign the project's Ark Pixel TTF.")]
+        [SerializeField] private Font _uiFont;
 
         private GameComposition _comp;
         private PlayerShip _player;
@@ -46,6 +49,8 @@ namespace KaijuBreaker.App.Gameplay
         private SegmentSequenceRunner _waveRunner;
         private Action<RunStateChanged> _onRunStateChanged;
         private bool _defeated;
+        private bool _showTitle;
+        private RunState _runState = RunState.Loadout;
 
         /// <summary>The spawned player ship (null before BeginRun).</summary>
         public PlayerShip Player => _player;
@@ -64,7 +69,22 @@ namespace KaijuBreaker.App.Gameplay
             _comp.Bus.Subscribe(_onRunStateChanged);
 
             SpawnPlayer();
+            _playerWeapon?.SetFiring(false); // hold fire on the title screen
             if (_autoStart) BeginRun();
+            else _showTitle = true;
+        }
+
+        private void Update()
+        {
+            if (_showTitle && (Input.anyKeyDown || Input.GetMouseButtonDown(0) || Input.touchCount > 0))
+                StartFromTitle();
+        }
+
+        private void StartFromTitle()
+        {
+            if (!_showTitle) return;
+            _showTitle = false;
+            BeginRun();
         }
 
         private void OnDestroy()
@@ -127,6 +147,7 @@ namespace KaijuBreaker.App.Gameplay
 
         private void OnRunStateChanged(RunStateChanged evt)
         {
+            _runState = evt.To;
             if (_player != null) _player.SetBossPhase(evt.To == RunState.Boss);
             if (evt.To == RunState.Results) { _showResults = true; _resultWin = !_defeated; }
         }
@@ -142,29 +163,70 @@ namespace KaijuBreaker.App.Gameplay
 
         private bool _showResults;
         private bool _resultWin;
-        private GUIStyle _resultStyle;
 
-        // Lightweight results overlay (ADR-0006 UGUI meta screen is a follow-up). Works on PC + touch.
+        // Placeholder IMGUI front-end (title / HUD / results), themed via GameUiSkin (Ark Pixel + cold palette).
+        // A UGUI + TMP pass is the ADR-0006 follow-up.
         private void OnGUI()
         {
-            if (!_showResults) return;
-            float s = Mathf.Clamp(Screen.dpi > 0 ? Screen.dpi / 96f : 1f, 1f, 3.5f);
+            GameUiSkin.EnsureBuilt(_uiFont);
+            float s = Mathf.Clamp(Screen.dpi > 0 ? Screen.dpi / 96f : 1f, 1f, 3f);
             var prev = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(s, s, 1f));
             float w = Screen.width / s, h = Screen.height / s;
 
-            if (_resultStyle == null)
-                _resultStyle = new GUIStyle(GUI.skin.label) { fontSize = 28, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            if (_showTitle) DrawTitle(w, h);
+            else if (_showResults) DrawResults(w, h);
+            else DrawHud(w, h);
 
-            var box = new Rect(w * 0.5f - 150f, h * 0.5f - 90f, 300f, 180f);
-            GUI.Box(box, GUIContent.none);
-            _resultStyle.normal.textColor = _resultWin ? new Color(0.4f, 0.95f, 1f) : new Color(1f, 0.45f, 0.4f);
-            GUI.Label(new Rect(box.x, box.y + 20f, box.width, 40f), _resultWin ? "VICTORY" : "DEFEAT", _resultStyle);
+            GUI.matrix = prev;
+        }
 
-            if (GUI.Button(new Rect(box.x + 70f, box.y + 110f, 160f, 40f), "RESTART (R)") ||
+        private void DrawTitle(float w, float h)
+        {
+            var panel = new Rect(w * 0.5f - 190f, h * 0.32f, 380f, 210f);
+            GUI.Box(panel, GUIContent.none, GameUiSkin.PanelStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 34f, panel.width, 50f), "殲獸戰機", GameUiSkin.TitleStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 92f, panel.width, 28f), "KAIJU BREAKER", GameUiSkin.HeadingStyle);
+            bool blink = Mathf.Repeat(Time.unscaledTime, 1f) < 0.6f;
+            if (blink) GUI.Label(new Rect(panel.x, panel.y + 150f, panel.width, 30f), "點擊開始  ·  TAP TO START", GameUiSkin.SmallStyle);
+        }
+
+        private void DrawHud(float w, float h)
+        {
+            // HP bar (bottom-centre, above the touch controls) + phase tag (top-centre).
+            if (_player != null)
+            {
+                float frac = _player.MaxHp > 0 ? (float)_player.Hp / _player.MaxHp : 0f;
+                var bar = new Rect(w * 0.5f - 90f, h - 44f, 180f, 12f);
+                Color fill = frac > 0.35f ? GameUiSkin.Cyan : GameUiSkin.Danger;
+                GameUiSkin.Bar(bar, frac, fill);
+                GUI.Label(new Rect(bar.x, bar.y - 18f, bar.width, 16f), "HP " + _player.Hp + " / " + _player.MaxHp, GameUiSkin.SmallStyle);
+            }
+            string phase = _runState == RunState.Boss ? "頭目戰  BOSS" : _runState == RunState.Stage ? "道中  STAGE" : "";
+            if (phase.Length > 0)
+            {
+                var tag = new Rect(w * 0.5f - 90f, 10f, 180f, 24f);
+                GUI.Box(tag, GUIContent.none, GameUiSkin.PanelStyle);
+                var st = _runState == RunState.Boss ? GameUiSkin.HeadingStyle : GameUiSkin.LabelStyle;
+                var pc = st.normal.textColor; st.normal.textColor = _runState == RunState.Boss ? GameUiSkin.Warm : GameUiSkin.Ink;
+                GUI.Label(tag, phase, st); st.normal.textColor = pc;
+            }
+        }
+
+        private void DrawResults(float w, float h)
+        {
+            var panel = new Rect(w * 0.5f - 170f, h * 0.5f - 110f, 340f, 220f);
+            GUI.Box(panel, GUIContent.none, GameUiSkin.PanelStyle);
+            var tc = GameUiSkin.TitleStyle.normal.textColor;
+            GameUiSkin.TitleStyle.normal.textColor = _resultWin ? GameUiSkin.Cyan : GameUiSkin.Danger;
+            GUI.Label(new Rect(panel.x, panel.y + 34f, panel.width, 50f), _resultWin ? "勝利！" : "敗北", GameUiSkin.TitleStyle);
+            GameUiSkin.TitleStyle.normal.textColor = tc;
+            GUI.Label(new Rect(panel.x, panel.y + 96f, panel.width, 24f), _resultWin ? "VICTORY" : "DEFEAT", GameUiSkin.SmallStyle);
+
+            var btn = new Rect(panel.x + panel.width * 0.5f - 80f, panel.y + 150f, 160f, 44f);
+            if (GUI.Button(btn, "重新開始  (R)", GameUiSkin.ButtonStyle) ||
                 (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.R))
                 Restart();
-            GUI.matrix = prev;
         }
 
         private void Restart()

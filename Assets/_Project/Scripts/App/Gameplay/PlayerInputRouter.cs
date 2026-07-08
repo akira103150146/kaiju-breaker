@@ -85,16 +85,17 @@ namespace KaijuBreaker.App.Gameplay
         {
             if (!_showTouchControls) return;
             if (_tex == null) { _tex = new Texture2D(1, 1); _tex.SetPixel(0, 0, Color.white); _tex.Apply(); }
+            var disc = GameUiSkin.Ring != null ? GameUiSkin.Ring : _tex; // soft radial disc from the shared skin
             // IMGUI y is top-down; screen coords are bottom-up.
-            DrawRing(_joyBase, _joyRadius, new Color(0.4f, 0.85f, 1f, 0.25f));
-            DrawRing(_joyBase + _joyAxis * _joyRadius, _joyRadius * 0.45f, new Color(0.5f, 0.95f, 1f, 0.5f));
-            DrawRing(_fireCenter, _fireRadius, new Color(1f, 0.55f, 0.35f, 0.35f));
+            DrawDisc(disc, _joyBase, _joyRadius, new Color(0.35f, 0.85f, 1f, 0.30f));                 // joystick base
+            DrawDisc(disc, _joyBase + _joyAxis * _joyRadius, _joyRadius * 0.5f, new Color(0.5f, 0.97f, 1f, 0.85f)); // handle
+            DrawDisc(disc, _fireCenter, _fireRadius, new Color(1f, 0.55f, 0.32f, 0.55f));             // fire button
         }
 
-        private void DrawRing(Vector2 screenCenter, float r, Color c)
+        private void DrawDisc(Texture2D tex, Vector2 screenCenter, float r, Color c)
         {
             var prev = GUI.color; GUI.color = c;
-            GUI.DrawTexture(new Rect(screenCenter.x - r, Screen.height - screenCenter.y - r, r * 2f, r * 2f), _tex);
+            GUI.DrawTexture(new Rect(screenCenter.x - r, Screen.height - screenCenter.y - r, r * 2f, r * 2f), tex);
             GUI.color = prev;
         }
     }
