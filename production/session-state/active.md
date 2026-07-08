@@ -9,8 +9,9 @@
 - **RUNTIME 驗證**: 真 Play session 發 PartBroke → timeScale=0+flash 0.78+shake 11+Meta partsBroken=1（整條事件鏈跑通）。
 - **TESTS**: **442 EditMode + 10 PlayMode GREEN**。**~40 commits 全 push**（origin/main HEAD `3e4d3d3`）。
 - **BUILDS**: `Builds/Windows/kaiju-breaker.exe`(118MB) + `Builds/Android/kaiju-breaker.apk`(46.9MB) 含美術+UI修復。
-- **✅ session 8 已完成**：首個「正式系統可玩 run」A→E（見下方 Session 8 段落）。完整迴圈 LOADOUT→道中(多樣小怪)→Boss(真戰)→勝負結算，PC+手機控制，可玩。
-- **TODO（下次）**: ① `git push`（5 commits `c435183`→`67627a2` 未推）② Boss 進場走真 PreBossLull ③ 結算/HUD 改 UGUI+像素字(ADR-0006) ④ 手機控制 UGUI 化+裝置 touch-feel ⑤ bespoke kaiju 美術+軟化 glow/粒子 ⑥ composable emitter 擴充 ⑦ Game view 直向。
+- **✅ session 8 已完成**：首個「正式系統可玩 run」A→E + **介面美術頂一下 + 選單流程**。完整體驗＝**標題 → 選頭目(洛克人X4風獨立hub) → 選裝備(L/M/難度) → 出擊 → 道中(多樣小怪) → Boss(真戰) → 勝負結算**，PC+手機控制。UI 用 Ark Pixel 字體(中文OK)+程序化冷色貼圖(GameUiSkin)。**已 push 到 origin/main HEAD `d7f4abd`**；**EXE+APK 已重建含新UI**。
+- **★ 工作習慣**：MCP 進 Play/截圖會把 Unity 切前景打斷導演 → 預設用 **EditMode 測試+反射驗證**，視覺確認集中並先告知（見 [[verify-without-stealing-focus]]）。
+- **TODO（下次）**: ① LACERA/VOLTWYRM KaijuDef+encounter → 接上選頭目(目前只有CARAPEX可打，另兩隻LOCKED) ② 武器選擇真正驅動玩家開火(接真WeaponBehaviour) ③ Boss 進場走真 PreBossLull ④ UI 改 UGUI+TMP(ADR-0006；目前 IMGUI) ⑤ bespoke kaiju 美術+軟化glow/粒子+頭目頭像 ⑥ composable emitter ⑦ Game view 直向。
 - **關鍵路徑**: `Scripts/App/*` 組合根 · `Scenes/Bootstrap.unity` · `Data/*` assets · MCP `run_tests` EditMode/PlayMode。
 
 ## Session 8 (2026-07-07) — 首個「正式系統可玩 run」開工 (道中+Boss並重、正式prefab、彈幕多樣化)
