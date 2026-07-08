@@ -19,13 +19,14 @@ namespace KaijuBreaker.App.Gameplay
         private Vector2 _joyBase, _fireCenter;
         private float _joyRadius, _fireRadius;
         private Vector2 _joyAxis;   // computed each frame
-        private bool _secondaryEdge; // fire pressed this frame (touch began in button / key down)
+        private bool _secondaryHeld; // fire input held this frame (touch in button region / key held)
 
         private void Update()
         {
             LayoutControls();
             _joyAxis = Vector2.zero;
-            _secondaryEdge = Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1);
+            // Hold-to-fire: true while the secondary input is HELD (the weapon's own cooldown rate-limits it).
+            _secondaryHeld = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(1);
 
             // Touch first (mobile); fall back to mouse (editor/PC) so the same controls verify with a cursor.
             if (Input.touchCount > 0)
@@ -33,16 +34,17 @@ namespace KaijuBreaker.App.Gameplay
                 for (int i = 0; i < Input.touchCount; i++)
                 {
                     var t = Input.GetTouch(i);
+                    if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) continue;
                     if (InCircle(t.position, _joyBase, _joyRadius * 2.2f)) _joyAxis = AxisFrom(t.position);
-                    if (t.phase == TouchPhase.Began && InCircle(t.position, _fireCenter, _fireRadius)) _secondaryEdge = true;
+                    if (InCircle(t.position, _fireCenter, _fireRadius)) _secondaryHeld = true; // any phase = held
                 }
             }
             else if (Input.GetMouseButton(0))
             {
                 Vector2 m = Input.mousePosition;
                 if (InCircle(m, _joyBase, _joyRadius * 2.2f)) _joyAxis = AxisFrom(m);
+                else if (InCircle(m, _fireCenter, _fireRadius)) _secondaryHeld = true; // click-hold the on-screen button
             }
-            if (Input.GetMouseButtonDown(0) && InCircle(Input.mousePosition, _fireCenter, _fireRadius)) _secondaryEdge = true;
         }
 
         private void LayoutControls()
@@ -76,7 +78,7 @@ namespace KaijuBreaker.App.Gameplay
 
         public bool HasPointerTarget => false; // axis-based movement (keyboard / joystick); no drag-to-point
         public Vector2 PointerWorld => Vector2.zero;
-        public bool SecondaryPressedThisFrame => _secondaryEdge;
+        public bool SecondaryPressedThisFrame => _secondaryHeld;
 
         private static bool Key(KeyCode k) => Input.GetKey(k);
 
