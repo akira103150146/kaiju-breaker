@@ -1,6 +1,35 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-08 (SESSION 9 進行中 — 搖桿靈敏度修正 + EXE/APK 重建 + 8-頭目 roster 設計擴充 5 隻新頭目 + 敵人擴充 + per-part 射擊 schema 規格; schema 實作委派中.)*
+*Last updated: 2026-07-09 (SESSION 9 收尾 — 8 頭目全可玩 per-part 射擊+移動、6 新小怪、破甲回填、巢母生怪、跳過道中、5 項 playtest 修正. 466 EditMode GREEN. EXE 116.8MB+APK 47MB 最新. 全 push + Obsidian.)*
+
+## ✅ SESSION 9 已辦 / ⬜ 待辦（收尾整合快照）
+
+**✅ 已辦（全部提交、測試綠、EXE+APK 重建、Obsidian 備份）：**
+1. ✅ 手機搖桿靈敏度調低（1.9× 行程 + 死區）。
+2. ✅ 8 頭目設計：`00-roster-overview` 骨幹 + 5 新頭目 GDD(04-08) + `enemy-roster-expansion` + `per-part-firing-schema` 規格。
+3. ✅ per-part 射擊 schema 實作：PartDef 加 Emitters[]/Movement/Gate/ArmorRegen、KaijuDef 加 Body、enums(KaijuTheme+5/MaterialId+5/EmitterType+Spiral/MovementType+2/EnemyTier)。
+4. ✅ **8 頭目全可玩**：3 既有 + 5 新(巢母/稜殼/潮顎/燼使/虛尖)，KaijuDef+場景階層(placeholder 色塊)+roster+選頭目 4×2 格。每部位射不同彈、破部位消音。
+5. ✅ 部位移動（肢掃/晶面公轉/盾自轉/衛星公轉/頸旋轉，邊動邊射）。
+6. ✅ boss 專屬彈幕(BossSpiral/Aimed/Wall)；6 新小怪(含 DiveSwoop/HoverStrafe/Spiral)加進道中。
+7. ✅ 破甲回填(TIDEMAW,+3 測試)；巢母卵囊生 spore_mite(上限 8)。
+8. ✅ 跳過道中直達 BOSS（loadout 切換,測試用）。
+9. ✅ **5 項 playtest 修正**：破甲/熱量雙條、難度真的接進 boss 發射+射速大降(D1 約 7 發/秒)、新頭目打擊框放大(0.85→1.35)、命中 pop+閃、飛彈綠×2/雷射青藍。
+10. ✅ CARAPEX 視覺：下顎朝下、背甲炮移到底部、body-base。
+- **狀態**：**466 EditMode GREEN**；EXE 116.8MB+APK 47MB(02:47-48)含全部；全 push origin/main；Obsidian 備份。
+
+**⬜ 待辦（下次，導演決定順序）：**
+1. ⬜ 5 新頭目 **bespoke 美術 / body-base**（目前色塊 placeholder）。
+2. ⬜ 彈幕/pop/難度**微調**（依 playtest 手感）。
+3. ⬜ **PartGate 執行**(6c 跨部位 hittable/breakable：稜殼 weak_node 需鄰面軟化、潮顎核心藏背甲後、燼使外翼孔需翼根剝甲)。
+4. ⬜ **音樂/音效**方向規格 + BGM 接線（CC0 占位或 AI 生成）。
+5. ⬜ per-part 移動場景 pivot 微調（新頭目 Orbit t=0 可能小跳）。
+6. ⬜ 頭目 emitter cadence 各自細調；per-kaiju 專屬待機動作/軟化 glow/擊破碎屑。
+7. ⬜ UI 改 UGUI+TMP(ADR-0006，目前 IMGUI)；Game view 直向解析度。
+
+**★ 工作守則**（memory）：build 前先 `manage_scene save`（否則跳對話框卡住 MCP，且 reload 可能變 Untitled→load Bootstrap）[[save-scene-before-build]]；MCP 進 Play/截圖搶焦點→預設 EditMode+反射驗證 [[verify-without-stealing-focus]]；新頭目先 placeholder 圖 [[new-bosses-placeholder-sprites]]；常態 commit、push 依指示 [[commit-often-push-on-request]]。
+
+---
+*(以下為 session 9 逐步細節，保留追溯)*
 
 ## ⚡ SESSION 9 (2026-07-08) — 搖桿修正 + 重建 + 頭目/敵人設計大擴充 + per-part 射擊 schema
 - **導演本輪指示**：① 手機搖桿太靈敏→調低。② 先「設計」剩餘頭目 + 更多小怪/菁英（含彈幕發射模式+移動模式）；頭目/菁英參考雷電「不同部位射不同子彈」。③ 用目前狀態重建 EXE+APK。④ 定案：+5 頭目（共 8）、**全部做完整**（設計→schema→實作）。
