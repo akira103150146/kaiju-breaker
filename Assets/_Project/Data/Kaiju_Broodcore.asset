@@ -59,6 +59,11 @@ MonoBehaviour:
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
+    - _pattern: {fileID: 0}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: spore_mite
+      _spawnCap: 2
     _movement:
       _type: 0
       _pivotOffset: {x: 0, y: 0}
@@ -89,6 +94,11 @@ MonoBehaviour:
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
+    - _pattern: {fileID: 0}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: spore_mite
+      _spawnCap: 2
     _movement:
       _type: 0
       _pivotOffset: {x: 0, y: 0}
@@ -119,6 +129,11 @@ MonoBehaviour:
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
+    - _pattern: {fileID: 0}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: spore_mite
+      _spawnCap: 2
     _movement:
       _type: 0
       _pivotOffset: {x: 0, y: 0}
@@ -149,6 +164,11 @@ MonoBehaviour:
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
+    - _pattern: {fileID: 0}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: spore_mite
+      _spawnCap: 2
     _movement:
       _type: 0
       _pivotOffset: {x: 0, y: 0}
@@ -179,6 +199,11 @@ MonoBehaviour:
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
+    - _pattern: {fileID: 0}
+      _gate: 0
+      _gatePartId: 
+      _spawnEnemyId: spore_mite
+      _spawnCap: 2
     _movement:
       _type: 0
       _pivotOffset: {x: 0, y: 0}

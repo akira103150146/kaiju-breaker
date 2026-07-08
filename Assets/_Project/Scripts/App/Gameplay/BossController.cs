@@ -35,6 +35,17 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Damage each boss-part bullet deals to the player on hit (warm enemy bullets, Mono pool).")]
         [SerializeField] private float _bulletDamage = 8f;
 
+        [Header("Minion Spawning (BROODCORE sacs)")]
+        [Tooltip("Enemy prefab spawned by spawner parts. Optional — spawners no-op if unset.")]
+        [SerializeField] private EnemyController _minionPrefab;
+        [Tooltip("EnemyDef for spawned minions (e.g. spore_mite). Optional.")]
+        [SerializeField] private EnemyDef _minionDef;
+        [Tooltip("Seconds between spawns per spawner part.")]
+        [SerializeField] private float _minionSpawnInterval = 4f;
+
+        [Tooltip("Max minions alive at once across the whole boss (keeps the swarm readable).")]
+        [SerializeField] private int _minionGlobalCap = 8;
+
         // One live emission source belonging to a part (per-part-firing-schema.md §3). Bullet emitters fire via
         // the shared pool; spawner slots (SpawnEnemyId) are noted but minion spawning is a follow-up.
         private struct ActiveEmitter
@@ -44,9 +55,12 @@ namespace KaijuBreaker.App.Gameplay
             public PartFireGate Gate;
             public int GatePartId;      // resolved from GatePartId string, −1 when none
             public bool IsSpawner;
+            public int SpawnCap;
             public float Cooldown;
             public float SpinPhaseDeg;
         }
+
+        private readonly System.Collections.Generic.List<EnemyController> _minions = new System.Collections.Generic.List<EnemyController>();
 
         private GameComposition _comp;
         private BossEntry _active;
@@ -108,6 +122,7 @@ namespace KaijuBreaker.App.Gameplay
             _partBaseLocal.Clear();
             _emitters.Clear();
             _brokenPartIds.Clear();
+            ClearMinions();
 
             // Map authored part-id string -> PartDef so bound scene parts can pull their emitters/movement.
             var nameToDef = new Dictionary<string, PartDef>();
@@ -170,7 +185,8 @@ namespace KaijuBreaker.App.Gameplay
                         Gate = e.Gate,
                         GatePartId = gateId,
                         IsSpawner = e.IsSpawner,
-                        Cooldown = e.Pattern != null ? e.Pattern.FireIntervalSeconds : 0f,
+                        SpawnCap = e.SpawnCap,
+                        Cooldown = e.IsSpawner ? _minionSpawnInterval : (e.Pattern != null ? e.Pattern.FireIntervalSeconds : 0f),
                         SpinPhaseDeg = 0f
                     });
                 }
@@ -196,15 +212,23 @@ namespace KaijuBreaker.App.Gameplay
         // Fire each live, gate-open bullet emitter from its owner part's current world position, aimed at the player.
         private void TickEmitters(float dt)
         {
-            if (_bulletPool == null || _emitters.Count == 0) return;
+            if (_emitters.Count == 0) return;
             for (int i = 0; i < _emitters.Count; i++)
             {
                 var e = _emitters[i];
-                if (e.IsSpawner || e.Pattern == null) continue;              // minion spawners: follow-up
                 if (_brokenPartIds.Contains(e.OwnerPartId)) continue;        // broken part = silenced
                 if (!GateOpen(e)) continue;
                 if (!_partsById.TryGetValue(e.OwnerPartId, out var owner) || owner == null || !owner.gameObject.activeSelf) continue;
 
+                if (e.IsSpawner) // sac births a minion on cadence (BROODCORE)
+                {
+                    e.Cooldown -= dt;
+                    if (e.Cooldown <= 0f) { SpawnMinion(owner.transform.position); e.Cooldown = _minionSpawnInterval; }
+                    _emitters[i] = e;
+                    continue;
+                }
+
+                if (_bulletPool == null || e.Pattern == null) continue;
                 if (e.Pattern.PatternType == EmitterPatternType.Spiral)
                     e.SpinPhaseDeg += e.Pattern.SpinRateDegPerSec * dt;
 
@@ -216,6 +240,25 @@ namespace KaijuBreaker.App.Gameplay
                 }
                 _emitters[i] = e; // struct — write back the mutated cooldown/phase
             }
+        }
+
+        // Birth a minion (spore_mite) at a sac, capped globally so the swarm stays readable. The minion uses the
+        // same enemy-bullet pool + player target as the 道中 mobs (its EnemyDef carries its movement/emitter).
+        private void SpawnMinion(Vector3 pos)
+        {
+            if (_minionPrefab == null || _minionDef == null) return;
+            for (int i = _minions.Count - 1; i >= 0; i--) if (_minions[i] == null) _minions.RemoveAt(i); // prune dead
+            if (_minions.Count >= _minionGlobalCap) return;
+            var m = Instantiate(_minionPrefab, pos, Quaternion.identity);
+            m.Init(_minionDef, false);
+            m.SetCombatContext(_bulletPool, _playerTarget, null);
+            _minions.Add(m);
+        }
+
+        private void ClearMinions()
+        {
+            for (int i = 0; i < _minions.Count; i++) if (_minions[i] != null) Destroy(_minions[i].gameObject);
+            _minions.Clear();
         }
 
         private bool GateOpen(ActiveEmitter e)
@@ -285,6 +328,7 @@ namespace KaijuBreaker.App.Gameplay
             _fighting = false;
             Debug.Log("[BossController] BOSS CORE BROKEN — VICTORY. (RunController → RESULTS + HuntEnded.)");
             if (_active.BossRoot != null) _active.BossRoot.SetActive(false);
+            ClearMinions();
             Unsubscribe();
         }
 

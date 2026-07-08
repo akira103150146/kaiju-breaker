@@ -4409,6 +4409,10 @@ MonoBehaviour:
     KaijuId: 8
     BossRoot: {fileID: 456691496}
   _bulletDamage: 8
+  _minionPrefab: {fileID: 1015213739383064583, guid: 5f8d5e00209f8ce4aa91348c6ede2abf, type: 3}
+  _minionDef: {fileID: 11400000, guid: ca132bef9be6a5943ab69c8484e597c1, type: 2}
+  _minionSpawnInterval: 4
+  _minionGlobalCap: 8
 --- !u!4 &1175540648
 Transform:
   m_ObjectHideFlags: 0
