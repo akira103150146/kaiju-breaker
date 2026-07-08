@@ -37,6 +37,9 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Boss encounter controller (hidden until the 道中 clears). Optional — no boss if unassigned.")]
         [SerializeField] private BossController _bossController;
 
+        [Tooltip("In-run power-up item prefab (PowerUpItem) that enemies drop. Optional — no drops if unassigned.")]
+        [SerializeField] private PowerUpItem _powerUpPrefab;
+
         [Tooltip("Skip the title screen and begin immediately on Play (e.g. for tests).")]
         [SerializeField] private bool _autoStart = false;
 
@@ -139,16 +142,17 @@ namespace KaijuBreaker.App.Gameplay
             }
 
             var content = _bootstrap.Content;
+            _playerWeapon?.ResetArsenal(_selPrimary, _selSecondary); // in-run firepower starts at level 1
 
-            // Shared enemy-bullet pool for the whole run; enemies fire from it (aimed at the player).
-            EnemyCombatContext combat = null;
+            // Shared enemy-bullet pool + the drop callback (enemies roll in-run power-ups on death).
+            EnemyBulletPool pool = null;
             if (_enemyBulletPrefab != null)
             {
                 var poolGo = new GameObject("EnemyBulletPool");
-                var pool = poolGo.AddComponent<EnemyBulletPool>();
+                pool = poolGo.AddComponent<EnemyBulletPool>();
                 pool.Configure(_enemyBulletPrefab);
-                combat = new EnemyCombatContext(pool, _player != null ? _player.transform : null);
             }
+            var combat = new EnemyCombatContext(pool, _player != null ? _player.transform : null, SpawnDrop);
 
             var runnerGo = new GameObject("WaveRunner");
             _waveRunner = runnerGo.AddComponent<SegmentSequenceRunner>();
@@ -157,6 +161,28 @@ namespace KaijuBreaker.App.Gameplay
 
             _playerWeapon?.SetFiring(true);
             Debug.Log($"[GameplaySceneDirector] Run started — {sequence.EscalatingSegments.Count} segments queued.");
+        }
+
+        // Enemy death → roll an in-run power-up drop. Rates are placeholder (a meta upgrade tunes drop rate).
+        private void SpawnDrop(Vector3 pos, bool isElite)
+        {
+            if (_powerUpPrefab == null) return;
+            if (isElite)
+            {
+                // Elites always yield: a weapon-switch pod + a firepower chip.
+                Spawn(pos + Vector3.left * 0.4f, UnityEngine.Random.value < 0.5f ? PowerUpKind.WeaponLaser : PowerUpKind.WeaponMissile);
+                Spawn(pos + Vector3.right * 0.4f, PowerUpKind.Power);
+                return;
+            }
+            float r = UnityEngine.Random.value;
+            if (r < 0.16f) Spawn(pos, PowerUpKind.Power);
+            else if (r < 0.26f) Spawn(pos, PowerUpKind.Missile);
+        }
+
+        private void Spawn(Vector3 pos, PowerUpKind kind)
+        {
+            var item = Instantiate(_powerUpPrefab, pos, Quaternion.identity);
+            item.Init(kind);
         }
 
         private void OnWavesCleared()
@@ -254,6 +280,15 @@ namespace KaijuBreaker.App.Gameplay
                 Color fill = frac > 0.35f ? GameUiSkin.Cyan : GameUiSkin.Danger;
                 GameUiSkin.Bar(bar, frac, fill);
                 GUI.Label(new Rect(bar.x, bar.y - 18f, bar.width, 16f), "HP " + _player.Hp + " / " + _player.MaxHp, GameUiSkin.SmallStyle);
+
+                // In-run arsenal readout (Raiden-style firepower / missile levels + weapon type).
+                if (_playerWeapon != null)
+                {
+                    string arsenal = "火力 Lv" + _playerWeapon.WeaponPower + "   飛彈 Lv" + _playerWeapon.MissilePower +
+                                     "   " + _playerWeapon.PrimaryType + "/" + _playerWeapon.SecondaryType;
+                    var ar = new Rect(w * 0.5f - 130f, bar.y - 38f, 260f, 16f);
+                    GUI.Label(ar, arsenal, GameUiSkin.SmallStyle);
+                }
             }
             string phase = _runState == RunState.Boss ? "頭目戰  BOSS" : _runState == RunState.Stage ? "道中  STAGE" : "";
             if (phase.Length > 0)

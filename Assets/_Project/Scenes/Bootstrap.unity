@@ -1191,6 +1191,7 @@ MonoBehaviour:
   _enemyPrefab: {fileID: 2191252469180199104, guid: 5f8d5e00209f8ce4aa91348c6ede2abf, type: 3}
   _enemyBulletPrefab: {fileID: 4855459094042239723, guid: 22ffe98064bb3634c9444512e3b59dcf, type: 3}
   _bossController: {fileID: 1175540647}
+  _powerUpPrefab: {fileID: 8230485887740383509, guid: 24921e21d6983204ea6ff9a5fe8aa39b, type: 3}
   _autoStart: 0
   _uiFont: {fileID: 12800000, guid: 6221f8879498494ea089843d2f4b4011, type: 3}
 --- !u!4 &2070403809

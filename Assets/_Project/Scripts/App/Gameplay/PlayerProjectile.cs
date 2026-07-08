@@ -6,24 +6,24 @@ using UnityEngine;
 namespace KaijuBreaker.App.Gameplay
 {
     /// <summary>
-    /// A pooled player projectile: kinematic straight-up travel, trigger-overlap hit resolution, and a despawn
-    /// callback back to its pool (<see cref="PlayerWeaponController"/>). Against a trash enemy it applies HP
-    /// damage; against a boss part it reports the hit so the weapon can publish the real <c>LaserHit</c> /
-    /// <c>MissileHit</c> event (boss wiring, Phase D). Bullets are cold-palette per the readability rule
-    /// (enemy bullets are warm) so the player's own shots never read as incoming fire.
+    /// A pooled player projectile: kinematic constant-velocity travel (any direction, so the primary can fire
+    /// spread fans), trigger-overlap hit resolution, and a despawn callback back to its pool. Against a trash
+    /// enemy it applies HP damage; against a boss part it reports laser heat or missile break (dual-track).
+    /// Piercing shots pass through trash enemies (they still despawn on a boss-part hit or off-field). Cold
+    /// palette per the readability rule (enemy bullets are warm).
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody2D))]
     public sealed class PlayerProjectile : MonoBehaviour
     {
-        private float _speed;
+        private Vector2 _velocity;
         private float _damage;      // vs trash-enemy HP
         private float _heatDelta;   // laser heat vs a boss part
         private float _breakDamage; // missile break units vs a boss part
         private bool _isMissile;
+        private bool _pierce;
         private WeaponId _weaponId;
         private float _life;
-        private float _cullY;
         private bool _active;
         private Action<PlayerProjectile> _onDespawn;
 
@@ -35,22 +35,22 @@ namespace KaijuBreaker.App.Gameplay
             var rb = GetComponent<Rigidbody2D>();
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.gravityScale = 0f;
-            rb.useFullKinematicContacts = true; // fire triggers against kinematic enemies
+            rb.useFullKinematicContacts = true;
         }
 
-        /// <summary>Arm this projectile for flight. Called by the pool on spawn.</summary>
-        public void Launch(Vector3 position, float speed, float damage, float heatDelta, float breakDamage,
-                           bool isMissile, WeaponId weaponId, float cullY, Action<PlayerProjectile> onDespawn)
+        /// <summary>Arm this projectile for flight along <paramref name="velocity"/>. Called by the pool on spawn.</summary>
+        public void Launch(Vector3 position, Vector2 velocity, float damage, float heatDelta, float breakDamage,
+                           bool isMissile, bool pierce, WeaponId weaponId, Action<PlayerProjectile> onDespawn)
         {
             transform.position = position;
-            _speed = speed;
+            _velocity = velocity;
             _damage = damage;
             _heatDelta = heatDelta;
             _breakDamage = breakDamage;
             _isMissile = isMissile;
+            _pierce = pierce;
             _weaponId = weaponId;
-            _cullY = cullY;
-            _life = 4f;
+            _life = 3f;
             _onDespawn = onDespawn;
             _active = true;
             gameObject.SetActive(true);
@@ -60,9 +60,10 @@ namespace KaijuBreaker.App.Gameplay
         {
             if (!_active) return;
             float dt = Time.deltaTime;
-            transform.position += Vector3.up * (_speed * dt);
+            transform.position += (Vector3)_velocity * dt;
             _life -= dt;
-            if (_life <= 0f || transform.position.y > _cullY) Despawn();
+            Vector3 p = transform.position;
+            if (_life <= 0f || p.y > 7.5f || p.y < -8f || p.x < -6f || p.x > 6f) Despawn();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -73,7 +74,7 @@ namespace KaijuBreaker.App.Gameplay
             if (enemy != null)
             {
                 enemy.TakeDamage(_damage);
-                Despawn();
+                if (!_pierce) Despawn(); // piercing shots continue through trash
                 return;
             }
 

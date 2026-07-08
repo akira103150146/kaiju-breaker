@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4077772709127002868
+--- !u!1 &8879199323540390881
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,27 +8,25 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8286773753001271716}
-  - component: {fileID: 4105150313647393316}
-  - component: {fileID: 2681909794880122237}
-  - component: {fileID: 4042027547823218670}
-  - component: {fileID: 5039581499492642538}
-  - component: {fileID: 2028230214280663346}
-  - component: {fileID: 2453548485297747475}
+  - component: {fileID: 8268636530151684372}
+  - component: {fileID: 5012475126368631882}
+  - component: {fileID: 744249196361123892}
+  - component: {fileID: 6327695335646009213}
+  - component: {fileID: 8230485887740383509}
   m_Layer: 0
-  m_Name: Player
-  m_TagString: Player
+  m_Name: PowerUpItem
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8286773753001271716
+--- !u!4 &8268636530151684372
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
+  m_GameObject: {fileID: 8879199323540390881}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -37,14 +35,14 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &4105150313647393316
+--- !u!212 &5012475126368631882
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
+  m_GameObject: {fileID: 8879199323540390881}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -84,26 +82,26 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 6
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 443592db563568f42a10f22ef528e1a8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 00ed3c50be5d9d74c83ee9ca5cdd1753, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.6666667, y: 0.6666667}
+  m_Size: {x: 0.35, y: 0.35}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!50 &2681909794880122237
+--- !u!50 &744249196361123892
 Rigidbody2D:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
+  m_GameObject: {fileID: 8879199323540390881}
   m_BodyType: 1
   m_Simulated: 1
   m_UseFullKinematicContacts: 1
@@ -123,13 +121,13 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &4042027547823218670
+--- !u!61 &6327695335646009213
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
+  m_GameObject: {fileID: 8879199323540390881}
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
@@ -161,54 +159,25 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.6666667, y: 0.6666667}
-    newSize: {x: 0.6666667, y: 0.6666667}
+    oldSize: {x: 0.35, y: 0.35}
+    newSize: {x: 0.35, y: 0.35}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.22, y: 0.22}
+  m_Size: {x: 0.42, y: 0.42}
   m_EdgeRadius: 0
---- !u!114 &5039581499492642538
+--- !u!114 &8230485887740383509
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
+  m_GameObject: {fileID: 8879199323540390881}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65d8b82e4ae99ad449cb1da56ee979f9, type: 3}
+  m_Script: {fileID: 11500000, guid: a9b0c830f078d7b4c9a6999b25c4653a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.PlayerShip
-  _config: {fileID: 11400000, guid: 4cbc945ae1504bb42bc298a755e11b3f, type: 2}
-  _sprite: {fileID: 4105150313647393316}
---- !u!114 &2028230214280663346
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: acab84ed418955d45a55f713eccaf7f4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.PlayerWeaponController
-  _config: {fileID: 11400000, guid: 4cbc945ae1504bb42bc298a755e11b3f, type: 2}
-  _projectilePrefab: {fileID: 7116671310512887424, guid: 3f1f1cef150d3e44fbba34fe1f18f368, type: 3}
-  _muzzleOffset: {x: 0, y: 0.42}
-  _projectileParent: {fileID: 0}
---- !u!114 &2453548485297747475
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4077772709127002868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e37208ad2403b04788ecd72bf6512f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.PlayerInputRouter
-  _showTouchControls: 1
+  m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.PowerUpItem
+  _fallSpeed: 2.2
+  _sprite: {fileID: 5012475126368631882}

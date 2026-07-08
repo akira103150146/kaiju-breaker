@@ -74,11 +74,15 @@ namespace KaijuBreaker.Stage
     {
         public readonly EnemyBulletPool BulletPool;
         public readonly Transform PlayerTarget;
+        /// <summary>Invoked when an enemy is killed by damage: (worldPosition, isElite) — the scene rolls drops.</summary>
+        public readonly System.Action<Vector3, bool> OnEnemyKilled;
 
-        public EnemyCombatContext(EnemyBulletPool bulletPool, Transform playerTarget)
+        public EnemyCombatContext(EnemyBulletPool bulletPool, Transform playerTarget,
+                                  System.Action<Vector3, bool> onEnemyKilled = null)
         {
             BulletPool = bulletPool;
             PlayerTarget = playerTarget;
+            OnEnemyKilled = onEnemyKilled;
         }
     }
 }

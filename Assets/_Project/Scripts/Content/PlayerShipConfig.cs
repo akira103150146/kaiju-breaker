@@ -63,6 +63,22 @@ namespace KaijuBreaker.Content
         [Tooltip("Break delta (break units) a secondary projectile applies to a boss part (the break track).")]
         [SerializeField] private float _secondaryBreakDamage = 30f;
 
+        [Header("In-run firepower (Raiden-style, resets each run)")]
+        [Tooltip("Max primary firepower level reachable by collecting P items.")]
+        [SerializeField] private int _maxWeaponPower = 8;
+
+        [Tooltip("Max missile level reachable by collecting M items.")]
+        [SerializeField] private int _maxMissilePower = 8;
+
+        [Tooltip("Angle (deg) between adjacent bullets in the primary spread fan.")]
+        [SerializeField] private float _primarySpreadPerBulletDeg = 7f;
+
+        [Tooltip("Hard cap on primary bullets per shot (readability).")]
+        [SerializeField] private int _maxPrimaryBullets = 9;
+
+        [Tooltip("Hard cap on missiles per secondary shot.")]
+        [SerializeField] private int _maxSecondaryMissiles = 5;
+
         // ── Movement ────────────────────────────────────────────────────────────────
         /// <summary>Keyboard/stick move speed (world units/sec).</summary>
         public float MoveSpeed => _moveSpeed;
@@ -103,6 +119,18 @@ namespace KaijuBreaker.Content
         public float SecondaryTrashDamage => _secondaryTrashDamage;
         /// <summary>Break-unit delta a secondary projectile applies to a boss part.</summary>
         public float SecondaryBreakDamage => _secondaryBreakDamage;
+
+        // ── In-run firepower ──────────────────────────────────────────────────────────
+        /// <summary>Max primary firepower level (P items).</summary>
+        public int MaxWeaponPower => _maxWeaponPower;
+        /// <summary>Max missile level (M items).</summary>
+        public int MaxMissilePower => _maxMissilePower;
+        /// <summary>Degrees between adjacent bullets in the primary spread fan.</summary>
+        public float PrimarySpreadPerBulletDeg => _primarySpreadPerBulletDeg;
+        /// <summary>Hard cap on primary bullets per shot.</summary>
+        public int MaxPrimaryBullets => _maxPrimaryBullets;
+        /// <summary>Hard cap on missiles per secondary shot.</summary>
+        public int MaxSecondaryMissiles => _maxSecondaryMissiles;
 
         private void OnValidate()
         {

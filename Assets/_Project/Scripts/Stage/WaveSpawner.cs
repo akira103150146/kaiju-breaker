@@ -81,7 +81,7 @@ namespace KaijuBreaker.Stage
             if (controller != null)
             {
                 controller.Init(instruction.Enemy, instruction.IsElite);
-                controller.SetCombatContext(_context?.BulletPool, _context?.PlayerTarget);
+                controller.SetCombatContext(_context?.BulletPool, _context?.PlayerTarget, _context?.OnEnemyKilled);
                 Spawned.Add(controller);
             }
         }

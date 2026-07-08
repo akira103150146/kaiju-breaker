@@ -38,6 +38,7 @@ namespace KaijuBreaker.Stage
         private EnemyMovementState _moveState;
         private EnemyBulletPool _bulletPool;
         private Transform _playerTarget;
+        private System.Action<Vector3, bool> _onKilled;
         private float _fireCooldown;
         private float _telegraphRemaining;
         private bool _telegraphing;
@@ -103,10 +104,12 @@ namespace KaijuBreaker.Stage
         /// Inject the run-scoped combat context (bullet pool + player target) so this enemy can fire its
         /// <see cref="EmitterPatternSO"/>. Called by <see cref="WaveSpawner"/> right after <see cref="Init"/>.
         /// </summary>
-        public void SetCombatContext(EnemyBulletPool pool, Transform playerTarget)
+        public void SetCombatContext(EnemyBulletPool pool, Transform playerTarget,
+                                     System.Action<Vector3, bool> onKilled = null)
         {
             _bulletPool = pool;
             _playerTarget = playerTarget;
+            _onKilled = onKilled;
             _fireCooldown = Emitter != null ? Emitter.FireIntervalSeconds : 0f;
             _telegraphing = false;
             _telegraphRemaining = 0f;
@@ -128,6 +131,7 @@ namespace KaijuBreaker.Stage
             // RingBurst emitters fire their omnidirectional volley at the moment of death (bullet-system.md §4.2).
             if (Emitter != null && _bulletPool != null && Emitter.PatternType == EmitterPatternType.RingBurst)
                 FireVolley(EmitterPatternType.RingBurst);
+            _onKilled?.Invoke(transform.position, IsElite); // scene rolls in-run power-up drops
             Died?.Invoke(this);
             gameObject.SetActive(false);
         }
