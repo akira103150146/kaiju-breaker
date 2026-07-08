@@ -47,6 +47,30 @@ namespace KaijuBreaker.Content
                  "kaiju-part-system.md C.5 on_part_break.drop_table_id.")]
         [SerializeField] private string _dropTableId = string.Empty;
 
+        [Header("Per-Part Firing & Movement (optional — per-part-firing-schema.md)")]
+        [Tooltip("Emission sources on this part (0..N). Empty = this part fires nothing. A part becomes a " +
+                 "named Raiden-style emitter here; breaking it silences these. Slots with a SpawnEnemyId spawn minions instead.")]
+        [SerializeField] private PartEmitter[] _emitters = Array.Empty<PartEmitter>();
+
+        [Tooltip("How this part moves relative to the kaiju body. None (default) = static.")]
+        [SerializeField] private PartMovement _movement;
+
+        [Tooltip("Per-part break-gauge regen (TIDEMAW). Disabled by default.")]
+        [SerializeField] private ArmorRegen _armorRegen;
+
+        [Header("Cross-Part Gate (optional)")]
+        [Tooltip("Does another part's state gate this part's hittability/breakability? None (default) = ungated.")]
+        [SerializeField] private PartGateKind _gateKind = PartGateKind.None;
+
+        [Tooltip("The state the gate part(s) must be in for the gate to open.")]
+        [SerializeField] private PartGateCond _gateCond = PartGateCond.GatePartBroken;
+
+        [Tooltip("Source part id(s) whose state controls this gate (e.g. PRISMSHELL weak_node lists its neighbouring facets).")]
+        [SerializeField] private string[] _gatePartIds = Array.Empty<string>();
+
+        [Tooltip("True = ALL gate parts must satisfy the condition; false = ANY one is enough.")]
+        [SerializeField] private bool _requireAllGates = true;
+
         // ── Public read-only properties ──────────────────────────────────────
 
         /// <summary>Unique part identifier within this kaiju. kaiju-part-system.md C.1.</summary>
@@ -78,6 +102,27 @@ namespace KaijuBreaker.Content
         /// kaiju-part-system.md C.5.
         /// </summary>
         public string DropTableId => _dropTableId;
+
+        /// <summary>Emission sources on this part (0..N; empty = fires nothing). Breaking the part silences them.</summary>
+        public PartEmitter[] Emitters => _emitters;
+
+        /// <summary>How this part moves relative to the kaiju body (None = static).</summary>
+        public PartMovement Movement => _movement;
+
+        /// <summary>Per-part break-gauge regen config (disabled by default; TIDEMAW).</summary>
+        public ArmorRegen ArmorRegen => _armorRegen;
+
+        /// <summary>Cross-part gate kind — does another part's state gate this part's hittability/breakability? None = ungated.</summary>
+        public PartGateKind GateKind => _gateKind;
+
+        /// <summary>State the gate part(s) must be in for the cross-part gate to open.</summary>
+        public PartGateCond GateCond => _gateCond;
+
+        /// <summary>Source part id(s) whose state controls this part's cross-part gate.</summary>
+        public string[] GatePartIds => _gatePartIds;
+
+        /// <summary>True = all gate parts must satisfy the condition; false = any one suffices.</summary>
+        public bool RequireAllGates => _requireAllGates;
     }
 
     /// <summary>
@@ -106,6 +151,10 @@ namespace KaijuBreaker.Content
                  "kaiju-part-system.md C.6 and A (overview).")]
         [SerializeField] private PartDef[] _parts = Array.Empty<PartDef>();
 
+        [Tooltip("Whole-kaiju idle drift/breathing (optional). Zero (default) = no body motion; " +
+                 "data-driven replacement for the hard-coded BossController idle sway.")]
+        [SerializeField] private BodyMovement _body;
+
         // ── Public read-only properties ──────────────────────────────────────
 
         /// <summary>Stable kaiju identifier. Used as a ContentRegistry and economy lookup key.</summary>
@@ -122,6 +171,9 @@ namespace KaijuBreaker.Content
         /// kaiju-part-system.md C.1, C.3, C.6.
         /// </summary>
         public PartDef[] Parts => _parts;
+
+        /// <summary>Whole-kaiju idle drift/breathing (zero = none). Data-driven idle body motion.</summary>
+        public BodyMovement Body => _body;
 
 #if UNITY_EDITOR
         private void OnValidate()

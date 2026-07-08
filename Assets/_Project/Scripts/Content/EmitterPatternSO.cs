@@ -16,7 +16,9 @@ namespace KaijuBreaker.Content
         /// <summary>Fan centred on the player position at fire time. AIM_AT_PLAYER.</summary>
         Aimed,
         /// <summary>Simultaneous omnidirectional burst on death or trigger. RADIAL, dense count.</summary>
-        RingBurst
+        RingBurst,
+        /// <summary>Rotating radial arms — a ring whose emission angle sweeps over time. Reads <see cref="EmitterPatternSO.SpinRateDegPerSec"/>.</summary>
+        Spiral
     }
 
     /// <summary>
@@ -56,6 +58,10 @@ namespace KaijuBreaker.Content
         [Tooltip("Seconds before a bullet auto-despawns after spawn. Must be > 0.")]
         [SerializeField] private float _bulletLifetimeSeconds = 5f;
 
+        [Tooltip("Spiral only: angular speed (deg/s) the emission ring rotates each volley. " +
+                 "Ignored by other pattern types. Positive = clockwise. Range: [-720, 720].")]
+        [SerializeField] private float _spinRateDegPerSec = 90f;
+
         [Header("Elite Density Hook")]
         [Tooltip("Bullet-count / fire-rate multiplier applied when this emitter is owned by an elite enemy. " +
                  "The Stage system multiplies BulletCountBase by this value for elite variants. " +
@@ -84,6 +90,9 @@ namespace KaijuBreaker.Content
 
         /// <summary>Bullet lifetime in seconds before auto-despawn.</summary>
         public float BulletLifetimeSeconds => _bulletLifetimeSeconds;
+
+        /// <summary>Spiral-only rotation speed in deg/s of the emission ring (positive = clockwise). Ignored by other types.</summary>
+        public float SpinRateDegPerSec => _spinRateDegPerSec;
 
         /// <summary>
         /// Elite density multiplier applied to bullet count when the owning enemy is an elite.

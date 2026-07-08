@@ -76,6 +76,22 @@ namespace KaijuBreaker.Content
         [Tooltip("Core material dropped by every part of an Energy-theme kaiju (VOLTWYRM). Default: CoreEnergy.")]
         [SerializeField] private MaterialId _coreForEnergy = MaterialId.CoreEnergy;
 
+        [Tooltip("Core material dropped by every part of a Swarm-theme kaiju (BROODCORE). Default: CoreSwarm. " +
+                 "Upgrade sink = mech/utility axis (per-part-firing-schema.md §1.2).")]
+        [SerializeField] private MaterialId _coreForSwarm = MaterialId.CoreSwarm;
+
+        [Tooltip("Core material dropped by every part of a Crystal-theme kaiju (PRISMSHELL). Default: CoreCrystal.")]
+        [SerializeField] private MaterialId _coreForCrystal = MaterialId.CoreCrystal;
+
+        [Tooltip("Core material dropped by every part of an Abyss-theme kaiju (TIDEMAW). Default: CoreAbyss.")]
+        [SerializeField] private MaterialId _coreForAbyss = MaterialId.CoreAbyss;
+
+        [Tooltip("Core material dropped by every part of an Ember-theme kaiju (EMBERWING). Default: CoreEmber.")]
+        [SerializeField] private MaterialId _coreForEmber = MaterialId.CoreEmber;
+
+        [Tooltip("Core material dropped by every part of a Void-theme kaiju (NULLSPIRE). Default: CoreVoid.")]
+        [SerializeField] private MaterialId _coreForVoid = MaterialId.CoreVoid;
+
         [Header("Upgrade Cost Table (G.2, C.4)")]
         [Tooltip("Common Shard cost to upgrade a weapon from Tier 0 to Tier 1. " +
                  "material-economy.md §C.4: 8 shards (safe range [4, 15]). No core / essence at this tier.")]
@@ -190,6 +206,11 @@ namespace KaijuBreaker.Content
                 case KaijuTheme.Carapace: return _coreForCarapace;
                 case KaijuTheme.Limb: return _coreForLimb;
                 case KaijuTheme.Energy: return _coreForEnergy;
+                case KaijuTheme.Swarm: return _coreForSwarm;
+                case KaijuTheme.Crystal: return _coreForCrystal;
+                case KaijuTheme.Abyss: return _coreForAbyss;
+                case KaijuTheme.Ember: return _coreForEmber;
+                case KaijuTheme.Void: return _coreForVoid;
                 default:
                     throw new ArgumentOutOfRangeException(
                         nameof(theme), theme, "Unhandled KaijuTheme in GetCoreForTheme.");

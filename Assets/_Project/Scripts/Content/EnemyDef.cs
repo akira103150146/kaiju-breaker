@@ -1,3 +1,4 @@
+using KaijuBreaker.Core;
 using UnityEngine;
 
 namespace KaijuBreaker.Content
@@ -50,6 +51,11 @@ namespace KaijuBreaker.Content
         [Tooltip("Score points awarded to the player on kill.")]
         [SerializeField] private int _pointValue = 10;
 
+        [Tooltip("Coarse combat-weight tier (hit-feel tiering + roster/drop logic). " +
+                 "Trash = ordinary mob (default); Elite = weapon-pod source (must match IsElite). " +
+                 "enemy-roster-expansion.md §4.1 / per-part-firing-schema.md §1.5.")]
+        [SerializeField] private EnemyTier _tier = EnemyTier.Trash;
+
         [Header("Elite Override")]
         [Tooltip("True when this asset represents an elite variant. " +
                  "Enables EliteHpMult, EliteDensityMult, EliteShardBonus, and EliteAuraColor. " +
@@ -90,6 +96,9 @@ namespace KaijuBreaker.Content
 
         /// <summary>HP tier. T1 = light; T2 = medium. Actual HP determined at runtime.</summary>
         public HpTier HpTier => _hpTier;
+
+        /// <summary>Combat-weight tier (Trash / Elite / Mid / Boss). Kept consistent with <see cref="IsElite"/>.</summary>
+        public EnemyTier Tier => _tier;
 
         /// <summary>Contact damage dealt on player collision.</summary>
         public float ContactDamage => _contactDamage;
@@ -145,6 +154,11 @@ namespace KaijuBreaker.Content
                 Debug.LogError(
                     $"[EnemyDef] '{name}': EliteHpMult must be >= 1.0 when IsElite is true. " +
                     $"Current: {_eliteHpMult}.", this);
+
+            if (_isElite != (_tier == EnemyTier.Elite))
+                Debug.LogError(
+                    $"[EnemyDef] '{name}': IsElite ({_isElite}) must agree with Tier ({_tier}). " +
+                    "Set Tier = Elite iff IsElite is true.", this);
 
             if (_movementPattern == null)
                 Debug.LogError(

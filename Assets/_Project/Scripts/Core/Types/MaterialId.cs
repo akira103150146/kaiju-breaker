@@ -21,6 +21,24 @@ namespace KaijuBreaker.Core
         CoreEnergy = 3,
 
         /// <summary>巨獸精魄 — awarded only on a full-clear hunt settlement; each weapon's Tier 2→3 needs one (§C.1 層級三).</summary>
-        EssenceKaiju = 4
+        EssenceKaiju = 4,
+
+        /// <summary>
+        /// 蟲群核心 — dropped by any part of a Swarm-theme kaiju (per-part-firing-schema.md §1.2).
+        /// Upgrade sink TBD (director decision pending); economy already yields it correctly.
+        /// </summary>
+        CoreSwarm = 5,
+
+        /// <summary>結晶核心 — dropped by any part of a Crystal-theme kaiju. Sink TBD (§1.2).</summary>
+        CoreCrystal = 6,
+
+        /// <summary>深淵核心 — dropped by any part of an Abyss-theme kaiju. Sink TBD (§1.2).</summary>
+        CoreAbyss = 7,
+
+        /// <summary>燼焰核心 — dropped by any part of an Ember-theme kaiju. Sink TBD (§1.2).</summary>
+        CoreEmber = 8,
+
+        /// <summary>虛空核心 — dropped by any part of a Void-theme kaiju. Sink TBD (§1.2).</summary>
+        CoreVoid = 9
     }
 }

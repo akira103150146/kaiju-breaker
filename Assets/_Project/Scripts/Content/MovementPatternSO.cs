@@ -22,7 +22,17 @@ namespace KaijuBreaker.Content
         /// Lateral sinusoidal oscillation while descending.
         /// <see cref="MovementPatternSO.AmplitudePx"/> and <see cref="MovementPatternSO.FrequencyHz"/> apply.
         /// </summary>
-        Sinusoidal
+        Sinusoidal,
+        /// <summary>
+        /// Arcs in along <see cref="MovementPatternSO.EntryAngleDeg"/>, swoops down past the player, then
+        /// curves away off-screen (does not linger). E.g. the `diver` mob. bullet-pattern-diversity.md.
+        /// </summary>
+        DiveSwoop,
+        /// <summary>
+        /// Descends to a hold Y then strafes laterally back and forth across
+        /// ±<see cref="MovementPatternSO.StrafeHalfWidthPx"/> while firing. E.g. the `void_lancer` mob.
+        /// </summary>
+        HoverStrafe
     }
 
     /// <summary>
@@ -59,6 +69,15 @@ namespace KaijuBreaker.Content
                  "Ignored by other types.")]
         [SerializeField] private float _frequencyHz = 1f;
 
+        [Header("DiveSwoop / HoverStrafe Parameters")]
+        [Tooltip("DiveSwoop only: entry arc angle in degrees off vertical (0 = straight down). " +
+                 "Ignored by other types. Range: [0, 80].")]
+        [SerializeField] private float _entryAngleDeg = 35f;
+
+        [Tooltip("HoverStrafe only: half-width of the lateral strafe range in pixels. " +
+                 "Ignored by other types. Must be >= 0.")]
+        [SerializeField] private float _strafeHalfWidthPx = 0f;
+
         // ── Public read-only properties ───────────────────────────────────────────
 
         /// <summary>Core locomotion archetype (StraightRush / HorizontalDrift / Hover / UTurn / Sinusoidal).</summary>
@@ -79,6 +98,12 @@ namespace KaijuBreaker.Content
 
         /// <summary>Oscillation frequency in Hz. Only relevant for Sinusoidal movement type.</summary>
         public float FrequencyHz => _frequencyHz;
+
+        /// <summary>DiveSwoop entry arc angle in degrees off vertical (0 = straight down). Ignored by other types.</summary>
+        public float EntryAngleDeg => _entryAngleDeg;
+
+        /// <summary>HoverStrafe lateral half-width in px. Ignored by other types.</summary>
+        public float StrafeHalfWidthPx => _strafeHalfWidthPx;
 
         // ── Editor validation ─────────────────────────────────────────────────────
 
