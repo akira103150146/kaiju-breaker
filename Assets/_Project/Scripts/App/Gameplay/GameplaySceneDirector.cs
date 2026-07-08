@@ -54,6 +54,7 @@ namespace KaijuBreaker.App.Gameplay
         private GameComposition _comp;
         private PlayerShip _player;
         private PlayerWeaponController _playerWeapon;
+        private EnemyBulletPool _bulletPool;
         private SegmentSequenceRunner _waveRunner;
         private Action<RunStateChanged> _onRunStateChanged;
         private Action<WeaponPodGrabbed> _onWeaponPodGrabbed;
@@ -159,14 +160,14 @@ namespace KaijuBreaker.App.Gameplay
             _playerWeapon?.SetFireIntervalMult(_utility != null ? _utility.FireIntervalMult : 1f); // meta faster-fire
 
             // Shared enemy-bullet pool + the drop callback (enemies roll in-run power-ups on death).
-            EnemyBulletPool pool = null;
+            _bulletPool = null;
             if (_enemyBulletPrefab != null)
             {
                 var poolGo = new GameObject("EnemyBulletPool");
-                pool = poolGo.AddComponent<EnemyBulletPool>();
-                pool.Configure(_enemyBulletPrefab);
+                _bulletPool = poolGo.AddComponent<EnemyBulletPool>();
+                _bulletPool.Configure(_enemyBulletPrefab);
             }
-            var combat = new EnemyCombatContext(pool, _player != null ? _player.transform : null, SpawnDrop);
+            var combat = new EnemyCombatContext(_bulletPool, _player != null ? _player.transform : null, SpawnDrop);
 
             var runnerGo = new GameObject("WaveRunner");
             _waveRunner = runnerGo.AddComponent<SegmentSequenceRunner>();
@@ -220,7 +221,9 @@ namespace KaijuBreaker.App.Gameplay
         private void OnWavesCleared()
         {
             Debug.Log("[GameplaySceneDirector] 道中 CLEAR — entering boss fight.");
-            if (_bossController != null) _bossController.BeginBossFight(_comp, _selBossIndex);
+            if (_bossController != null)
+                _bossController.BeginBossFight(_comp, _selBossIndex, _bulletPool,
+                                               _player != null ? _player.transform : null);
             else Debug.Log("[GameplaySceneDirector] No BossController assigned — run ends after 道中.");
         }
 
