@@ -259,6 +259,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: hL
+  _intactSprite: {fileID: 21300000, guid: 13afe14d8cd92d94ebe96403faf30626, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &647181047
 Rigidbody2D:
   serializedVersion: 5
@@ -439,6 +443,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: mandible_l
+  _intactSprite: {fileID: 21300000, guid: 8dde2960c14e27941942dd92042739fc, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &719316023
 Rigidbody2D:
   serializedVersion: 5
@@ -655,6 +663,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: fL
+  _intactSprite: {fileID: 21300000, guid: 7ebdd12950a095649aeaaffe3b48988f, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &913591120
 Rigidbody2D:
   serializedVersion: 5
@@ -835,6 +847,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: n2
+  _intactSprite: {fileID: 21300000, guid: ef52fc968d20af74d8cc560a1c7780a1, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &942704494
 Rigidbody2D:
   serializedVersion: 5
@@ -1015,6 +1031,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: sR
+  _intactSprite: {fileID: 21300000, guid: fd0d0159d15fe654c93d625526765947, type: 3}
+  _strippedSprite: {fileID: 21300000, guid: 1bbf589cfaf2a2f44be0a70a985ae8a5, type: 3}
+  _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &963731610
 Rigidbody2D:
   serializedVersion: 5
@@ -1195,6 +1215,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: n1
+  _intactSprite: {fileID: 21300000, guid: ef52fc968d20af74d8cc560a1c7780a1, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1084850906
 Rigidbody2D:
   serializedVersion: 5
@@ -1464,6 +1488,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: core
+  _intactSprite: {fileID: 21300000, guid: 68ab67f43c506c4488e9bb4a92cb7e97, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: b164e9e6418f1494794d63be482898e9, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1233042744
 Rigidbody2D:
   serializedVersion: 5
@@ -1644,6 +1672,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: hR
+  _intactSprite: {fileID: 21300000, guid: 13afe14d8cd92d94ebe96403faf30626, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1434940192
 Rigidbody2D:
   serializedVersion: 5
@@ -1824,6 +1856,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: sL
+  _intactSprite: {fileID: 21300000, guid: fd0d0159d15fe654c93d625526765947, type: 3}
+  _strippedSprite: {fileID: 21300000, guid: 1bbf589cfaf2a2f44be0a70a985ae8a5, type: 3}
+  _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1464108152
 Rigidbody2D:
   serializedVersion: 5
@@ -2004,6 +2040,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: fR
+  _intactSprite: {fileID: 21300000, guid: 7ebdd12950a095649aeaaffe3b48988f, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1472202272
 Rigidbody2D:
   serializedVersion: 5
@@ -2184,6 +2224,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: core
+  _intactSprite: {fileID: 21300000, guid: 4398928a318356b4ab58620dfe88b17c, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 9d5fa090fb735964a85d5d4fda39f54d, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1476778248
 Rigidbody2D:
   serializedVersion: 5
@@ -2461,6 +2505,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: mandible_r
+  _intactSprite: {fileID: 21300000, guid: 8dde2960c14e27941942dd92042739fc, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1721702181
 Rigidbody2D:
   serializedVersion: 5
@@ -2677,6 +2725,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: dorsal
+  _intactSprite: {fileID: 21300000, guid: d61e8e6272d3747449910b4f4ca3dfb1, type: 3}
+  _strippedSprite: {fileID: 21300000, guid: cb065300eb7a23b4a87becdbdb36e5d7, type: 3}
+  _hitWhiteSprite: {fileID: 21300000, guid: aabd6318a625ca64cbc4881994d28d5f, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1761857046
 Rigidbody2D:
   serializedVersion: 5
@@ -2857,6 +2909,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: KaijuBreaker.App::KaijuBreaker.App.Gameplay.BossPart
   _partName: core
+  _intactSprite: {fileID: 21300000, guid: 6d952801a03ca9c459429e248589e255, type: 3}
+  _strippedSprite: {fileID: 0}
+  _hitWhiteSprite: {fileID: 21300000, guid: 2181fafe0542d6645bd6763f08ce45af, type: 3}
+  _hitFlashSeconds: 0.06
 --- !u!50 &1811110444
 Rigidbody2D:
   serializedVersion: 5

@@ -37,6 +37,8 @@ namespace KaijuBreaker.App.Gameplay
         private Action<PartBroke> _onPartBroke;
         private Action<BossCoreBroke> _onBossCoreBroke;
         private bool _fighting;
+        private Vector3 _rootBase;
+        private float _idleT;
 
         /// <summary>True while a boss fight is live (parts ticking).</summary>
         public bool Fighting => _fighting;
@@ -72,6 +74,8 @@ namespace KaijuBreaker.App.Gameplay
             _comp.Themes.Register(_active.KaijuId, _active.Kaiju.Theme); // Economy sources the theme core on break
 
             if (_active.BossRoot != null) _active.BossRoot.SetActive(true);
+            _rootBase = _active.BossRoot != null ? _active.BossRoot.transform.position : Vector3.zero;
+            _idleT = 0f;
 
             _partsById.Clear();
             var parts = _active.BossRoot != null ? _active.BossRoot.GetComponentsInChildren<BossPart>(true) : Array.Empty<BossPart>();
@@ -96,7 +100,32 @@ namespace KaijuBreaker.App.Gameplay
 
         private void Update()
         {
-            if (_fighting && _comp != null) _comp.Parts.Tick(Time.deltaTime);
+            if (!_fighting || _comp == null) return;
+            _comp.Parts.Tick(Time.deltaTime); // drives heat fill + soften/stagger
+            SyncPartVisuals();
+            IdleMotion();
+        }
+
+        // Push each part's live armor/heat state into its BossPart so the art swaps (intact↔stripped) and the
+        // softened tint follow the real system.
+        private void SyncPartVisuals()
+        {
+            foreach (var kv in _partsById)
+            {
+                var part = kv.Value;
+                if (part == null) continue;
+                part.SetArmorStripped(_comp.Parts.GetArmorState(kv.Key) == ArmorState.Stripped);
+                part.SetSoftened(_comp.Parts.GetHeatState(kv.Key) == HeatState.Softened);
+            }
+        }
+
+        // Gentle breathing/drift so the kaiju reads as alive (the whole part hierarchy moves together).
+        private void IdleMotion()
+        {
+            if (_active.BossRoot == null) return;
+            _idleT += Time.deltaTime;
+            var o = new Vector3(Mathf.Sin(_idleT * 0.6f) * 0.18f, Mathf.Sin(_idleT * 1.2f) * 0.12f, 0f);
+            _active.BossRoot.transform.position = _rootBase + o;
         }
 
         private void OnPartBroke(PartBroke evt)
