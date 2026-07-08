@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 179ecec3025f59042b4afca874a096c2, type: 3}
+  m_Name: Emitter_BossSpiral
+  m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EmitterPatternSO
+  _patternType: 4
+  _bulletCountBase: 5
+  _fireIntervalSeconds: 1
+  _bulletSpeedPxPerSec: 115
+  _spreadAngleDeg: 0
+  _bulletLifetimeSeconds: 6
+  _spinRateDegPerSec: 80
+  _eliteDensityMult: 1

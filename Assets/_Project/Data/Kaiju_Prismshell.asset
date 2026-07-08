@@ -24,7 +24,7 @@ MonoBehaviour:
     _adjacency: []
     _dropTableId: boss_drop
     _emitters:
-    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+    - _pattern: {fileID: 11400000, guid: 2f8cc868c6b845a45b78db917e6158a1, type: 2}
       _gate: 0
       _gatePartId: 
       _spawnEnemyId: 
@@ -54,7 +54,7 @@ MonoBehaviour:
     - prism_core
     _dropTableId: boss_drop
     _emitters:
-    - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
+    - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
       _gate: 0
       _gatePartId: 
       _spawnEnemyId: 
@@ -84,7 +84,7 @@ MonoBehaviour:
     - prism_core
     _dropTableId: boss_drop
     _emitters:
-    - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
+    - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
       _gate: 0
       _gatePartId: 
       _spawnEnemyId: 
@@ -114,7 +114,7 @@ MonoBehaviour:
     - prism_core
     _dropTableId: boss_drop
     _emitters:
-    - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
+    - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
       _gate: 0
       _gatePartId: 
       _spawnEnemyId: 
@@ -144,7 +144,7 @@ MonoBehaviour:
     - prism_core
     _dropTableId: boss_drop
     _emitters:
-    - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
+    - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
       _gate: 0
       _gatePartId: 
       _spawnEnemyId: 
