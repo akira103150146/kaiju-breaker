@@ -26,9 +26,24 @@ MonoBehaviour:
     _emitters:
     - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
       _gate: 0
-      _gatePartId:
-      _spawnEnemyId:
+      _gatePartId: 
+      _spawnEnemyId: 
       _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 1
   - _partId: sL
     _partType: 1
     _hMaxOverride: 0
@@ -41,9 +56,24 @@ MonoBehaviour:
     _emitters:
     - _pattern: {fileID: 11400000, guid: 70739296f25c22842b7c8279c9b7f5e2, type: 2}
       _gate: 0
-      _gatePartId:
-      _spawnEnemyId:
+      _gatePartId: 
+      _spawnEnemyId: 
       _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 1
   - _partId: sR
     _partType: 1
     _hMaxOverride: 0
@@ -56,9 +86,24 @@ MonoBehaviour:
     _emitters:
     - _pattern: {fileID: 11400000, guid: 70739296f25c22842b7c8279c9b7f5e2, type: 2}
       _gate: 0
-      _gatePartId:
-      _spawnEnemyId:
+      _gatePartId: 
+      _spawnEnemyId: 
       _spawnCap: 0
+    _movement:
+      _type: 0
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 0
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 1
   - _partId: n1
     _partType: 0
     _hMaxOverride: 0
@@ -71,9 +116,24 @@ MonoBehaviour:
     _emitters:
     - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
       _gate: 0
-      _gatePartId:
-      _spawnEnemyId:
+      _gatePartId: 
+      _spawnEnemyId: 
       _spawnCap: 0
+    _movement:
+      _type: 4
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 35
+      _arcHalfDeg: 0
+      _phaseDeg: 0
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 1
   - _partId: n2
     _partType: 0
     _hMaxOverride: 0
@@ -86,6 +146,26 @@ MonoBehaviour:
     _emitters:
     - _pattern: {fileID: 11400000, guid: c7136c5a5c15811418b5273c05464fff, type: 2}
       _gate: 0
-      _gatePartId:
-      _spawnEnemyId:
+      _gatePartId: 
+      _spawnEnemyId: 
       _spawnCap: 0
+    _movement:
+      _type: 4
+      _pivotOffset: {x: 0, y: 0}
+      _radiusWorld: 0
+      _angularSpeedDeg: 35
+      _arcHalfDeg: 0
+      _phaseDeg: 120
+    _armorRegen:
+      _enabled: 0
+      _graceSeconds: 0
+      _regenRatePerSec: 0
+    _gateKind: 0
+    _gateCond: 0
+    _gatePartIds: []
+    _requireAllGates: 1
+  _body:
+    _driftAmpX: 0
+    _driftAmpY: 0
+    _driftFreqX: 0
+    _driftFreqY: 0

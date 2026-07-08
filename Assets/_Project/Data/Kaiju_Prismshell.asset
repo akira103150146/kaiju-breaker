@@ -60,10 +60,10 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 0
-      _pivotOffset: {x: 0, y: 0}
-      _radiusWorld: 0
-      _angularSpeedDeg: 0
+      _type: 1
+      _pivotOffset: {x: 0, y: 2.9}
+      _radiusWorld: 1.9
+      _angularSpeedDeg: 18
       _arcHalfDeg: 0
       _phaseDeg: 0
     _armorRegen:
@@ -90,12 +90,12 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 0
-      _pivotOffset: {x: 0, y: 0}
-      _radiusWorld: 0
-      _angularSpeedDeg: 0
+      _type: 1
+      _pivotOffset: {x: 0, y: 2.9}
+      _radiusWorld: 1.9
+      _angularSpeedDeg: 18
       _arcHalfDeg: 0
-      _phaseDeg: 0
+      _phaseDeg: 90
     _armorRegen:
       _enabled: 0
       _graceSeconds: 0
@@ -120,12 +120,12 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 0
-      _pivotOffset: {x: 0, y: 0}
-      _radiusWorld: 0
-      _angularSpeedDeg: 0
+      _type: 1
+      _pivotOffset: {x: 0, y: 2.9}
+      _radiusWorld: 1.9
+      _angularSpeedDeg: 18
       _arcHalfDeg: 0
-      _phaseDeg: 0
+      _phaseDeg: 180
     _armorRegen:
       _enabled: 0
       _graceSeconds: 0
@@ -150,12 +150,12 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 0
-      _pivotOffset: {x: 0, y: 0}
-      _radiusWorld: 0
-      _angularSpeedDeg: 0
+      _type: 1
+      _pivotOffset: {x: 0, y: 2.9}
+      _radiusWorld: 1.9
+      _angularSpeedDeg: 18
       _arcHalfDeg: 0
-      _phaseDeg: 0
+      _phaseDeg: 270
     _armorRegen:
       _enabled: 0
       _graceSeconds: 0
