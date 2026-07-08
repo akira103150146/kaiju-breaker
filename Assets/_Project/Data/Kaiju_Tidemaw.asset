@@ -67,9 +67,9 @@ MonoBehaviour:
       _arcHalfDeg: 0
       _phaseDeg: 0
     _armorRegen:
-      _enabled: 0
-      _graceSeconds: 0
-      _regenRatePerSec: 0
+      _enabled: 1
+      _graceSeconds: 5
+      _regenRatePerSec: 6
     _gateKind: 0
     _gateCond: 0
     _gatePartIds: []
@@ -97,9 +97,9 @@ MonoBehaviour:
       _arcHalfDeg: 0
       _phaseDeg: 0
     _armorRegen:
-      _enabled: 0
-      _graceSeconds: 0
-      _regenRatePerSec: 0
+      _enabled: 1
+      _graceSeconds: 5
+      _regenRatePerSec: 6
     _gateKind: 0
     _gateCond: 0
     _gatePartIds: []
@@ -127,9 +127,9 @@ MonoBehaviour:
       _arcHalfDeg: 0
       _phaseDeg: 0
     _armorRegen:
-      _enabled: 0
-      _graceSeconds: 0
-      _regenRatePerSec: 0
+      _enabled: 1
+      _graceSeconds: 5
+      _regenRatePerSec: 6
     _gateKind: 0
     _gateCond: 0
     _gatePartIds: []

@@ -39,6 +39,11 @@ namespace KaijuBreaker.KaijuParts
         // fill and decay are mutually exclusive per frame (kaiju-part-system.md D.1).
         private readonly Dictionary<int, float> _pendingHeatDeltas = new Dictionary<int, float>(16);
 
+        // Per-part break-gauge regen (per-part-firing-schema.md §5 / TIDEMAW). Disabled for parts whose
+        // PartDef.ArmorRegen.Enabled is false (the default) — so existing kaiju are unaffected.
+        private readonly Dictionary<int, KaijuBreaker.Content.ArmorRegen> _armorRegen = new Dictionary<int, KaijuBreaker.Content.ArmorRegen>(16);
+        private readonly Dictionary<int, float> _timeSinceBreakHit = new Dictionary<int, float>(16);
+
         private readonly Action<LaserHit> _onLaserHit;
         private readonly Action<WaveHit> _onWaveHit;
         private readonly Action<MissileHit> _onMissileHit;
@@ -91,6 +96,8 @@ namespace KaijuBreaker.KaijuParts
             _partIdByName.Clear();
             _dropTableIdByName.Clear();
             _pendingHeatDeltas.Clear();
+            _armorRegen.Clear();
+            _timeSinceBreakHit.Clear();
 
             var parts = def.Parts;
             for (int i = 0; i < parts.Length; i++)
@@ -110,6 +117,11 @@ namespace KaijuBreaker.KaijuParts
                 _parts[id] = part;
                 if (!string.IsNullOrEmpty(pd.PartId))
                     _partIdByName[pd.PartId] = id;
+                if (pd.ArmorRegen.Enabled)
+                {
+                    _armorRegen[id] = pd.ArmorRegen;
+                    _timeSinceBreakHit[id] = 0f;
+                }
             }
 
             BuildAdjacencyGraph();
@@ -124,6 +136,7 @@ namespace KaijuBreaker.KaijuParts
         {
             TickHeat(deltaTime);
             TickStagger(deltaTime);
+            TickArmorRegen(deltaTime);
         }
 
         /// <summary>Assign the part's world position (called by the scene wiring / Stage). Defaults to zero.</summary>
@@ -284,9 +297,29 @@ namespace KaijuBreaker.KaijuParts
             float mult = LookupStateMult(part);
             float bFill = evt.BreakDeltaBase * mult;
             part.BCurrent = Mathf.Clamp(part.BCurrent + bFill, 0f, part.BMax);
+            if (_timeSinceBreakHit.ContainsKey(part.Id)) _timeSinceBreakHit[part.Id] = 0f; // break input resets regen grace
 
             if (part.BCurrent >= GetBreakThreshold(part.PartType))
                 TriggerPartBreak(part, isChainBreak: false);
+        }
+
+        /// <summary>
+        /// Break-gauge regen (per-part-firing-schema.md §5 / TIDEMAW): a part whose break track received no
+        /// input for <c>GraceSeconds</c> decays its accumulated break units at <c>RegenRatePerSec</c> BU/s,
+        /// clamped at 0 and never resurrecting a BROKEN part. Only runs for parts whose PartDef enabled it, so
+        /// existing kaiju (regen disabled) are unaffected. Laser heat does NOT reset the grace — break-track only.
+        /// </summary>
+        public void TickArmorRegen(float deltaTime)
+        {
+            if (_armorRegen.Count == 0) return;
+            foreach (var kv in _armorRegen)
+            {
+                if (!_parts.TryGetValue(kv.Key, out var part) || part.BreakState == BreakState.Broken) continue;
+                float t = (_timeSinceBreakHit.TryGetValue(kv.Key, out float v) ? v : 0f) + deltaTime;
+                _timeSinceBreakHit[kv.Key] = t;
+                if (t >= kv.Value.GraceSeconds && part.BCurrent > 0f)
+                    part.BCurrent = Mathf.Max(0f, part.BCurrent - kv.Value.RegenRatePerSec * deltaTime);
+            }
         }
 
         /// <summary>
