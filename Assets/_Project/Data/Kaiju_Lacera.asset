@@ -23,6 +23,12 @@ MonoBehaviour:
     _bMaxUseOverride: 0
     _adjacency: []
     _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId:
+      _spawnEnemyId:
+      _spawnCap: 0
   - _partId: fL
     _partType: 0
     _hMaxOverride: 0
@@ -32,6 +38,12 @@ MonoBehaviour:
     _adjacency:
     - core
     _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId:
+      _spawnEnemyId:
+      _spawnCap: 0
   - _partId: fR
     _partType: 0
     _hMaxOverride: 0
@@ -41,6 +53,12 @@ MonoBehaviour:
     _adjacency:
     - core
     _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId:
+      _spawnEnemyId:
+      _spawnCap: 0
   - _partId: hL
     _partType: 0
     _hMaxOverride: 0
@@ -50,6 +68,12 @@ MonoBehaviour:
     _adjacency:
     - core
     _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId:
+      _spawnEnemyId:
+      _spawnCap: 0
   - _partId: hR
     _partType: 0
     _hMaxOverride: 0
@@ -59,3 +83,9 @@ MonoBehaviour:
     _adjacency:
     - core
     _dropTableId: boss_drop
+    _emitters:
+    - _pattern: {fileID: 11400000, guid: 749e6de3c321b9f47a3a8dca684473f1, type: 2}
+      _gate: 0
+      _gatePartId:
+      _spawnEnemyId:
+      _spawnCap: 0
