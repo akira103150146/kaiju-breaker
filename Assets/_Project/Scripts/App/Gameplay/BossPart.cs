@@ -27,11 +27,13 @@ namespace KaijuBreaker.App.Gameplay
         [SerializeField] private Sprite _hitWhiteSprite;
         [SerializeField] private float _hitFlashSeconds = 0.06f;
 
-        [Tooltip("Untuned placeholder parts (left at Unity's default 1×1 box collider) are scaled up by this so " +
-                 "the block reads clearly and the hittable area is generous. Hand-authored parts, whose collider " +
-                 "carries a real art-matched size (never exactly 1×1), are left untouched. ~2.2 makes a placeholder " +
-                 "part read at roughly 3 world units — comparable to the real-art bosses, not a tiny dot.")]
-        [SerializeField] private float _placeholderPartScaleMult = 2.2f;
+        [Tooltip("Target WORLD size (units) for untuned placeholder parts (those left at Unity's default 1×1 box " +
+                 "collider). They shipped with Unity's tiny built-in sprite (~0.16 world), so scaling the transform " +
+                 "left the visible block bullet-sized while the collider grew mismatched. Instead we give the part a " +
+                 "1-unit square sprite (colour preserved) and size the whole part to this, so sprite AND hitbox both " +
+                 "equal it. ~2.0 reads like a real boss part (≈10× a bullet). Hand-authored parts (collider ≠ 1×1) " +
+                 "are untouched. Lower it if a many-part boss's blocks overlap into a blob.")]
+        [SerializeField] private float _placeholderWorldSize = 2.0f;
 
         private int _partId = -1;
         private int _kaijuId;
@@ -74,6 +76,8 @@ namespace KaijuBreaker.App.Gameplay
             rb.gravityScale = 0f;
             rb.useFullKinematicContacts = true;
 
+            _sr = GetComponent<SpriteRenderer>();
+
             // Player shots register hits through OnTriggerEnter2D (see PlayerProjectile). A part collider left as
             // a solid (non-trigger) collider — as the procedurally-built new bosses were (m_IsTrigger: 0) — never
             // raises that event, so shots pass straight through and the part can never soften or break. Force
@@ -84,22 +88,22 @@ namespace KaijuBreaker.App.Gameplay
             {
                 col.isTrigger = true;
 
-                // Placeholder parts were left at Unity's default 1×1 box collider (hand-tuned parts carry a real,
-                // art-matched size that is never exactly 1×1). Grow the whole part so both the visible block and
-                // the hittable area read clearly — the "new boss parts too small" reports. localScale scales the
-                // collider and sprite together, keeping them matched, and runs once (Awake). Authored parts, whose
-                // collider size ≠ 1×1, are untouched.
-                // 0 = field absent on an old serialized instance → fall back to the default rather than skip.
-                float mult = _placeholderPartScaleMult > 0f ? _placeholderPartScaleMult : 2.2f;
+                // Untuned placeholder parts shipped with Unity's tiny built-in sprite (~0.16 world) on a default
+                // 1×1 collider — so the visible block came out bullet-sized while the collider grew mismatched.
+                // Give the part a 1-world-unit square sprite (the part's colour is preserved as a tint) and size
+                // the whole part to a readable world size, so the SPRITE and the COLLIDER both equal it. Scaling a
+                // 1-unit sprite (not the ~0.16 built-in) also keeps the child gauge bars sane. Hand-authored parts
+                // (collider ≠ 1×1) keep their real art and tuned size.
                 if (col is BoxCollider2D box &&
-                    Mathf.Approximately(box.size.x, 1f) && Mathf.Approximately(box.size.y, 1f) &&
-                    mult > 1f)
+                    Mathf.Approximately(box.size.x, 1f) && Mathf.Approximately(box.size.y, 1f))
                 {
-                    transform.localScale *= mult;
+                    float target = _placeholderWorldSize > 0f ? _placeholderWorldSize : 2.0f;
+                    if (_sr != null) _sr.sprite = BarSprite(); // shared 1-unit white square, tinted by _sr.color
+                    box.size = Vector2.one;                    // 1-unit box → collider world size == target
+                    transform.localScale = new Vector3(target, target, 1f);
                 }
             }
 
-            _sr = GetComponent<SpriteRenderer>();
             if (_sr != null)
             {
                 if (_intactSprite == null) _intactSprite = _sr.sprite;
