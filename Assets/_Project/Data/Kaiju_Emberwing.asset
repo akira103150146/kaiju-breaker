@@ -100,10 +100,11 @@ MonoBehaviour:
       _enabled: 0
       _graceSeconds: 0
       _regenRatePerSec: 0
-    _gateKind: 0
+    _gateKind: 2
     _gateCond: 0
-    _gatePartIds: []
-    _requireAllGates: 0
+    _gatePartIds:
+    - wing_root_l
+    _requireAllGates: 1
   - _partId: wing_vent_r1
     _partType: 0
     _hMaxOverride: 0
@@ -160,10 +161,11 @@ MonoBehaviour:
       _enabled: 0
       _graceSeconds: 0
       _regenRatePerSec: 0
-    _gateKind: 0
+    _gateKind: 2
     _gateCond: 0
-    _gatePartIds: []
-    _requireAllGates: 0
+    _gatePartIds:
+    - wing_root_r
+    _requireAllGates: 1
   - _partId: wing_root_l
     _partType: 1
     _hMaxOverride: 0

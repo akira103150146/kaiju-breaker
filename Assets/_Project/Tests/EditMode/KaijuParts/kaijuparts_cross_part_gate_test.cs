@@ -176,6 +176,36 @@ namespace KaijuBreaker.Tests.EditMode.KaijuParts
             Assert.AreEqual(BreakState.Broken, g.BreakState, "any: one broken opens the gate");
         }
 
+        [Test]
+        public void SoftenedOrStripped_EitherConditionOpensGate()
+        {
+            // PRISMSHELL weak_node: HittableWhen, open if ANY of {a,b} is softened OR armor-stripped.
+            var sys = Build(out var bus,
+                PartTestFactory.Part("a", PartType.Armored, dropTableId: "a_drop"),
+                PartTestFactory.Part("b", PartType.Armored, dropTableId: "b_drop"),
+                Gated("node", PartGateKind.HittableWhen, PartGateCond.GatePartSoftenedOrStripped, new[] { "a", "b" }, requireAll: false),
+                PartTestFactory.Part("core", PartType.BossCore, dropTableId: "core_drop"));
+            var node = sys.Parts[sys.GetPartId("node")];
+
+            // Neither softened nor stripped -> closed.
+            Assert.IsFalse(sys.IsPartCurrentlyHittable(node.Id));
+            bus.Publish(new MissileHit(node.Id, Kaiju, 1000f, WeaponId.M1));
+            Assert.AreEqual(0f, node.BCurrent, "closed while neither gate facet softened/stripped");
+
+            // Softening one facet opens it.
+            sys.Parts[sys.GetPartId("a")].HeatState = HeatState.Softened;
+            Assert.IsTrue(sys.IsPartCurrentlyHittable(node.Id), "softened facet opens the seam");
+
+            // Cool a, strip b instead -> still open via the stripped branch.
+            sys.Parts[sys.GetPartId("a")].HeatState = HeatState.Intact;
+            Assert.IsFalse(sys.IsPartCurrentlyHittable(node.Id));
+            sys.Parts[sys.GetPartId("b")].ArmorState = ArmorState.Stripped;
+            Assert.IsTrue(sys.IsPartCurrentlyHittable(node.Id), "armor-stripped facet also opens the seam");
+            bus.Publish(new MissileHit(node.Id, Kaiju, 1000f, WeaponId.M1));
+            Assert.AreEqual(BreakState.Broken, node.BreakState, "node breakable once a gate facet is stripped");
+        }
+
+
         // ── Fallbacks / regressions ───────────────────────────────────────────────
 
         [Test]

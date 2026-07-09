@@ -40,10 +40,11 @@ MonoBehaviour:
       _enabled: 0
       _graceSeconds: 0
       _regenRatePerSec: 0
-    _gateKind: 0
+    _gateKind: 1
     _gateCond: 0
-    _gatePartIds: []
-    _requireAllGates: 0
+    _gatePartIds:
+    - dorsal_plate
+    _requireAllGates: 1
   - _partId: maw_1
     _partType: 0
     _hMaxOverride: 0

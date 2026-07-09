@@ -136,7 +136,9 @@ namespace KaijuBreaker.Content
         /// <summary>Gate part(s) armor-stripped.</summary>
         GatePartArmorStripped = 1,
         /// <summary>Gate part(s) heat-softened (PRISMSHELL weak_node exposed by softened facets).</summary>
-        GatePartSoftened = 2
+        GatePartSoftened = 2,
+        /// <summary>Gate part(s) heat-softened OR armor-stripped — either exposes the seam (PRISMSHELL weak_node).</summary>
+        GatePartSoftenedOrStripped = 3
     }
 
     /// <summary>

@@ -266,6 +266,7 @@ namespace KaijuBreaker.KaijuParts
                     PartGateCond.GatePartBroken => gp.BreakState == BreakState.Broken,
                     PartGateCond.GatePartArmorStripped => gp.ArmorState == ArmorState.Stripped,
                     PartGateCond.GatePartSoftened => gp.HeatState == HeatState.Softened,
+                    PartGateCond.GatePartSoftenedOrStripped => gp.HeatState == HeatState.Softened || gp.ArmorState == ArmorState.Stripped,
                     _ => false
                 };
                 if (sat) any = true; else all = false;

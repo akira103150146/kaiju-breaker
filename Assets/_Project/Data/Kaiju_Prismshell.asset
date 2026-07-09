@@ -185,9 +185,11 @@ MonoBehaviour:
       _enabled: 0
       _graceSeconds: 0
       _regenRatePerSec: 0
-    _gateKind: 0
-    _gateCond: 0
-    _gatePartIds: []
+    _gateKind: 1
+    _gateCond: 3
+    _gatePartIds:
+    - facet_a
+    - facet_b
     _requireAllGates: 0
   _body:
     _driftAmpX: 0
