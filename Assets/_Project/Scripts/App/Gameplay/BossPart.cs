@@ -40,6 +40,12 @@ namespace KaijuBreaker.App.Gameplay
                  "to hide the part on break (the default).")]
         [SerializeField] private Sprite _brokenSprite;
 
+        [Tooltip("Optional child stub object (a severed-limb stump the artist positions/scales freely in the scene). " +
+                 "When set, breaking the part ACTIVATES this child and hides the intact sprite + collider instead of " +
+                 "swapping _brokenSprite in place — so the stump has its own independent, draggable transform. Leave " +
+                 "null to fall back to _brokenSprite (in-place swap) or hiding the part.")]
+        [SerializeField] private GameObject _brokenStub;
+
         private int _partId = -1;
         private int _kaijuId;
         private IEventBus _bus;
@@ -168,6 +174,8 @@ namespace KaijuBreaker.App.Gameplay
             _broken = false;
             var col0 = GetComponent<Collider2D>();
             if (col0 != null) col0.enabled = true; // new fight — part is whole and hittable again
+            if (_sr != null) _sr.enabled = true;    // undo a prior break's stub-path renderer disable
+            if (_brokenStub != null) _brokenStub.SetActive(false); // hide the severed stump again
             RestoreVisual();
         }
 
@@ -211,6 +219,22 @@ namespace KaijuBreaker.App.Gameplay
         public void Hide()
         {
             _broken = true;
+
+            // Preferred: a dedicated child stub object the artist has positioned + scaled in the scene.
+            // Activate it and hide the intact part (sprite + collider), so the severed stump has its own
+            // independent, draggable transform instead of reusing the intact leg's scale/pivot.
+            if (_brokenStub != null)
+            {
+                _flashRemaining = 0f;
+                if (_sr != null) _sr.enabled = false;
+                var colStub = GetComponent<Collider2D>();
+                if (colStub != null) colStub.enabled = false; // severed — no longer a target
+                _brokenStub.SetActive(true);
+                SetGauge(0f, 0f);
+                return;
+            }
+
+            // Fallback: swap this part's own sprite to a stub in place, keeping its transform.
             if (_brokenSprite != null && _sr != null)
             {
                 _flashRemaining = 0f;
@@ -254,6 +278,8 @@ namespace KaijuBreaker.App.Gameplay
             if (_sr == null) return;
             if (_broken) // a severed part keeps its stub — never restore intact/stripped art over it
             {
+                // Child-stub path: the intact renderer is disabled and the stub child shows instead — leave it.
+                if (_brokenStub != null) return;
                 if (_brokenSprite != null) { _sr.sprite = _brokenSprite; _sr.color = _baseColor; }
                 return;
             }
