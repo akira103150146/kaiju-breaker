@@ -168,7 +168,8 @@ namespace KaijuBreaker.App.Gameplay
                 _bulletPool = poolGo.AddComponent<EnemyBulletPool>();
                 _bulletPool.Configure(_enemyBulletPrefab);
             }
-            var combat = new EnemyCombatContext(_bulletPool, _player != null ? _player.transform : null, SpawnDrop);
+            var combat = new EnemyCombatContext(_bulletPool, _player != null ? _player.transform : null, SpawnDrop,
+                                                _comp != null && _comp.Difficulty != null ? _comp.Difficulty.BulletDensityMult : 1f);
 
             if (_skipToBoss)
             {

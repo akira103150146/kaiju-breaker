@@ -290,7 +290,8 @@ namespace KaijuBreaker.App.Gameplay
             if (_minions.Count >= _minionGlobalCap) return;
             var m = Instantiate(_minionPrefab, pos, Quaternion.identity);
             m.Init(_minionDef, false);
-            m.SetCombatContext(_bulletPool, _playerTarget, null);
+            m.SetCombatContext(_bulletPool, _playerTarget, null,
+                               _comp != null && _comp.Difficulty != null ? _comp.Difficulty.BulletDensityMult : 1f);
             _minions.Add(m);
         }
 

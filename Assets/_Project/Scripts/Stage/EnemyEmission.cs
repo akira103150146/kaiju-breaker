@@ -80,13 +80,16 @@ namespace KaijuBreaker.Stage
         public readonly Transform PlayerTarget;
         /// <summary>Invoked when an enemy is killed by damage: (worldPosition, isElite) — the scene rolls drops.</summary>
         public readonly System.Action<Vector3, bool> OnEnemyKilled;
+        /// <summary>Difficulty bullet-density multiplier for the run (D1 = 1.0). Scales each mob's shot count.</summary>
+        public readonly float BulletDensityMult;
 
         public EnemyCombatContext(EnemyBulletPool bulletPool, Transform playerTarget,
-                                  System.Action<Vector3, bool> onEnemyKilled = null)
+                                  System.Action<Vector3, bool> onEnemyKilled = null, float bulletDensityMult = 1f)
         {
             BulletPool = bulletPool;
             PlayerTarget = playerTarget;
             OnEnemyKilled = onEnemyKilled;
+            BulletDensityMult = bulletDensityMult > 0f ? bulletDensityMult : 1f;
         }
     }
 }

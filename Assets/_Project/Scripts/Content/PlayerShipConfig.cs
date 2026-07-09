@@ -37,6 +37,12 @@ namespace KaijuBreaker.Content
         [Tooltip("Invulnerability window (seconds) after taking a hit — i-frames.")]
         [SerializeField] private float _invulnSeconds = 0.9f;
 
+        [Tooltip("Player hit-detection box, in WORLD units (full width, applied independent of the ship's visual " +
+                 "scale). Bullet-hell fairness rule: the kill zone must be far smaller than the ship sprite. " +
+                 "0.24 world ≈ a ~0.2 world effective kill radius once the bullet's own radius is added — dodgeable " +
+                 "even in dense patterns. Set ≤ 0 to keep whatever the prefab authored.")]
+        [SerializeField] private float _hitboxWorldSize = 0.24f;
+
         [Header("Primary auto-fire (trash-clearing)")]
         [Tooltip("Seconds between primary shots.")]
         [SerializeField] private float _primaryFireInterval = 0.12f;
@@ -99,6 +105,8 @@ namespace KaijuBreaker.Content
         public int MaxHp => _maxHp;
         /// <summary>I-frame window after a hit, seconds.</summary>
         public float InvulnSeconds => _invulnSeconds;
+        /// <summary>Player hit box full width in world units, applied independent of ship scale (≤ 0 = keep prefab).</summary>
+        public float HitboxWorldSize => _hitboxWorldSize;
 
         // ── Primary fire ──────────────────────────────────────────────────────────────
         /// <summary>Seconds between primary auto-fire shots.</summary>

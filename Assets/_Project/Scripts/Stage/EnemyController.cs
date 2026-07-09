@@ -39,6 +39,7 @@ namespace KaijuBreaker.Stage
         private EnemyBulletPool _bulletPool;
         private Transform _playerTarget;
         private System.Action<Vector3, bool> _onKilled;
+        private float _bulletDensityMult = 1f; // difficulty bullet-density scale (D1 = 1.0)
         private float _fireCooldown;
         private float _telegraphRemaining;
         private bool _telegraphing;
@@ -106,11 +107,12 @@ namespace KaijuBreaker.Stage
         /// <see cref="EmitterPatternSO"/>. Called by <see cref="WaveSpawner"/> right after <see cref="Init"/>.
         /// </summary>
         public void SetCombatContext(EnemyBulletPool pool, Transform playerTarget,
-                                     System.Action<Vector3, bool> onKilled = null)
+                                     System.Action<Vector3, bool> onKilled = null, float bulletDensityMult = 1f)
         {
             _bulletPool = pool;
             _playerTarget = playerTarget;
             _onKilled = onKilled;
+            _bulletDensityMult = bulletDensityMult > 0f ? bulletDensityMult : 1f;
             _fireCooldown = Emitter != null ? Emitter.FireIntervalSeconds : 0f;
             _telegraphing = false;
             _telegraphRemaining = 0f;
@@ -162,7 +164,10 @@ namespace KaijuBreaker.Stage
         private void FireVolley(EmitterPatternType type)
         {
             if (Emitter == null || _bulletPool == null) return;
-            int count = Emitter.BulletCountBase;
+            // Difficulty scales mob bullet DENSITY (design pillar 難度是門: density-only, D1 = ×1.0). This was the
+            // missing wire — mobs previously fired the same count at every tier, so 道中 難度 only changed enemy
+            // COUNT. Speed/shape stay tier-invariant. Elite multiplier stacks on top (§E.3).
+            int count = KaijuBreaker.Difficulty.DifficultyScaling.ScaledBulletCount(Emitter.BulletCountBase, _bulletDensityMult);
             if (IsElite) count = Mathf.CeilToInt(count * Emitter.EliteDensityMult); // elites fire denser (§E.3)
             float speed = Emitter.BulletSpeedPxPerSec * EnemyMovement.PxToWorld;
             Vector2 aim = _playerTarget != null

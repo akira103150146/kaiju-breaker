@@ -52,6 +52,18 @@ namespace KaijuBreaker.App.Gameplay
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.gravityScale = 0f;
             rb.useFullKinematicContacts = true; // kinematic↔kinematic trigger events (enemies/bullets are kinematic too)
+
+            // Bullet-hell fairness: the ship's authored trigger box was ~0.62 world — nearly the whole sprite — so
+            // the effective kill zone was 5–8× a normal danmaku hitbox and dense patterns became undodgeable. Shrink
+            // it to the data-driven world size (independent of the ship's visual scale, so the sprite stays big while
+            // the kill dot stays small). ADR-0003: the size lives in PlayerShipConfig, not hardcoded here.
+            if (_config != null && _config.HitboxWorldSize > 0f && GetComponent<Collider2D>() is BoxCollider2D box)
+            {
+                float s = Mathf.Abs(transform.localScale.x) > 1e-4f ? Mathf.Abs(transform.localScale.x) : 1f;
+                float local = _config.HitboxWorldSize / s;
+                box.size = new Vector2(local, local);
+            }
+
             ResetShip();
         }
 
