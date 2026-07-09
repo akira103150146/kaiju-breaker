@@ -61,10 +61,10 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: -0.7, y: 3.1}
+      _pivotOffset: {x: -0.95, y: 3.2}
       _radiusWorld: 0
       _angularSpeedDeg: 50
-      _arcHalfDeg: 35
+      _arcHalfDeg: 28
       _phaseDeg: 0
     _armorRegen:
       _enabled: 0
@@ -91,10 +91,10 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: 0.7, y: 3.1}
+      _pivotOffset: {x: 0.95, y: 3.2}
       _radiusWorld: 0
       _angularSpeedDeg: 50
-      _arcHalfDeg: 35
+      _arcHalfDeg: 28
       _phaseDeg: 180
     _armorRegen:
       _enabled: 0
@@ -121,10 +121,10 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: -0.7, y: 2.8}
+      _pivotOffset: {x: -0.95, y: 2.6}
       _radiusWorld: 0
       _angularSpeedDeg: 38
-      _arcHalfDeg: 48
+      _arcHalfDeg: 30
       _phaseDeg: 90
     _armorRegen:
       _enabled: 0
@@ -151,10 +151,10 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: 0.7, y: 2.8}
+      _pivotOffset: {x: 0.95, y: 2.6}
       _radiusWorld: 0
       _angularSpeedDeg: 38
-      _arcHalfDeg: 48
+      _arcHalfDeg: 30
       _phaseDeg: 270
     _armorRegen:
       _enabled: 0

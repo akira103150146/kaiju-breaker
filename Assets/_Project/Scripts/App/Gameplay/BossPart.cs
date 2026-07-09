@@ -35,6 +35,11 @@ namespace KaijuBreaker.App.Gameplay
                  "are untouched. Lower it if a many-part boss's blocks overlap into a blob.")]
         [SerializeField] private float _placeholderWorldSize = 2.0f;
 
+        [Tooltip("Optional 'destroyed' sprite (e.g. a broken limb stub). When the part breaks, instead of vanishing " +
+                 "it swaps to this and its collider is disabled — so a severed leg leaves a visible stump. Leave null " +
+                 "to hide the part on break (the default).")]
+        [SerializeField] private Sprite _brokenSprite;
+
         private int _partId = -1;
         private int _kaijuId;
         private IEventBus _bus;
@@ -43,6 +48,7 @@ namespace KaijuBreaker.App.Gameplay
         private float _flashRemaining;
         private bool _stripped;
         private bool _softened;
+        private bool _broken;
 
         // Per-part gauges (heat = orange soften track / break = red destroy track), like the prototype meters.
         private SpriteRenderer _heatFill, _breakFill;
@@ -159,6 +165,9 @@ namespace KaijuBreaker.App.Gameplay
             _bus = bus;
             _stripped = false;
             _softened = false;
+            _broken = false;
+            var col0 = GetComponent<Collider2D>();
+            if (col0 != null) col0.enabled = true; // new fight — part is whole and hittable again
             RestoreVisual();
         }
 
@@ -194,8 +203,28 @@ namespace KaijuBreaker.App.Gameplay
             if (_flashRemaining <= 0f) RestoreVisual();
         }
 
-        /// <summary>Hide this part (called when it breaks).</summary>
-        public void Hide() => gameObject.SetActive(false);
+        /// <summary>
+        /// Called when the part breaks. If a <see cref="_brokenSprite"/> is authored (e.g. a severed-limb stub),
+        /// swap to it and disable the collider so the stump stays visible but can't be hit again; otherwise hide
+        /// the part entirely (the default for cores/armour with no stub art).
+        /// </summary>
+        public void Hide()
+        {
+            _broken = true;
+            if (_brokenSprite != null && _sr != null)
+            {
+                _flashRemaining = 0f;
+                _sr.sprite = _brokenSprite;
+                _sr.color = _baseColor;
+                var col = GetComponent<Collider2D>();
+                if (col != null) col.enabled = false; // severed — no longer a target
+                SetGauge(0f, 0f);
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
+        }
 
         private void Update()
         {
@@ -223,6 +252,11 @@ namespace KaijuBreaker.App.Gameplay
         private void RestoreVisual()
         {
             if (_sr == null) return;
+            if (_broken) // a severed part keeps its stub — never restore intact/stripped art over it
+            {
+                if (_brokenSprite != null) { _sr.sprite = _brokenSprite; _sr.color = _baseColor; }
+                return;
+            }
             _sr.sprite = (_stripped && _strippedSprite != null) ? _strippedSprite : _intactSprite;
             _sr.color = _softened ? new Color(1f, 0.62f, 0.42f) : _baseColor; // warm = heated/softened
         }

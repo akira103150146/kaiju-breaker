@@ -120,11 +120,11 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 0
-      _pivotOffset: {x: 0, y: 0}
+      _type: 3
+      _pivotOffset: {x: 0, y: 3.3}
       _radiusWorld: 0
-      _angularSpeedDeg: 35
-      _arcHalfDeg: 0
+      _angularSpeedDeg: 60
+      _arcHalfDeg: 12
       _phaseDeg: 0
     _armorRegen:
       _enabled: 0
@@ -150,12 +150,12 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 0
-      _pivotOffset: {x: 0, y: 0}
+      _type: 3
+      _pivotOffset: {x: 0, y: 3.3}
       _radiusWorld: 0
-      _angularSpeedDeg: 35
-      _arcHalfDeg: 0
-      _phaseDeg: 120
+      _angularSpeedDeg: 60
+      _arcHalfDeg: 12
+      _phaseDeg: 180
     _armorRegen:
       _enabled: 0
       _graceSeconds: 0
