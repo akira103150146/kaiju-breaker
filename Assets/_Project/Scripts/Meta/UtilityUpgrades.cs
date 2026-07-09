@@ -4,10 +4,10 @@ namespace KaijuBreaker.Meta
 {
     /// <summary>
     /// The out-of-run (meta) upgrade layer: permanent UTILITY boosts bought with materials between runs —
-    /// deliberately NOT killing power (that is the in-run Raiden firepower). Two tracks: faster fire
-    /// (open-fire interval) and a higher power-up drop rate. Levels persist through <see cref="ISaveService"/>
-    /// as flags (<c>util_fire_1..N</c> / <c>util_drop_1..N</c>) so no save-schema change is needed for the
-    /// placeholder; ShardCommon is the currency. Pure C# over the save interface — EditMode-testable.
+    /// deliberately NOT killing power (that is the in-run Raiden firepower). Two shard-funded tracks (faster
+    /// fire / higher drop rate) plus five theme-core-funded tracks (the MECHA/utility axis for the new cores,
+    /// session-9 decision). Levels persist through <see cref="ISaveService"/> as flags (<c>util_*_N</c>) so no
+    /// save-schema change is needed for the placeholder. Pure C# over the save interface — EditMode-testable.
     /// </summary>
     public sealed class UtilityUpgrades
     {
@@ -42,12 +42,68 @@ namespace KaijuBreaker.Meta
         /// <summary>Buy the next drop-rate level. Returns false if maxed or too few shards.</summary>
         public bool BuyDropRate() => Buy("util_drop", DropRateLevel);
 
+        // ── Core-funded utility tracks (session-9 sink decision) ─────────────────────────
+        // The five new theme cores fund a MECHA/utility axis, separate from in-run firepower. Each track spends
+        // its OWN theme core (Swarm/Crystal/Abyss/Ember/Void), not ShardCommon. Levels persist as util_<name>_N
+        // flags, same as the shard tracks. Every effect is non-killpower QoL / survivability / convenience.
+        public const int MaxCoreLevel = 5;
+
+        /// <summary>Secondary-ammo track level, 0..MaxCoreLevel (Swarm core).</summary>
+        public int AmmoLevel => LevelOf("util_ammo");
+        /// <summary>Material-magnet track level (Crystal core).</summary>
+        public int MagnetLevel => LevelOf("util_magnet");
+        /// <summary>Post-hit i-frame track level (Abyss core).</summary>
+        public int IFrameLevel => LevelOf("util_iframe");
+        /// <summary>Move-speed track level (Ember core).</summary>
+        public int SpeedLevel => LevelOf("util_speed");
+        /// <summary>Run head-start firepower track level (Void core).</summary>
+        public int HeadStartLevel => LevelOf("util_headstart");
+
+        /// <summary>Extra secondary-weapon rounds per magazine (+1 per level) — sustain, not per-hit power.</summary>
+        public int SecondaryAmmoBonus => AmmoLevel;
+        /// <summary>Material auto-collect radius multiplier (1.0 at level 0).</summary>
+        public float MagnetRadiusMult => 1f + MagnetLevel * 0.25f;
+        /// <summary>Post-hit invulnerability duration multiplier (1.0 at level 0).</summary>
+        public float IFrameMult => 1f + IFrameLevel * 0.15f;
+        /// <summary>Move-speed multiplier (1.0 at level 0).</summary>
+        public float MoveSpeedMult => 1f + SpeedLevel * 0.06f;
+        /// <summary>Firepower level each run starts at (0 at level 0). The in-run ceiling is unchanged.</summary>
+        public int StartPowerLevel => HeadStartLevel;
+
+        /// <summary>Core cost to buy the level after <paramref name="currentLevel"/> (cores are rarer than shards).</summary>
+        public int CoreCostFor(int currentLevel) => (currentLevel + 1) * 4;
+
+        /// <summary>Current spendable count of a theme core.</summary>
+        public int CoreBalance(MaterialId core) => _save.GetMaterialCount(core);
+
+        /// <summary>Buy the next secondary-ammo level (Swarm core). False if maxed or too few cores.</summary>
+        public bool BuyAmmo() => BuyCore("util_ammo", AmmoLevel, MaterialId.CoreSwarm);
+        /// <summary>Buy the next material-magnet level (Crystal core).</summary>
+        public bool BuyMagnet() => BuyCore("util_magnet", MagnetLevel, MaterialId.CoreCrystal);
+        /// <summary>Buy the next i-frame level (Abyss core).</summary>
+        public bool BuyIFrame() => BuyCore("util_iframe", IFrameLevel, MaterialId.CoreAbyss);
+        /// <summary>Buy the next move-speed level (Ember core).</summary>
+        public bool BuySpeed() => BuyCore("util_speed", SpeedLevel, MaterialId.CoreEmber);
+        /// <summary>Buy the next run head-start level (Void core).</summary>
+        public bool BuyHeadStart() => BuyCore("util_headstart", HeadStartLevel, MaterialId.CoreVoid);
+
         private bool Buy(string key, int level)
         {
             if (level >= MaxLevel) return false;
             int cost = CostFor(level);
             if (_save.GetMaterialCount(Currency) < cost) return false;
             _save.SpendMaterials(Currency, cost);
+            _save.SetFlag(key + "_" + (level + 1), true);
+            _save.EnqueueAutosave();
+            return true;
+        }
+
+        private bool BuyCore(string key, int level, MaterialId currency)
+        {
+            if (level >= MaxCoreLevel) return false;
+            int cost = CoreCostFor(level);
+            if (_save.GetMaterialCount(currency) < cost) return false;
+            _save.SpendMaterials(currency, cost);
             _save.SetFlag(key + "_" + (level + 1), true);
             _save.EnqueueAutosave();
             return true;
