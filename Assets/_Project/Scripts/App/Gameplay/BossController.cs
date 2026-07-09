@@ -345,6 +345,10 @@ namespace KaijuBreaker.App.Gameplay
                 bool stripped = _comp.Parts.GetArmorState(kv.Key) == ArmorState.Stripped;
                 part.SetArmorStripped(stripped || softened);
                 part.SetSoftened(softened);
+                // Cross-part HittableWhen gate: close the scene hitbox while the gate is shut, so shots pass
+                // through an un-hittable part (TIDEMAW core behind the dorsal, PRISMSHELL hidden weak_node)
+                // instead of visibly popping on it. Ungated/open parts report hittable; broken parts no-op.
+                part.SetHittable(_comp.Parts.IsPartCurrentlyHittable(kv.Key));
                 if (_comp.Parts.Parts.TryGetValue(kv.Key, out var bp))
                 {
                     float heatFrac = bp.HMax > 0f ? bp.HCurrent / bp.HMax : 0f;

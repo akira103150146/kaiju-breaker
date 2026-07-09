@@ -212,6 +212,19 @@ namespace KaijuBreaker.App.Gameplay
         }
 
         /// <summary>
+        /// Enable/disable the hitbox for a cross-part HittableWhen gate (per-part-firing-schema.md §4):
+        /// while the gate is closed the part is un-hittable and shots pass through it. No-op once the part is
+        /// broken/severed (its collider is already off and must stay off).
+        /// </summary>
+        public void SetHittable(bool hittable)
+        {
+            if (_broken) return;
+            var col = GetComponent<Collider2D>();
+            if (col != null && col.enabled != hittable) col.enabled = hittable;
+        }
+
+
+        /// <summary>
         /// Called when the part breaks. If a <see cref="_brokenSprite"/> is authored (e.g. a severed-limb stub),
         /// swap to it and disable the collider so the stump stays visible but can't be hit again; otherwise hide
         /// the part entirely (the default for cores/armour with no stub art).
