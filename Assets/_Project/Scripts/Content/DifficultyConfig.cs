@@ -24,11 +24,11 @@ namespace KaijuBreaker.Content
 
         [Header("Bullet Density Multipliers — D1..D4 (index 0–3)")]
         [Tooltip("Per-shot bullet count multipliers for D1–D4. Length must be exactly 4. " +
-                 "Index 0 (D1) must equal 1.0 (baseline). D4 is intentionally higher than " +
-                 "enemy count to emphasise bullet-density pressure over headcount pressure. " +
-                 "Formula: actual_bullets = ceil(base_bullets × BulletDensityMult[tier]). " +
-                 "difficulty-system.md G.1.")]
-        [SerializeField] private float[] _bulletDensityMult = { 1.00f, 1.25f, 1.50f, 2.00f };
+                 "Index 0 (D1) must equal 1.0 (baseline). COUNT-FIRST difficulty model (director 2026-07): the " +
+                 "emitter base counts ARE the sparse D1 pattern (aimed ≈ 1 bullet), and difficulty scales the " +
+                 "per-volley count UP steeply (D4 = 4× the sparse base) — the pattern shape never changes. " +
+                 "Formula: actual_bullets = ceil(base_bullets × BulletDensityMult[tier]). difficulty-system.md G.1.")]
+        [SerializeField] private float[] _bulletDensityMult = { 1.00f, 2.00f, 3.00f, 4.00f };
 
         [Header("UI Behaviour")]
         [Tooltip("Difficulty shown on first game launch. Must be D1 (D1 Promise — difficulty-system.md C.6).")]

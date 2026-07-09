@@ -19,9 +19,10 @@ namespace KaijuBreaker.Tests.EditMode.Difficulty
     [TestFixture]
     public sealed class DifficultySystemTests
     {
-        // §D.3 default multipliers, asserted directly so a config regression is caught here too.
+        // Default multipliers, asserted directly so a config regression is caught here too. Bullet density is the
+        // count-first model (director 2026-07): D1..D4 = 1/2/3/4 (sparse D1 base scaled up steeply).
         private const float D2Enemy = 1.25f, D3Enemy = 1.50f, D4Enemy = 1.75f;
-        private const float D4Bullet = 2.00f;
+        private const float D4Bullet = 4.00f;
 
         private static DifficultySystem MakeSystem() =>
             new DifficultySystem(ContentTestFactory.Create<DifficultyConfig>());
@@ -50,20 +51,20 @@ namespace KaijuBreaker.Tests.EditMode.Difficulty
         }
 
         // ── AC-2 / H.1: bullet-density matrix (base × tier), no cap ─────────────────────────────
-        // base=1 →1/2/2/2 · base=5 →5/7/8/10 · base=8 →8/10/12/16
+        // Count-first mults 1/2/3/4: base=1 →1/2/3/4 · base=5 →5/10/15/20 · base=8 →8/16/24/32
 
         [TestCase(1, DifficultyTier.D1, 1)]
         [TestCase(1, DifficultyTier.D2, 2)]
-        [TestCase(1, DifficultyTier.D3, 2)]
-        [TestCase(1, DifficultyTier.D4, 2)]
+        [TestCase(1, DifficultyTier.D3, 3)]
+        [TestCase(1, DifficultyTier.D4, 4)]
         [TestCase(5, DifficultyTier.D1, 5)]
-        [TestCase(5, DifficultyTier.D2, 7)]
-        [TestCase(5, DifficultyTier.D3, 8)]
-        [TestCase(5, DifficultyTier.D4, 10)]
+        [TestCase(5, DifficultyTier.D2, 10)]
+        [TestCase(5, DifficultyTier.D3, 15)]
+        [TestCase(5, DifficultyTier.D4, 20)]
         [TestCase(8, DifficultyTier.D1, 8)]
-        [TestCase(8, DifficultyTier.D2, 10)]
-        [TestCase(8, DifficultyTier.D3, 12)]
-        [TestCase(8, DifficultyTier.D4, 16)]
+        [TestCase(8, DifficultyTier.D2, 16)]
+        [TestCase(8, DifficultyTier.D3, 24)]
+        [TestCase(8, DifficultyTier.D4, 32)]
         public void test_scaled_bullet_count_matches_gdd_matrix(int baseBullets, DifficultyTier tier, int expected)
         {
             var sys = MakeSystem();

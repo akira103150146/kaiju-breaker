@@ -98,8 +98,8 @@ namespace KaijuBreaker.Tests.EditMode.Difficulty
         [Test]
         public void test_onvalidate_accepts_gdd_default_values()
         {
-            // Factory with no overrides = the SO's own §D.3 defaults
-            // (enemy {1,1.25,1.5,1.75}, bullet {1,1.25,1.5,2.0}, cap 20, default D1).
+            // Factory with no overrides = the SO's own defaults. Count-first model (director 2026-07):
+            // enemy {1,1.25,1.5,1.75}, bullet {1,2,3,4} (D1 sparse base, scaled up steeply), cap 20, default D1.
             var config = ContentTestFactory.Create<DifficultyConfig>();
             InvokeOnValidate(config);
             LogAssert.NoUnexpectedReceived();
@@ -108,9 +108,10 @@ namespace KaijuBreaker.Tests.EditMode.Difficulty
         [Test]
         public void test_onvalidate_accepts_upper_band_edges()
         {
-            // D4 bullet at the safe-range ceiling (2.50) and enemy_cap at its floor (15) are accepted.
+            // Bullet-density D2–D4 at the count-first safe-range ceilings (2.5 / 3.5 / 5.0) and enemy_cap at
+            // its floor (15) are accepted with no warning.
             var config = ContentTestFactory.Create<DifficultyConfig>(
-                ("_bulletDensityMult", new[] { 1.00f, 1.25f, 1.50f, 2.50f }),
+                ("_bulletDensityMult", new[] { 1.00f, 2.50f, 3.50f, 5.00f }),
                 ("_enemyCapPerScene", 15));
             InvokeOnValidate(config);
             LogAssert.NoUnexpectedReceived();
@@ -122,7 +123,7 @@ namespace KaijuBreaker.Tests.EditMode.Difficulty
         public void test_onvalidate_warns_on_d4_bullet_multiplier_above_band()
         {
             var config = ContentTestFactory.Create<DifficultyConfig>(
-                ("_bulletDensityMult", new[] { 1.00f, 1.25f, 1.50f, 2.51f }));  // > 2.50 ceiling
+                ("_bulletDensityMult", new[] { 1.00f, 2.00f, 3.00f, 5.01f }));  // > 5.00 ceiling (count-first band)
             LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("BulletDensityMult\\[D4\\]"));
             InvokeOnValidate(config);
         }
@@ -131,7 +132,7 @@ namespace KaijuBreaker.Tests.EditMode.Difficulty
         public void test_onvalidate_warns_on_d4_bullet_multiplier_below_band()
         {
             var config = ContentTestFactory.Create<DifficultyConfig>(
-                ("_bulletDensityMult", new[] { 1.00f, 1.25f, 1.50f, 1.74f }));  // < 1.75 floor
+                ("_bulletDensityMult", new[] { 1.00f, 2.00f, 3.00f, 2.49f }));  // < 2.50 floor (count-first band)
             LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("BulletDensityMult\\[D4\\]"));
             InvokeOnValidate(config);
         }
