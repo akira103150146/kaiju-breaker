@@ -27,6 +27,11 @@ namespace KaijuBreaker.App.Gameplay
         [SerializeField] private Sprite _hitWhiteSprite;
         [SerializeField] private float _hitFlashSeconds = 0.06f;
 
+        [Tooltip("Untuned placeholder parts (left at Unity's default 1×1 box collider) are scaled up by this so " +
+                 "the block reads clearly and the hittable area is generous. Hand-authored parts, whose collider " +
+                 "carries a real art-matched size (never exactly 1×1), are left untouched.")]
+        [SerializeField] private float _placeholderPartScaleMult = 1.4f;
+
         private int _partId = -1;
         private int _kaijuId;
         private IEventBus _bus;
@@ -67,6 +72,31 @@ namespace KaijuBreaker.App.Gameplay
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.gravityScale = 0f;
             rb.useFullKinematicContacts = true;
+
+            // Player shots register hits through OnTriggerEnter2D (see PlayerProjectile). A part collider left as
+            // a solid (non-trigger) collider — as the procedurally-built new bosses were (m_IsTrigger: 0) — never
+            // raises that event, so shots pass straight through and the part can never soften or break. Force
+            // every part's collider to a trigger so hit detection is uniform across hand-authored and generated
+            // bosses. (This is the root cause of the "new boss parts can't be broken" reports.)
+            var col = GetComponent<Collider2D>();
+            if (col != null)
+            {
+                col.isTrigger = true;
+
+                // Placeholder parts were left at Unity's default 1×1 box collider (hand-tuned parts carry a real,
+                // art-matched size that is never exactly 1×1). Grow the whole part so both the visible block and
+                // the hittable area read clearly — the "new boss parts too small" reports. localScale scales the
+                // collider and sprite together, keeping them matched, and runs once (Awake). Authored parts, whose
+                // collider size ≠ 1×1, are untouched.
+                // 0 = field absent on an old serialized instance → fall back to the default rather than skip.
+                float mult = _placeholderPartScaleMult > 0f ? _placeholderPartScaleMult : 1.4f;
+                if (col is BoxCollider2D box &&
+                    Mathf.Approximately(box.size.x, 1f) && Mathf.Approximately(box.size.y, 1f) &&
+                    mult > 1f)
+                {
+                    transform.localScale *= mult;
+                }
+            }
 
             _sr = GetComponent<SpriteRenderer>();
             if (_sr != null)

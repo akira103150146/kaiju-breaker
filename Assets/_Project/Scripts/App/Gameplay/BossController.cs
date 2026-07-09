@@ -46,6 +46,12 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Max minions alive at once across the whole boss (keeps the swarm readable).")]
         [SerializeField] private int _minionGlobalCap = 8;
 
+        [Tooltip("Boss bullet cadence is normalised so a boss with MORE firing parts than this doesn't scale total " +
+                 "bullets/sec with part count. Set to the original bosses' emitter count (~4) so they're unaffected; " +
+                 "many-part new bosses (巢母 6, 虛尖 8) then fire each part proportionally slower. D1 stays the " +
+                 "reference — this shapes the base cadence BEFORE the difficulty density multiplier.")]
+        [SerializeField] private int _bossDensityReferenceEmitters = 4;
+
         // One live emission source belonging to a part (per-part-firing-schema.md §3). Bullet emitters fire via
         // the shared pool; spawner slots (SpawnEnemyId) are noted but minion spawning is a follow-up.
         private struct ActiveEmitter
@@ -58,6 +64,7 @@ namespace KaijuBreaker.App.Gameplay
             public int SpawnCap;
             public float Cooldown;
             public float SpinPhaseDeg;
+            public float IntervalMult;  // cadence normalisation by boss emitter count (1 = unchanged)
         }
 
         private readonly System.Collections.Generic.List<EnemyController> _minions = new System.Collections.Generic.List<EnemyController>();
@@ -187,9 +194,41 @@ namespace KaijuBreaker.App.Gameplay
                         IsSpawner = e.IsSpawner,
                         SpawnCap = e.SpawnCap,
                         Cooldown = e.IsSpawner ? _minionSpawnInterval : (e.Pattern != null ? e.Pattern.FireIntervalSeconds : 0f),
-                        SpinPhaseDeg = 0f
+                        SpinPhaseDeg = 0f,
+                        IntervalMult = 1f
                     });
                 }
+            }
+
+            NormaliseEmitterCadence();
+        }
+
+        // The 3 original bosses fire from ~4 parts; the new bosses stacked many more (巢母 6, 虛尖 8), and every
+        // emitter started on a full cooldown so they all volleyed on the SAME frame — a wall of bullets even at D1,
+        // whose density multiplier is locked at ×1.0 (D1 is the reference tier). Two shaping passes on the BASE
+        // cadence (before FireVolley applies the difficulty multiplier, so the D1-is-baseline invariant holds):
+        //   1) Scale each bullet emitter's interval by (bulletEmitters / reference) when a boss has more firing
+        //      parts than the reference, so total bullets/sec doesn't grow with part count.
+        //   2) Stagger the initial cooldowns across one interval so parts don't fire together.
+        private void NormaliseEmitterCadence()
+        {
+            int bulletEmitters = 0;
+            for (int i = 0; i < _emitters.Count; i++) if (!_emitters[i].IsSpawner) bulletEmitters++;
+            if (bulletEmitters == 0) return;
+
+            float cadenceMult = (_bossDensityReferenceEmitters > 0 && bulletEmitters > _bossDensityReferenceEmitters)
+                ? (float)bulletEmitters / _bossDensityReferenceEmitters : 1f;
+
+            int idx = 0;
+            for (int i = 0; i < _emitters.Count; i++)
+            {
+                var e = _emitters[i];
+                if (e.IsSpawner || e.Pattern == null) continue;
+                e.IntervalMult = cadenceMult;
+                float interval = e.Pattern.FireIntervalSeconds * cadenceMult;
+                e.Cooldown = interval * ((float)idx / bulletEmitters); // spread first shots across one interval
+                _emitters[i] = e;
+                idx++;
             }
         }
 
@@ -236,7 +275,7 @@ namespace KaijuBreaker.App.Gameplay
                 if (e.Cooldown <= 0f)
                 {
                     FireVolley(e, owner.transform.position);
-                    e.Cooldown = e.Pattern.FireIntervalSeconds;
+                    e.Cooldown = e.Pattern.FireIntervalSeconds * (e.IntervalMult > 0f ? e.IntervalMult : 1f);
                 }
                 _emitters[i] = e; // struct — write back the mutated cooldown/phase
             }
