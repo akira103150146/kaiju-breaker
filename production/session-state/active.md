@@ -1,5 +1,84 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
+*Last updated: 2026-07-09 (SESSION 11 — 導演連續回報頭目/難度/FPS 修正大輪，全部修完+push origin main 1ba7d4f. 469 EditMode GREEN. EXE 116.8MB+APK 44MB 最新. gh CLI 裝好+登入.)*
+
+## ✅ SESSION 11 (2026-07-09) — 頭目/難度/公平性/FPS 連續修正 + 原頭目視覺重塑
+
+**✅ 已辦（全部 commit + push origin main `1ba7d4f`；469 EditMode GREEN；EXE+APK 多次重建 0 錯）：**
+
+**新頭目 3 BUG（回報）：**
+1. ✅ 部位打不壞 → 程序化建的部位 collider `m_IsTrigger:0`(原頭目 1)，子彈用 OnTriggerEnter2D 穿過去。`BossPart.Awake` 強制所有部位 isTrigger=true。
+2. ✅ 部位過小/跟子彈一樣大 → placeholder 用 Unity 內建迷你 sprite(0.16 world) 縮放沒用。改成 **1 單位方形 sprite(保留色)+絕對 `_placeholderWorldSize`(2.0 world)**。
+3. ✅ 最低難度彈幕爆炸 → 齊射錯開 + 依發射部位數正規化射速(`_bossDensityReferenceEmitters` 4)。
+
+**🔴 重大 BUG（回報）：新頭目部位打完不消失、擋著、還在射**
+4. ✅ 根因：session-9 加 5 新核心 enum 時**漏補 `MaterialKeys.ToKeyMap`**。破部位→經濟記帳新核心→`ToKey` 查表**丟 KeyNotFoundException**→事件匯流排 fail-loud(有測試鎖 Publish 外拋)→中止 PartBroke 派送→後訂閱的 `BossController.OnPartBroke`(Hide+消音)沒跑。補 5 key + **回歸測試**(每個 MaterialId 都要有 key)。
+
+**難度（導演方法：規律不變、只改單發子彈數）：**
+5. ✅ Emitter 基數降到 D1 稀疏(集中線 1 顆/放射保留 3 顆)、`BulletDensityMult` **[1,2,3,4]** 往上加；SO 預設/OnValidate 區間/測試同步。小怪彈幕也接難度(`EnemyCombatContext` 傳倍率)。
+
+**公平性（導演：正常人躲得掉嗎，定量算）：**
+6. ✅ 根因：玩家判定框過大(0.62 world≈整台船)。改資料驅動 `PlayerShipConfig.HitboxWorldSize`(0.24)。
+
+**APK FPS：**
+7. ✅ 鎖 30(手機預設沒設 targetFrameRate)。`GameBootstrap` 僅 mobile 設 targetFrameRate=裝置更新率(60/120) clamp[60,`_maxFrameRate`120]，PC 不動。
+
+**原頭目視覺（回報，MCP 編輯器截圖逐一驗證）：**
+8. ✅ **LACERA**：body-base 圖補上(磁碟早有沒接)；四肢從共用 pivot{0,3}改**各自根部**(截圖模擬擺動驗證，最終 {±0.95,3.2/2.6} 擺幅 28/30)；**頭上移 y3.9**(導演建議，露出腳根部)；**斷腳換殘根圖**(`BossPart._brokenSprite`=limb_stub_broken，破壞後換殘根+關碰撞不消失)；過熱(軟化)也顯示破殼 stripped 圖。
+9. ✅ **VOLTWYRM**：頸原地自轉(session-9 設錯 Spin)→移除→**重塑縱向能量龍**：頭(核心)在最頂、兩盾在頭下方展開、體節在下方 **S 形波動**(n1 繞頭下{0,4.0}±12°、n2 繞 n1 下{0,2.9}±16°反相)。
+
+**基建：** gh CLI 裝好(`C:\Program Files\GitHub CLI`)+登入 akira103150146；PR #1 已合併；全部 push origin main。
+
+**★ 新技術：** MCP `manage_camera` screenshot(include_image) 可**視覺驗證**頭目排列/動作(啟用頭目→正交相機→截圖→我讀圖)。用來對齊 LACERA 腳根部、設計 VOLTWYRM 龍身。[[verify-without-stealing-focus]] 預設仍 EditMode，但視覺美術工作可用截圖迴圈。
+
+**⬜ 待辦（導演實測後微調）：**
+- 手機實測 FPS(60/120)、難度手感(D1 是否夠低、梯度)、頭目視覺(LACERA 腳擺動/斷腳、VOLTWYRM 蛇擺)。
+- **可調旋鈕**：`PlayerShipConfig.HitboxWorldSize`(0.24)·`DifficultyConfig` 密度[1,2,3,4]+emitter 基數·`BossPart._placeholderWorldSize`(2.0)·`BossController._bossDensityReferenceEmitters`(4)·`GameBootstrap._maxFrameRate`(120)·`Kaiju_Lacera` 四肢 pivot/arc·`Kaiju_Voltwyrm` n1/n2 擺幅。
+- 5 新頭目 bespoke 美術(目前色塊 placeholder)；新 5 核心經濟 sink；PartGate 跨部位；音樂/音效；UI 改 UGUI+TMP。
+
+---
+
+*Last updated: 2026-07-09 (SESSION 10b — 導演第二輪回報修正：重大 bug 部位打完不消失(MaterialKeys 漏 key)+難度改 count-first+部位放大+APK FPS 解鎖. 469 EditMode GREEN. EXE 116.8MB+APK 44MB 重建含全部. 本地 main 748ea59 未 push origin(de54e3a).)*
+
+## ✅ SESSION 10b (2026-07-09) — 導演第二輪回報 4 修 + 重建
+
+**導演回報 → 已修（全綠 469 EditMode、雙平台重建 0 錯）：**
+1. ✅ **🔴 重大：新頭目部位打完不消失、擋著、還在射** → 根因：session 9 加 5 個新核心 enum 時**漏補 `MaterialKeys.ToKeyMap`**（缺 CoreSwarm/Crystal/Abyss/Ember/Void）。破新頭目部位→`EconomyService.OnPartBroke`→`MetaSaveService.CreditMaterials`→`MaterialKeys.ToKey(id)`=`ToKeyMap[id]`→**KeyNotFoundException**。事件匯流排是 fail-loud（`economy_yield_on_break`/`run_state_machine` 兩測試鎖定 Publish 外拋），例外中止 `PartBroke` 派送 → **後訂閱的 `BossController.OnPartBroke`(Hide+消音) 沒跑** → 部位 Broken 卻不隱藏、不消音。只發生在新頭目（只有它們掉新核心）。修：補 5 key + **回歸測試** `material_keys_cover_all_ids_test`（每個 MaterialId 都要有 key）。與之前 `EconomyConfig.GetCoreForTheme` 同類「enum 擴充只補一半」坑。
+2. ✅ **難度過高（導演指定方法）** → 規律不變（放射還放射、集中線還集中線），**只改單發子彈數**：emitter 基數降到 D1 稀疏（BossAimed 3→1、BossWall 5→2、BossSpiral 4→2、TriFan 3→1、Wall 4→2、Ring 8→3(保留放射)、MobSpiral 4→2、DeathRing 10→4）；`BulletDensityMult` 1/1.25/1.5/1.8 → **1/2/3/4**（D1 稀疏基準、往上加）。同步更新 SO 欄位預設、OnValidate 區間、2 個難度測試矩陣。
+3. ✅ **部位跟子彈一樣大** → 根因：placeholder 用 Unity 內建迷你 sprite（原生 0.16 world），縮放 transform 沒用（sprite+collider 一起放大但起點太小、且血條子物件會被撐爆）。修：`BossPart.Awake` 對 placeholder 部位換 **1 單位方形 sprite（保留顏色）** + 設**絕對世界大小** `_placeholderWorldSize`(2.0，≈子彈 10 倍)，sprite 與 collider 都等於它。取代原本的 scale-mult 旋鈕。
+4. ✅ **APK FPS 鎖 30** → 根因：程式沒設 `Application.targetFrameRate`（手機 Unity 預設 30、vSync 在 Android 被忽略）。修：`GameBootstrap.Awake` **僅 mobile** 設 targetFrameRate=裝置更新率(60Hz→60/120Hz→120) clamp [60,`_maxFrameRate`=120]；PC 維持 quality vSync 不動。
+
+**建置**：refresh+編譯乾淨(0 CSxxxx)→存 Bootstrap→MCP 建 Win(116.8MB)+Android(APK 44MB)，皆 0 錯。EXE 增量重建(App.dll+level0 新、Meta.dll 上一次已含 MaterialKeys)、APK 全新。
+
+**可調旋鈕**：`BossPart._placeholderWorldSize`(2.0，多部位頭目重疊就調小) · `DifficultyConfig` 密度倍率[1,2,3,4] + 各 emitter 基數 · `GameBootstrap._maxFrameRate`(120) · `PlayerShipConfig.HitboxWorldSize`(0.24)。
+
+**commits(本地 main，未 push origin)**：`4404c46`(MaterialKeys+難度+回歸測試) · `2cfd40b`(部位尺寸) · `528e6fb`(難度測試對齊) · `748ea59`(FPS)。**待導演實測後決定 push origin main**。
+
+---
+
+*Last updated: 2026-07-09 (SESSION 10 — 新頭目 3 BUG 修正 + 四階難度稽核/公平性修正 + 雙平台重建. EXE 116.8MB + APK 44MB 最新含修正. 分支 worktree-fix-new-boss-parts / 本地 main de54e3a; 遠端 main 已更新 de54e3a、PR #1 已合併(MERGED)。)*
+
+## ✅ SESSION 10 (2026-07-09) — 新頭目 BUG 修 + 難度公平性 + 重建
+
+**導演回報 → 已修（全部程式碼修正、資料驅動、不動平衡不變量；唯讀診斷比對 `Bootstrap.unity` 新舊部位）：**
+1. ✅ **新頭目部位打不壞** → 根因：程序化(execute_code)建的部位 collider `m_IsTrigger:0`（原頭目 :1），玩家子彈用 `OnTriggerEnter2D` → 穿過去不觸發命中，蓄熱/破壞值永遠 0。修：`BossPart.Awake` 強制所有部位 `isTrigger=true`（統一、對原頭目無害）。
+2. ✅ **新頭目部位過小** → 根因：維持 Unity 預設 1×1 box collider（原頭目手調過、絕不會剛好 1×1）。修：`BossPart.Awake` 把剛好 1×1 的 placeholder 部位依 `_placeholderPartScaleMult`(1.4，可調) 整體放大（視覺塊+hitbox 一起長大），已調過的部位不動。
+3. ✅ **最低難度彈幕爆炸** → 新頭目發射部位暴增（巢母 6 / 虛尖 8 vs 原 ~4）+ 所有 emitter 初始冷卻同值 → 同幀齊射 → 瞬間滿畫面。修：`BossController.NormaliseEmitterCadence` 依發射部位數正規化射速（`_bossDensityReferenceEmitters`，預設 4 → 原頭目不受影響）+ 錯開初始冷卻。作用在難度倍率之前，D1=×1.0 不變量不動。
+4. ✅ **四階難度稽核 + 公平性（導演：正常人躲得掉嗎）** → 用真實資料定量算可閃避性。**根因：玩家判定框過大** = 0.62 world（≈整台船），有效致死半徑 ~0.39（彈幕遊戲常規的 5–8 倍）→ 密彈幕到處彈隙都小於致死區 → 躲不掉。修：資料驅動 `PlayerShipConfig.HitboxWorldSize`(0.24，獨立於船視覺縮放，`PlayerShip.Awake` 套用) → 致死半徑 ~0.20，D1 舒適可躲、D4(×1.8) 仍有挑戰。速度(9 vs 子彈 2.4–3.75)/反應(telegraph 0.3s)/移動範圍本來就沒問題。
+5. ✅ **小怪彈幕接難度（機制破口）** → `EnemyController.FireVolley` 原本只吃 elite 倍率，`BulletDensityMult` 沒接、`DifficultyScaling.ScaledBulletCount` 是死碼。修：經 `EnemyCombatContext` 把難度倍率傳給每隻小怪 + 巢母召喚物。D1 不變，D2–D4 道中彈變密。難度**只縮密度**（難度是門，非雷電式速度縮放）。
+
+**四階難度稽核結論**：選難度→系統 ✅ / 敵人數量 ✅ / 頭目彈幕 ✅ / 段落門檻 ✅ / 小怪彈幕 ❌(已修) / 玩家能躲 ❌(已修判定框)。模型（只縮密度）本身合理，問題是**沒接完 + 判定框不公平**，都修好。**小發現(未改)**：`WavePlanner` 沒套 `EnemyCapPerScene`(20)——D4 每波才 13 隻不會超；`DifficultyConfig.asset` D4 密度 1.8（設計文件寫 2.0），落在安全範圍。
+
+**建置**：fast-forward 合併分支 → 本地 main → refresh + 編譯乾淨(0 CSxxxx，只剩既有空 asmdef 提醒) → 存 Bootstrap → MCP 建 Win(116.8MB / 27s) + Android(APK 44MB / 160s)，皆 0 錯；`kaiju-breaker_Data` 程式 DLL + `level0` 場景今日重寫，確認含修正（.exe 啟動器 stub 未變是正常，Unity 同版本不重寫）。
+
+**可調旋鈕**：`PlayerShipConfig.HitboxWorldSize`(0.24) · `BossController._bossDensityReferenceEmitters`(4) · `BossPart._placeholderPartScaleMult`(1.4)。
+
+**commits**：`ef45427`(新頭目 3 修) · `de54e3a`(難度公平性)。分支已推 origin + PR #1 (draft，未合遠端 main)。gh CLI 本機已裝(`C:\Program Files\GitHub CLI`) + 登入 akira103150146。
+
+**待導演**：實測 D1 手感（有壓力但躲得掉？）；滿意再把旋鈕定案 / 讓遠端 main 更新（叫我 push 或自己合 PR #1）。
+
+---
+
 *Last updated: 2026-07-09 (SESSION 9 收尾 — 8 頭目全可玩 per-part 射擊+移動、6 新小怪、破甲回填、巢母生怪、跳過道中、5 項 playtest 修正. 466 EditMode GREEN. EXE 116.8MB+APK 47MB 最新. 全 push + Obsidian.)*
 
 ## ✅ SESSION 9 已辦 / ⬜ 待辦（收尾整合快照）
