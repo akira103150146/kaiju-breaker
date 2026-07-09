@@ -1,6 +1,25 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-09 (SESSION 11 — 導演連續回報頭目/難度/FPS 修正大輪，全部修完+push origin main 1ba7d4f. 469 EditMode GREEN. EXE 116.8MB+APK 44MB 最新. gh CLI 裝好+登入.)*
+*Last updated: 2026-07-09 (SESSION 12 — LACERA 斷腳可拖子物件 + PartGate 跨部位閘門全線落地(引擎+3頭目資料+判定框開關+PRISMSHELL晶面軟化停火). 480 EditMode GREEN. 6 commit 已 push origin main 0e774a1.)*
+
+## ✅ SESSION 12 (2026-07-09) — LACERA 斷腳可拖 + PartGate 跨部位閘門(6c)全線
+
+**⚠️ 環境注意**：Unity 綁的是**主 checkout `C:\Game\kaiju-breaker`（branch main）**，不是 job 的 worktree。所有 Unity 相關改動用 MCP 落主 checkout、在 main 提交/push（延續 session 8–11 慣例）。worktree 分支 `worktree-fix-new-boss-parts` 未同步這些 commit。
+
+**✅ 已辦（6 commit 全 push origin main，最新 `0e774a1`；480 EditMode GREEN）：**
+1. ✅ **LACERA 斷腳殘根改「每腿可拖子物件」**（`90e53be`）：舊做法斷腳原地換 `_brokenSprite` 沿用原腿 scale/pivot → 粗細/位置錯。新增 `BossPart._brokenStub`（子物件），斷腳時啟用子物件+關原腿圖與碰撞；`Configure()` 新戰鬥重置。四腿 `fL/fR/hL/hR` 各建 `stub` 子物件並接線；**導演已手調位置/粗細/旋轉並存檔**（完整腿本身也是可拖 GameObject）。
+2. ✅ **PartGate 跨部位閘門執行引擎**（`8d379e9`，+10 測試）：`PartStateSystem` 接 gate。HittableWhen=閘門關時對所有攻擊無效；BreakableWhen=只擋破壞值(飛彈+連鎖)、雷射熱仍可軟化。即時判定(瞬態動態開關)、RequireAll 全/任一、壞 id 視為 ungated 不 soft-lock。public `IsPartCurrentlyHittable`。
+3. ✅ **3 頭目 gate 資料**（`0d012c5`，+1 測試 → 480）：潮顎 heart_core=HittableWhen/dorsal_plate 破(GDD06§4.3)；燼使 wing_vent_l2/r2=BreakableWhen/翼根破(GDD07§4.2)；稜殼 weak_node=HittableWhen/任一 facet_a·b **軟化或剝甲**(GDD05§4.1)。新增 enum `PartGateCond.GatePartSoftenedOrStripped`。
+4. ✅ **HittableWhen 場景判定框+sprite 開關**（`3ab168a`+`9c07d89`）：`BossPart.SetHittable` 依閘門每幀開關 collider+renderer，閘門關時部位不可命中且隱藏(子彈穿過)；破壞後 no-op。`BossController.SyncPartVisuals` 驅動。
+5. ✅ **稜殼晶面軟化停火**（`0e774a1`）：4 片 facet 的 emitter FireGate 設 SilenceWhenSoftened(GDD05§5，軟化→折射暫停→給狙擊窗口)。
+
+**⬜ 待辦（下一步，導演定方向）：**
+- **新 5 核心經濟 sink**（session 9 定案=機體/utility 養成軸，與武器殺傷力分開）：**需先決定「5 核心各升什麼 utility + 成本」才能實作**。現有 `UtilityUpgrades`(開火速度/掉落率)吃 shard；要把 5 新核心接成升級貨幣。
+- **PartGate 純視覺 polish**：不可命中↔可命中的暗淡/亮白脈動提示；稜殼晶面「剝甲也停火」(需擴 FireGate enum)。
+- 可選：進 Play 實測 3 頭目閘門 + LACERA 斷腳外觀。
+- 沿用舊待辦：5 頭目 bespoke 美術、音樂/音效、UI 改 UGUI+TMP、手機實測難度/FPS 微調。
+
+---
 
 ## ✅ SESSION 11 (2026-07-09) — 頭目/難度/公平性/FPS 連續修正 + 原頭目視覺重塑
 
