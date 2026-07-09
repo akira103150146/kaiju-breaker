@@ -121,7 +121,7 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 3
-      _pivotOffset: {x: 0, y: 3.3}
+      _pivotOffset: {x: 0, y: 4.0}
       _radiusWorld: 0
       _angularSpeedDeg: 60
       _arcHalfDeg: 12
@@ -151,10 +151,10 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 3
-      _pivotOffset: {x: 0, y: 3.3}
+      _pivotOffset: {x: 0, y: 2.9}
       _radiusWorld: 0
       _angularSpeedDeg: 60
-      _arcHalfDeg: 12
+      _arcHalfDeg: 16
       _phaseDeg: 180
     _armorRegen:
       _enabled: 0
