@@ -216,11 +216,18 @@ namespace KaijuBreaker.App.Gameplay
         /// while the gate is closed the part is un-hittable and shots pass through it. No-op once the part is
         /// broken/severed (its collider is already off and must stay off).
         /// </summary>
+        /// <summary>
+        /// Enable/disable the hitbox AND sprite for a cross-part HittableWhen gate (per-part-firing-schema.md §4):
+        /// while the gate is closed the part is un-hittable and hidden, so shots pass through where the part isn't
+        /// yet exposed (TIDEMAW core behind the dorsal, PRISMSHELL weak_node in the seam). No-op once the part is
+        /// broken/severed (its collider is already off and must stay off).
+        /// </summary>
         public void SetHittable(bool hittable)
         {
             if (_broken) return;
             var col = GetComponent<Collider2D>();
             if (col != null && col.enabled != hittable) col.enabled = hittable;
+            if (_sr != null && _sr.enabled != hittable) _sr.enabled = hittable;
         }
 
 
