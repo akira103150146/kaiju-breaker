@@ -30,6 +30,12 @@ namespace KaijuBreaker.App
         [Tooltip("Half-height of the play field to guarantee visible (world units). Enemies spawn y=6, player to y=-6.")]
         [SerializeField] private float _fieldHalfHeight = 7.0f;
 
+        [Header("Frame rate")]
+        [Tooltip("Upper cap for the mobile frame rate. On mobile Unity defaults to 30 FPS unless targetFrameRate " +
+                 "is set; we unlock it to the device's display refresh (60Hz→60, 120Hz→120) clamped to [60, this]. " +
+                 "Desktop is left on its quality-level vSync and is not touched.")]
+        [SerializeField] private int _maxFrameRate = 120;
+
         private GameComposition _composition;
         private UnityTimeScaleControl _timeScale;
         private Vector3 _cameraBasePosition;
@@ -45,6 +51,16 @@ namespace KaijuBreaker.App
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
+
+            // Unlock the mobile frame rate. On mobile Unity caps to 30 FPS unless Application.targetFrameRate is
+            // set (QualitySettings vSync is ignored there), which is why the APK felt locked at 30. Match the
+            // device's display refresh — a 60Hz phone runs 60, a 120Hz phone 120 — clamped to [60, _maxFrameRate].
+            // Desktop is deliberately untouched (its quality-level vSync governs the frame rate).
+            if (Application.isMobilePlatform)
+            {
+                int hz = (int)System.Math.Round(Screen.currentResolution.refreshRateRatio.value);
+                Application.targetFrameRate = Mathf.Clamp(hz > 0 ? hz : 60, 60, Mathf.Max(60, _maxFrameRate));
+            }
 
             if (_content == null)
             {
