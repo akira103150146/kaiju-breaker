@@ -29,8 +29,9 @@ namespace KaijuBreaker.App.Gameplay
 
         [Tooltip("Untuned placeholder parts (left at Unity's default 1×1 box collider) are scaled up by this so " +
                  "the block reads clearly and the hittable area is generous. Hand-authored parts, whose collider " +
-                 "carries a real art-matched size (never exactly 1×1), are left untouched.")]
-        [SerializeField] private float _placeholderPartScaleMult = 1.4f;
+                 "carries a real art-matched size (never exactly 1×1), are left untouched. ~2.2 makes a placeholder " +
+                 "part read at roughly 3 world units — comparable to the real-art bosses, not a tiny dot.")]
+        [SerializeField] private float _placeholderPartScaleMult = 2.2f;
 
         private int _partId = -1;
         private int _kaijuId;
@@ -89,7 +90,7 @@ namespace KaijuBreaker.App.Gameplay
                 // collider and sprite together, keeping them matched, and runs once (Awake). Authored parts, whose
                 // collider size ≠ 1×1, are untouched.
                 // 0 = field absent on an old serialized instance → fall back to the default rather than skip.
-                float mult = _placeholderPartScaleMult > 0f ? _placeholderPartScaleMult : 1.4f;
+                float mult = _placeholderPartScaleMult > 0f ? _placeholderPartScaleMult : 2.2f;
                 if (col is BoxCollider2D box &&
                     Mathf.Approximately(box.size.x, 1f) && Mathf.Approximately(box.size.y, 1f) &&
                     mult > 1f)

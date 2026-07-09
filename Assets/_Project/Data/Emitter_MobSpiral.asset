@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Emitter_MobSpiral
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EmitterPatternSO
   _patternType: 4
-  _bulletCountBase: 4
+  _bulletCountBase: 2
   _fireIntervalSeconds: 1.8
   _bulletSpeedPxPerSec: 100
   _spreadAngleDeg: 0

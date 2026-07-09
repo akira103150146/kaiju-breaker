@@ -121,9 +121,11 @@ namespace KaijuBreaker.Content
             }
             if (_bulletDensityMult != null && _bulletDensityMult.Length == 4)
             {
-                WarnRange("BulletDensityMult[D2]", _bulletDensityMult[1], 1.10f, 1.50f);
-                WarnRange("BulletDensityMult[D3]", _bulletDensityMult[2], 1.25f, 1.75f);
-                WarnRange("BulletDensityMult[D4]", _bulletDensityMult[3], 1.75f, 2.50f);
+                // Bands widened for the count-first difficulty model: emitter base counts are now the D1 (sparse,
+                // ~1-bullet) baseline and density scales UP steeply per tier (design: 難度只改單發子彈數量).
+                WarnRange("BulletDensityMult[D2]", _bulletDensityMult[1], 1.50f, 2.50f);
+                WarnRange("BulletDensityMult[D3]", _bulletDensityMult[2], 2.00f, 3.50f);
+                WarnRange("BulletDensityMult[D4]", _bulletDensityMult[3], 2.50f, 5.00f);
             }
 
             if (_defaultDifficultyOnFirstLaunch != DifficultyTier.D1)

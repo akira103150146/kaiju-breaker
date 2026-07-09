@@ -19,9 +19,9 @@ MonoBehaviour:
   - 1.6
   _bulletDensityMult:
   - 1
-  - 1.25
-  - 1.5
-  - 1.8
+  - 2
+  - 3
+  - 4
   _defaultDifficultyOnFirstLaunch: 0
   _rememberLastDifficulty: 1
   _midRunDifficultyChangeAllowed: 0

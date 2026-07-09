@@ -18,6 +18,16 @@ namespace KaijuBreaker.Meta
             { MaterialId.CoreCarapace, "core_carapace" },
             { MaterialId.CoreLimb, "core_limb" },
             { MaterialId.CoreEnergy, "core_energy" },
+            // The 5 new-kaiju theme cores (session-9 roster expansion). MUST be here: a break on a new boss
+            // credits one of these via Economy → MetaSaveService.CreditMaterials → ToKey; a missing entry threw
+            // KeyNotFoundException mid-PartBroke dispatch, and because the bus is fail-loud the later-subscribed
+            // BossController.OnPartBroke (which hides + silences the part) never ran — so new-boss parts broke but
+            // never disappeared. (Same half-done enum-expansion trap as EconomyConfig.GetCoreForTheme.)
+            { MaterialId.CoreSwarm, "core_swarm" },
+            { MaterialId.CoreCrystal, "core_crystal" },
+            { MaterialId.CoreAbyss, "core_abyss" },
+            { MaterialId.CoreEmber, "core_ember" },
+            { MaterialId.CoreVoid, "core_void" },
             { MaterialId.EssenceKaiju, "essence_kaiju" },
         };
 

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Emitter_TriFan
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EmitterPatternSO
   _patternType: 2
-  _bulletCountBase: 3
+  _bulletCountBase: 1
   _fireIntervalSeconds: 2.5
   _bulletSpeedPxPerSec: 130
   _spreadAngleDeg: 30

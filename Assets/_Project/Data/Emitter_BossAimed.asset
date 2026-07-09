@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Emitter_BossAimed
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EmitterPatternSO
   _patternType: 2
-  _bulletCountBase: 3
+  _bulletCountBase: 1
   _fireIntervalSeconds: 2.2
   _bulletSpeedPxPerSec: 135
   _spreadAngleDeg: 26
