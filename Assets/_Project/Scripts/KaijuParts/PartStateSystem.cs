@@ -44,6 +44,12 @@ namespace KaijuBreaker.KaijuParts
         private readonly Dictionary<int, KaijuBreaker.Content.ArmorRegen> _armorRegen = new Dictionary<int, KaijuBreaker.Content.ArmorRegen>(16);
         private readonly Dictionary<int, float> _timeSinceBreakHit = new Dictionary<int, float>(16);
 
+        // Cross-part gate (per-part-firing-schema.md §4): another part's state gates this part's
+        // hittability (HittableWhen) or breakability (BreakableWhen). Resolved at InitializeParts;
+        // only gated parts are stored, so ungated kaiju are unaffected.
+        private struct GateRuntime { public PartGateKind Kind; public PartGateCond Cond; public int[] GateParts; public bool RequireAll; }
+        private readonly Dictionary<int, GateRuntime> _gates = new Dictionary<int, GateRuntime>(8);
+
         private readonly Action<LaserHit> _onLaserHit;
         private readonly Action<WaveHit> _onWaveHit;
         private readonly Action<MissileHit> _onMissileHit;
@@ -98,6 +104,7 @@ namespace KaijuBreaker.KaijuParts
             _pendingHeatDeltas.Clear();
             _armorRegen.Clear();
             _timeSinceBreakHit.Clear();
+            _gates.Clear();
 
             var parts = def.Parts;
             for (int i = 0; i < parts.Length; i++)
@@ -125,6 +132,7 @@ namespace KaijuBreaker.KaijuParts
             }
 
             BuildAdjacencyGraph();
+            BuildGates(def);
         }
 
         /// <summary>
@@ -209,12 +217,83 @@ namespace KaijuBreaker.KaijuParts
             }
         }
 
+        // ── Cross-part gate (per-part-firing-schema.md §4) ───────────────────────
+
+        /// <summary>
+        /// Resolve each gated part's authored gate-part names to runtime ids (after the id map is built).
+        /// A gate whose source parts don't resolve is dropped (treated as ungated) rather than left permanently
+        /// closed, so a bad id can't soft-lock a boss. Only gated parts are stored — ungated kaiju pay nothing.
+        /// </summary>
+        private void BuildGates(KaijuDef def)
+        {
+            var parts = def.Parts;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                PartDef pd = parts[i];
+                if (pd == null || pd.GateKind == PartGateKind.None) continue;
+                if (!_partIdByName.TryGetValue(pd.PartId, out int selfId)) continue;
+
+                var srcNames = pd.GatePartIds;
+                var resolved = new List<int>(srcNames.Length);
+                for (int j = 0; j < srcNames.Length; j++)
+                    if (_partIdByName.TryGetValue(srcNames[j], out int gid) && gid != selfId && !resolved.Contains(gid))
+                        resolved.Add(gid);
+                if (resolved.Count == 0) continue; // no resolvable gate part → ungated (never soft-lock)
+
+                _gates[selfId] = new GateRuntime
+                {
+                    Kind = pd.GateKind,
+                    Cond = pd.GateCond,
+                    GateParts = resolved.ToArray(),
+                    RequireAll = pd.RequireAllGates
+                };
+            }
+        }
+
+        /// <summary>
+        /// True when a part's cross-part gate condition is currently satisfied (or it has no gate). Evaluated
+        /// live per hit, so gates keyed on transient states (softened / armor-stripped) open and close dynamically.
+        /// </summary>
+        private bool IsGateOpen(int partId)
+        {
+            if (!_gates.TryGetValue(partId, out var g)) return true; // ungated
+            bool all = true, any = false;
+            for (int i = 0; i < g.GateParts.Length; i++)
+            {
+                if (!_parts.TryGetValue(g.GateParts[i], out var gp)) { all = false; continue; }
+                bool sat = g.Cond switch
+                {
+                    PartGateCond.GatePartBroken => gp.BreakState == BreakState.Broken,
+                    PartGateCond.GatePartArmorStripped => gp.ArmorState == ArmorState.Stripped,
+                    PartGateCond.GatePartSoftened => gp.HeatState == HeatState.Softened,
+                    _ => false
+                };
+                if (sat) any = true; else all = false;
+            }
+            return g.RequireAll ? all : any;
+        }
+
+        // A closed HittableWhen gate makes the part inert to EVERY hit (laser/wave/missile/chain); a closed
+        // BreakableWhen gate blocks only break-track fill (missile + chain), letting laser heat still soften it.
+        // Both default open (no gate) so existing kaiju are unaffected.
+        private bool IsHitBlocked(int partId)
+            => _gates.TryGetValue(partId, out var g) && g.Kind == PartGateKind.HittableWhen && !IsGateOpen(partId);
+
+        private bool IsBreakBlocked(int partId)
+            => _gates.TryGetValue(partId, out var g)
+               && (g.Kind == PartGateKind.HittableWhen || g.Kind == PartGateKind.BreakableWhen)
+               && !IsGateOpen(partId);
+
+        /// <summary>False while a HittableWhen cross-part gate is closed (the scene may disable the collider). True otherwise.</summary>
+        public bool IsPartCurrentlyHittable(int partId) => !IsHitBlocked(partId);
+
         // ── Heat track (Story 002) ───────────────────────────────────────────────
 
         private void HandleLaserHit(LaserHit evt)
         {
             if (!_parts.TryGetValue(evt.PartId, out var part)) return;
             if (part.BreakState == BreakState.Broken) return;
+            if (IsHitBlocked(evt.PartId)) return; // HittableWhen gate closed — the hitbox is inert
             if (evt.HeatDelta <= 0f) return; // heat delta must be > 0 (GDD D.1)
 
             _pendingHeatDeltas.TryGetValue(evt.PartId, out float acc);
@@ -261,6 +340,7 @@ namespace KaijuBreaker.KaijuParts
         {
             if (!_parts.TryGetValue(evt.PartId, out var part)) return;
             if (part.BreakState == BreakState.Broken) return;
+            if (IsHitBlocked(evt.PartId)) return; // HittableWhen gate closed — no strip/stagger lands
 
             part.StaggerTimer = _balance.StaggerDuration; // reset, never additive
             bool armorStripped = part.PartType == PartType.Armored;
@@ -292,6 +372,7 @@ namespace KaijuBreaker.KaijuParts
         {
             if (!_parts.TryGetValue(evt.PartId, out var part)) return;
             if (part.BreakState == BreakState.Broken) return;
+            if (IsBreakBlocked(evt.PartId)) return; // Hittable/BreakableWhen gate closed — break track is protected
             if (evt.BreakDeltaBase <= 0f) return;
 
             float mult = LookupStateMult(part);
@@ -408,6 +489,7 @@ namespace KaijuBreaker.KaijuParts
 
         private void ApplyChainDamage(BreakablePart target)
         {
+            if (IsBreakBlocked(target.Id)) return; // gated neighbour — chain can't fill its protected break track
             float bChain = _partConfig.M3T3ChainDmgMult * _partConfig.M3ChainDamageBase * LookupStateMult(target);
             if (bChain <= 0f) return; // ARMOR_INTACT neighbour deflects (mult = 0) — no state change
             target.BCurrent = Mathf.Clamp(target.BCurrent + bChain, 0f, target.BMax);
