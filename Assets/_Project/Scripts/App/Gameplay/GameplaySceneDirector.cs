@@ -159,6 +159,9 @@ namespace KaijuBreaker.App.Gameplay
             var content = _bootstrap.Content;
             _playerWeapon?.ResetArsenal(_selPrimary, _selSecondary); // in-run firepower starts at level 1
             _playerWeapon?.SetFireIntervalMult(_utility != null ? _utility.FireIntervalMult : 1f); // meta faster-fire
+            _player?.SetUtilityMultipliers(
+                _utility != null ? _utility.MoveSpeedMult : 1f,
+                _utility != null ? _utility.IFrameMult : 1f); // Ember move-speed / Abyss i-frames
 
             // Shared enemy-bullet pool + the drop callback (enemies roll in-run power-ups on death).
             _bulletPool = null;
@@ -429,21 +432,40 @@ namespace KaijuBreaker.App.Gameplay
         }
 
         // Meta utility upgrade shop (spend shards on faster fire / higher drop rate — killing power is in-run).
+        // Meta utility upgrade shop. Shards buy faster fire / higher drop rate; the five theme cores buy the
+        // mecha/utility tracks. Killing power stays in-run. (IMGUI placeholder — UGUI per ADR-0006 later.)
         private void DrawUpgrades(float w, float h)
         {
-            var panel = new Rect(w * 0.5f - 210f, h * 0.5f - 160f, 420f, 320f);
+            var panel = new Rect(w * 0.5f - 220f, h * 0.5f - 245f, 440f, 490f);
             GUI.Box(panel, GUIContent.none, GameUiSkin.PanelStyle);
-            GUI.Label(new Rect(panel.x, panel.y + 16f, panel.width, 32f), "強化 · UPGRADE", GameUiSkin.HeadingStyle);
-            GUI.Label(new Rect(panel.x, panel.y + 52f, panel.width, 18f), "碎片 Shards：" + (_utility != null ? _utility.Shards : 0), GameUiSkin.SmallStyle);
+            GUI.Label(new Rect(panel.x, panel.y + 14f, panel.width, 30f), "強化 · UPGRADE", GameUiSkin.HeadingStyle);
 
             if (_utility != null)
             {
-                UpgradeRow(panel, 86f, "開火速度  FIRE RATE", _utility.FireRateLevel, _utility.CostFor(_utility.FireRateLevel), _utility.BuyFireRate);
-                UpgradeRow(panel, 158f, "掉落率  DROP RATE", _utility.DropRateLevel, _utility.CostFor(_utility.DropRateLevel), _utility.BuyDropRate);
+                GUI.Label(new Rect(panel.x + 22f, panel.y + 48f, panel.width - 44f, 16f), "碎片 Shards：" + _utility.Shards, GameUiSkin.SmallStyle);
+                UpgradeRow(panel, 70f, "開火速度  FIRE RATE", _utility.FireRateLevel, _utility.CostFor(_utility.FireRateLevel), _utility.BuyFireRate);
+                UpgradeRow(panel, 124f, "掉落率  DROP RATE", _utility.DropRateLevel, _utility.CostFor(_utility.DropRateLevel), _utility.BuyDropRate);
+
+                GUI.Label(new Rect(panel.x + 22f, panel.y + 182f, panel.width - 44f, 16f), "頭目核心 · CORES", GameUiSkin.SmallStyle);
+                CoreRow(panel, 202f, "副武彈藥  AMMO", _utility.AmmoLevel, _utility.CoreCostFor(_utility.AmmoLevel), _utility.CoreBalance(MaterialId.CoreSwarm), _utility.BuyAmmo);
+                CoreRow(panel, 250f, "吸取範圍  MAGNET", _utility.MagnetLevel, _utility.CoreCostFor(_utility.MagnetLevel), _utility.CoreBalance(MaterialId.CoreCrystal), _utility.BuyMagnet);
+                CoreRow(panel, 298f, "無敵時間  I-FRAME", _utility.IFrameLevel, _utility.CoreCostFor(_utility.IFrameLevel), _utility.CoreBalance(MaterialId.CoreAbyss), _utility.BuyIFrame);
+                CoreRow(panel, 346f, "移動速度  SPEED", _utility.SpeedLevel, _utility.CoreCostFor(_utility.SpeedLevel), _utility.CoreBalance(MaterialId.CoreEmber), _utility.BuySpeed);
+                CoreRow(panel, 394f, "開場火力  HEAD-START", _utility.HeadStartLevel, _utility.CoreCostFor(_utility.HeadStartLevel), _utility.CoreBalance(MaterialId.CoreVoid), _utility.BuyHeadStart);
             }
 
-            var back = new Rect(panel.x + panel.width * 0.5f - 90f, panel.y + 262f, 180f, 42f);
+            var back = new Rect(panel.x + panel.width * 0.5f - 90f, panel.yMax - 42f, 180f, 34f);
             if (GUI.Button(back, "返回 BACK", GameUiSkin.ButtonStyle)) { _showUpgrades = false; _showBossSelect = true; }
+        }
+
+        // One core-funded utility row: title, level/owned-core readout, and a buy button showing the core cost.
+        private void CoreRow(Rect panel, float y, string title, int level, int cost, int have, System.Func<bool> buy)
+        {
+            GUI.Label(new Rect(panel.x + 22f, panel.y + y, 230f, 18f), title, GameUiSkin.LabelStyle);
+            GUI.Label(new Rect(panel.x + 22f, panel.y + y + 19f, 250f, 14f), "Lv " + level + "/" + UtilityUpgrades.MaxCoreLevel + "   核心 " + have, GameUiSkin.SmallStyle);
+            var btn = new Rect(panel.xMax - 148f, panel.y + y + 2f, 128f, 34f);
+            if (level >= UtilityUpgrades.MaxCoreLevel) GUI.Label(btn, "MAX", GameUiSkin.SmallStyle);
+            else if (GUI.Button(btn, "升級 (" + cost + ")", GameUiSkin.ButtonStyle)) buy();
         }
 
         private void UpgradeRow(Rect panel, float y, string title, int level, int cost, System.Func<bool> buy)

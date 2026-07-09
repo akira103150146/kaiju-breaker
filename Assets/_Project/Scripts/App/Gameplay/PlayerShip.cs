@@ -28,6 +28,9 @@ namespace KaijuBreaker.App.Gameplay
         private IPlayerInput _input;
         private int _hp;
         private float _invulnRemaining;
+        // Meta utility multipliers (Ember move-speed / Abyss i-frame tracks). 1.0 = no upgrade.
+        private float _moveSpeedMult = 1f;
+        private float _invulnMult = 1f;
         private bool _bossPhase;
         private Color _baseColor = Color.white;
 
@@ -78,6 +81,17 @@ namespace KaijuBreaker.App.Gameplay
         /// <summary>Switch the upper-Y clamp between the stage band and the boss band.</summary>
         public void SetBossPhase(bool boss) => _bossPhase = boss;
 
+        /// <summary>
+        /// Apply the meta utility multipliers for this run (Ember move-speed / Abyss i-frame tracks).
+        /// 1.0 leaves the config value unchanged. Clamped to a sane floor so a bad value can't freeze the ship.
+        /// </summary>
+        public void SetUtilityMultipliers(float moveSpeedMult, float invulnMult)
+        {
+            _moveSpeedMult = Mathf.Max(0.1f, moveSpeedMult);
+            _invulnMult = Mathf.Max(0.1f, invulnMult);
+        }
+
+
         private void Update()
         {
             if (_config == null) return;
@@ -101,7 +115,7 @@ namespace KaijuBreaker.App.Gameplay
             {
                 Vector2 axis = _input.MoveAxis;
                 if (axis.sqrMagnitude > 1f) axis = axis.normalized;
-                pos += (Vector3)axis * (_config.MoveSpeed * dt);
+                pos += (Vector3)axis * (_config.MoveSpeed * _moveSpeedMult * dt);
             }
 
             float maxY = _bossPhase ? _config.BossMaxY : _config.StageMaxY;
@@ -129,7 +143,7 @@ namespace KaijuBreaker.App.Gameplay
         {
             if (!IsAlive || _invulnRemaining > 0f || amount <= 0f) return;
             _hp = Mathf.Max(0, _hp - Mathf.CeilToInt(amount));
-            _invulnRemaining = _config.InvulnSeconds;
+            _invulnRemaining = _config.InvulnSeconds * _invulnMult;
             HpChanged?.Invoke(_hp, MaxHp);
             if (_hp <= 0) Died?.Invoke();
         }
