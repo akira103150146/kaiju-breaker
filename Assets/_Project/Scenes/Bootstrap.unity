@@ -171,6 +171,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &10704631
 Rigidbody2D:
   serializedVersion: 5
@@ -393,6 +394,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &208794090
 Rigidbody2D:
   serializedVersion: 5
@@ -577,6 +579,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &241531506
 Rigidbody2D:
   serializedVersion: 5
@@ -761,6 +764,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &313588961
 Rigidbody2D:
   serializedVersion: 5
@@ -945,6 +949,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &318876874
 Rigidbody2D:
   serializedVersion: 5
@@ -1221,6 +1226,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &421031255
 Rigidbody2D:
   serializedVersion: 5
@@ -1405,6 +1411,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &444303465
 Rigidbody2D:
   serializedVersion: 5
@@ -1628,6 +1635,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &491082180
 Rigidbody2D:
   serializedVersion: 5
@@ -1812,6 +1820,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &516828314
 Rigidbody2D:
   serializedVersion: 5
@@ -1944,6 +1953,97 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &637983254
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 637983255}
+  - component: {fileID: 637983256}
+  m_Layer: 0
+  m_Name: body_base
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &637983255
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637983254}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 3, z: 0.1}
+  m_LocalScale: {x: 0.72, y: 0.72, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1732297403}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &637983256
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637983254}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: -1
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 21300000, guid: 62a0b8f5d9dd26d4982675c38df3a8d1, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 5.12, y: 2.7}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
 --- !u!1 &647181044
 GameObject:
   m_ObjectHideFlags: 0
@@ -1996,6 +2096,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &647181047
 Rigidbody2D:
   serializedVersion: 5
@@ -2180,6 +2281,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &719316023
 Rigidbody2D:
   serializedVersion: 5
@@ -2529,6 +2631,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &913591120
 Rigidbody2D:
   serializedVersion: 5
@@ -2713,6 +2816,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &927696721
 Rigidbody2D:
   serializedVersion: 5
@@ -2897,6 +3001,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &942704494
 Rigidbody2D:
   serializedVersion: 5
@@ -3081,6 +3186,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &954978529
 Rigidbody2D:
   serializedVersion: 5
@@ -3265,6 +3371,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 21300000, guid: 1bbf589cfaf2a2f44be0a70a985ae8a5, type: 3}
   _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &963731610
 Rigidbody2D:
   serializedVersion: 5
@@ -3449,6 +3556,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &975574234
 Rigidbody2D:
   serializedVersion: 5
@@ -3633,6 +3741,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &995986214
 Rigidbody2D:
   serializedVersion: 5
@@ -3817,6 +3926,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1083099355
 Rigidbody2D:
   serializedVersion: 5
@@ -4001,6 +4111,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1084850906
 Rigidbody2D:
   serializedVersion: 5
@@ -4222,6 +4333,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1120576526
 Rigidbody2D:
   serializedVersion: 5
@@ -4413,6 +4525,7 @@ MonoBehaviour:
   _minionDef: {fileID: 11400000, guid: ca132bef9be6a5943ab69c8484e597c1, type: 2}
   _minionSpawnInterval: 4
   _minionGlobalCap: 8
+  _bossDensityReferenceEmitters: 4
 --- !u!4 &1175540648
 Transform:
   m_ObjectHideFlags: 0
@@ -4516,6 +4629,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1212191099
 Rigidbody2D:
   serializedVersion: 5
@@ -4700,6 +4814,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: b164e9e6418f1494794d63be482898e9, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1233042744
 Rigidbody2D:
   serializedVersion: 5
@@ -4884,6 +4999,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1270427461
 Rigidbody2D:
   serializedVersion: 5
@@ -5068,6 +5184,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1294884978
 Rigidbody2D:
   serializedVersion: 5
@@ -5252,6 +5369,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1319344666
 Rigidbody2D:
   serializedVersion: 5
@@ -5436,6 +5554,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1391591158
 Rigidbody2D:
   serializedVersion: 5
@@ -5620,6 +5739,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1408319869
 Rigidbody2D:
   serializedVersion: 5
@@ -5804,6 +5924,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1427208200
 Rigidbody2D:
   serializedVersion: 5
@@ -5988,6 +6109,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1434940192
 Rigidbody2D:
   serializedVersion: 5
@@ -6172,6 +6294,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1458324985
 Rigidbody2D:
   serializedVersion: 5
@@ -6356,6 +6479,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 21300000, guid: 1bbf589cfaf2a2f44be0a70a985ae8a5, type: 3}
   _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1464108152
 Rigidbody2D:
   serializedVersion: 5
@@ -6540,6 +6664,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1472202272
 Rigidbody2D:
   serializedVersion: 5
@@ -6724,6 +6849,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 9d5fa090fb735964a85d5d4fda39f54d, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1476778248
 Rigidbody2D:
   serializedVersion: 5
@@ -6908,6 +7034,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1528985564
 Rigidbody2D:
   serializedVersion: 5
@@ -7092,6 +7219,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1580764997
 Rigidbody2D:
   serializedVersion: 5
@@ -7276,6 +7404,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1635066836
 Rigidbody2D:
   serializedVersion: 5
@@ -7594,6 +7723,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1677275562
 Rigidbody2D:
   serializedVersion: 5
@@ -7778,6 +7908,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1721702181
 Rigidbody2D:
   serializedVersion: 5
@@ -7944,6 +8075,7 @@ Transform:
   - {fileID: 1472202270}
   - {fileID: 647181045}
   - {fileID: 1434940190}
+  - {fileID: 637983255}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1743787108
@@ -7998,6 +8130,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1743787111
 Rigidbody2D:
   serializedVersion: 5
@@ -8182,6 +8315,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1744663305
 Rigidbody2D:
   serializedVersion: 5
@@ -8366,6 +8500,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1752093747
 Rigidbody2D:
   serializedVersion: 5
@@ -8550,6 +8685,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 21300000, guid: cb065300eb7a23b4a87becdbdb36e5d7, type: 3}
   _hitWhiteSprite: {fileID: 21300000, guid: aabd6318a625ca64cbc4881994d28d5f, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1761857046
 Rigidbody2D:
   serializedVersion: 5
@@ -8734,6 +8870,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1766064373
 Rigidbody2D:
   serializedVersion: 5
@@ -8918,6 +9055,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 2181fafe0542d6645bd6763f08ce45af, type: 3}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1811110444
 Rigidbody2D:
   serializedVersion: 5
@@ -9102,6 +9240,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &1826801179
 Rigidbody2D:
   serializedVersion: 5
@@ -9268,6 +9407,7 @@ MonoBehaviour:
   _fitCameraToField: 1
   _fieldHalfWidth: 4.5
   _fieldHalfHeight: 7
+  _maxFrameRate: 120
 --- !u!4 &1889951835
 Transform:
   m_ObjectHideFlags: 0
@@ -9335,6 +9475,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &2040632321
 Rigidbody2D:
   serializedVersion: 5
@@ -9573,6 +9714,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _placeholderWorldSize: 2
 --- !u!50 &2126401154
 Rigidbody2D:
   serializedVersion: 5
