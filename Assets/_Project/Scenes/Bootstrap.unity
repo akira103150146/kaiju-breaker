@@ -172,6 +172,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &10704631
 Rigidbody2D:
   serializedVersion: 5
@@ -395,6 +396,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &208794090
 Rigidbody2D:
   serializedVersion: 5
@@ -580,6 +582,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &241531506
 Rigidbody2D:
   serializedVersion: 5
@@ -765,6 +768,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &313588961
 Rigidbody2D:
   serializedVersion: 5
@@ -950,6 +954,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &318876874
 Rigidbody2D:
   serializedVersion: 5
@@ -1227,6 +1232,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &421031255
 Rigidbody2D:
   serializedVersion: 5
@@ -1412,6 +1418,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &444303465
 Rigidbody2D:
   serializedVersion: 5
@@ -1636,6 +1643,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &491082180
 Rigidbody2D:
   serializedVersion: 5
@@ -1821,6 +1829,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &516828314
 Rigidbody2D:
   serializedVersion: 5
@@ -2097,6 +2106,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
 --- !u!50 &647181047
 Rigidbody2D:
   serializedVersion: 5
@@ -2282,6 +2292,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &719316023
 Rigidbody2D:
   serializedVersion: 5
@@ -2632,6 +2643,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
 --- !u!50 &913591120
 Rigidbody2D:
   serializedVersion: 5
@@ -2817,6 +2829,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &927696721
 Rigidbody2D:
   serializedVersion: 5
@@ -2977,7 +2990,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 942704491}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 2.3, z: 0}
   m_LocalScale: {x: 0.4316547, y: 0.4316547, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3002,6 +3015,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &942704494
 Rigidbody2D:
   serializedVersion: 5
@@ -3187,6 +3201,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &954978529
 Rigidbody2D:
   serializedVersion: 5
@@ -3372,6 +3387,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &963731610
 Rigidbody2D:
   serializedVersion: 5
@@ -3557,6 +3573,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &975574234
 Rigidbody2D:
   serializedVersion: 5
@@ -3742,6 +3759,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &995986214
 Rigidbody2D:
   serializedVersion: 5
@@ -3927,6 +3945,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1083099355
 Rigidbody2D:
   serializedVersion: 5
@@ -4087,7 +4106,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1084850903}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 4.4, z: 0}
   m_LocalScale: {x: 0.4316547, y: 0.4316547, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4112,6 +4131,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1084850906
 Rigidbody2D:
   serializedVersion: 5
@@ -4334,6 +4354,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1120576526
 Rigidbody2D:
   serializedVersion: 5
@@ -4630,6 +4651,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1212191099
 Rigidbody2D:
   serializedVersion: 5
@@ -4815,6 +4837,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: b164e9e6418f1494794d63be482898e9, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1233042744
 Rigidbody2D:
   serializedVersion: 5
@@ -5000,6 +5023,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1270427461
 Rigidbody2D:
   serializedVersion: 5
@@ -5185,6 +5209,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1294884978
 Rigidbody2D:
   serializedVersion: 5
@@ -5370,6 +5395,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1319344666
 Rigidbody2D:
   serializedVersion: 5
@@ -5555,6 +5581,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1391591158
 Rigidbody2D:
   serializedVersion: 5
@@ -5740,6 +5767,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1408319869
 Rigidbody2D:
   serializedVersion: 5
@@ -5925,6 +5953,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1427208200
 Rigidbody2D:
   serializedVersion: 5
@@ -6110,6 +6139,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
 --- !u!50 &1434940192
 Rigidbody2D:
   serializedVersion: 5
@@ -6295,6 +6325,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1458324985
 Rigidbody2D:
   serializedVersion: 5
@@ -6480,6 +6511,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1464108152
 Rigidbody2D:
   serializedVersion: 5
@@ -6665,6 +6697,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
 --- !u!50 &1472202272
 Rigidbody2D:
   serializedVersion: 5
@@ -6826,7 +6859,7 @@ Transform:
   m_GameObject: {fileID: 1476778245}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.3, z: 0}
+  m_LocalPosition: {x: 0, y: 3.9, z: 0}
   m_LocalScale: {x: 0.3515625, y: 0.3515625, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6850,6 +6883,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 9d5fa090fb735964a85d5d4fda39f54d, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1476778248
 Rigidbody2D:
   serializedVersion: 5
@@ -7035,6 +7069,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1528985564
 Rigidbody2D:
   serializedVersion: 5
@@ -7220,6 +7255,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1580764997
 Rigidbody2D:
   serializedVersion: 5
@@ -7405,6 +7441,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1635066836
 Rigidbody2D:
   serializedVersion: 5
@@ -7724,6 +7761,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1677275562
 Rigidbody2D:
   serializedVersion: 5
@@ -7909,6 +7947,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1721702181
 Rigidbody2D:
   serializedVersion: 5
@@ -8131,6 +8170,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1743787111
 Rigidbody2D:
   serializedVersion: 5
@@ -8316,6 +8356,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1744663305
 Rigidbody2D:
   serializedVersion: 5
@@ -8501,6 +8542,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1752093747
 Rigidbody2D:
   serializedVersion: 5
@@ -8686,6 +8728,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: aabd6318a625ca64cbc4881994d28d5f, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1761857046
 Rigidbody2D:
   serializedVersion: 5
@@ -8871,6 +8914,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1766064373
 Rigidbody2D:
   serializedVersion: 5
@@ -9056,6 +9100,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 21300000, guid: 2181fafe0542d6645bd6763f08ce45af, type: 3}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1811110444
 Rigidbody2D:
   serializedVersion: 5
@@ -9241,6 +9286,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &1826801179
 Rigidbody2D:
   serializedVersion: 5
@@ -9476,6 +9522,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &2040632321
 Rigidbody2D:
   serializedVersion: 5
@@ -9715,6 +9762,7 @@ MonoBehaviour:
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
   _placeholderWorldSize: 2
+  _brokenSprite: {fileID: 0}
 --- !u!50 &2126401154
 Rigidbody2D:
   serializedVersion: 5
