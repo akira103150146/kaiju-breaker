@@ -337,8 +337,14 @@ namespace KaijuBreaker.App.Gameplay
             {
                 var part = kv.Value;
                 if (part == null) continue;
-                part.SetArmorStripped(_comp.Parts.GetArmorState(kv.Key) == ArmorState.Stripped);
-                part.SetSoftened(_comp.Parts.GetHeatState(kv.Key) == HeatState.Softened);
+                // The break-shell (stripped) sprite shows when the shell is compromised — either armor stripped by
+                // the Wave Cannon OR heat-SOFTENED (over-heated). The director's "過熱之後破殼圖" is the soften case,
+                // which previously only tinted warm and never swapped the sprite. Parts with no stripped sprite keep
+                // their intact art (BossPart.RestoreVisual guards it), so non-armored parts are unaffected.
+                bool softened = _comp.Parts.GetHeatState(kv.Key) == HeatState.Softened;
+                bool stripped = _comp.Parts.GetArmorState(kv.Key) == ArmorState.Stripped;
+                part.SetArmorStripped(stripped || softened);
+                part.SetSoftened(softened);
                 if (_comp.Parts.Parts.TryGetValue(kv.Key, out var bp))
                 {
                     float heatFrac = bp.HMax > 0f ? bp.HCurrent / bp.HMax : 0f;

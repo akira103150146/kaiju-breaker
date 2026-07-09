@@ -61,7 +61,7 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: 0, y: 3}
+      _pivotOffset: {x: -0.8, y: 3.7}
       _radiusWorld: 0
       _angularSpeedDeg: 50
       _arcHalfDeg: 35
@@ -91,7 +91,7 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: 0, y: 3}
+      _pivotOffset: {x: 0.8, y: 3.7}
       _radiusWorld: 0
       _angularSpeedDeg: 50
       _arcHalfDeg: 35
@@ -121,7 +121,7 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: 0, y: 3}
+      _pivotOffset: {x: -0.8, y: 2.7}
       _radiusWorld: 0
       _angularSpeedDeg: 38
       _arcHalfDeg: 48
@@ -151,7 +151,7 @@ MonoBehaviour:
       _spawnCap: 0
     _movement:
       _type: 2
-      _pivotOffset: {x: 0, y: 3}
+      _pivotOffset: {x: 0.8, y: 2.7}
       _radiusWorld: 0
       _angularSpeedDeg: 38
       _arcHalfDeg: 48

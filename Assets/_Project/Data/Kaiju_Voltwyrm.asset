@@ -120,7 +120,7 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 4
+      _type: 0
       _pivotOffset: {x: 0, y: 0}
       _radiusWorld: 0
       _angularSpeedDeg: 35
@@ -150,7 +150,7 @@ MonoBehaviour:
       _spawnEnemyId: 
       _spawnCap: 0
     _movement:
-      _type: 4
+      _type: 0
       _pivotOffset: {x: 0, y: 0}
       _radiusWorld: 0
       _angularSpeedDeg: 35
