@@ -1,23 +1,25 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-09 (SESSION 12 — LACERA 斷腳可拖子物件 + PartGate 跨部位閘門全線落地(引擎+3頭目資料+判定框開關+PRISMSHELL晶面軟化停火). 480 EditMode GREEN. 6 commit 已 push origin main 0e774a1.)*
+*Last updated: 2026-07-10 (SESSION 12 — LACERA 斷腳可拖 + PartGate 跨部位閘門(6c)全線 + 新5核心經濟sink + Play實測 + 重建EXE/APK. 486 EditMode GREEN. 全 push origin main. EXE 116.81MB + APK 45MB.)*
 
-## ✅ SESSION 12 (2026-07-09) — LACERA 斷腳可拖 + PartGate 跨部位閘門(6c)全線
+## ✅ SESSION 12 (2026-07-09~10) — LACERA斷腳 + PartGate(6c) + 新5核心sink + Play實測 + 重建
 
-**⚠️ 環境注意**：Unity 綁的是**主 checkout `C:\Game\kaiju-breaker`（branch main）**，不是 job 的 worktree。所有 Unity 相關改動用 MCP 落主 checkout、在 main 提交/push（延續 session 8–11 慣例）。worktree 分支 `worktree-fix-new-boss-parts` 未同步這些 commit。
+**⚠️ 環境**：Unity 綁**主 checkout `C:\Game\kaiju-breaker`(branch main)**，非 job worktree。Unity 改動用 MCP 落主 checkout、在 main 提交/push。**踩雷**：MCP `script_apply_edits` 驗證器會把多個 `=> LevelOf(...)` 唯讀屬性誤判成「重複方法」擋下 → 改用「Write 到 job tmp + Bash cp 覆蓋 + refresh」或 python 插入繞過。
 
-**✅ 已辦（6 commit 全 push origin main，最新 `0e774a1`；480 EditMode GREEN）：**
-1. ✅ **LACERA 斷腳殘根改「每腿可拖子物件」**（`90e53be`）：舊做法斷腳原地換 `_brokenSprite` 沿用原腿 scale/pivot → 粗細/位置錯。新增 `BossPart._brokenStub`（子物件），斷腳時啟用子物件+關原腿圖與碰撞；`Configure()` 新戰鬥重置。四腿 `fL/fR/hL/hR` 各建 `stub` 子物件並接線；**導演已手調位置/粗細/旋轉並存檔**（完整腿本身也是可拖 GameObject）。
-2. ✅ **PartGate 跨部位閘門執行引擎**（`8d379e9`，+10 測試）：`PartStateSystem` 接 gate。HittableWhen=閘門關時對所有攻擊無效；BreakableWhen=只擋破壞值(飛彈+連鎖)、雷射熱仍可軟化。即時判定(瞬態動態開關)、RequireAll 全/任一、壞 id 視為 ungated 不 soft-lock。public `IsPartCurrentlyHittable`。
-3. ✅ **3 頭目 gate 資料**（`0d012c5`，+1 測試 → 480）：潮顎 heart_core=HittableWhen/dorsal_plate 破(GDD06§4.3)；燼使 wing_vent_l2/r2=BreakableWhen/翼根破(GDD07§4.2)；稜殼 weak_node=HittableWhen/任一 facet_a·b **軟化或剝甲**(GDD05§4.1)。新增 enum `PartGateCond.GatePartSoftenedOrStripped`。
-4. ✅ **HittableWhen 場景判定框+sprite 開關**（`3ab168a`+`9c07d89`）：`BossPart.SetHittable` 依閘門每幀開關 collider+renderer，閘門關時部位不可命中且隱藏(子彈穿過)；破壞後 no-op。`BossController.SyncPartVisuals` 驅動。
-5. ✅ **稜殼晶面軟化停火**（`0e774a1`）：4 片 facet 的 emitter FireGate 設 SilenceWhenSoftened(GDD05§5，軟化→折射暫停→給狙擊窗口)。
+**✅ 已辦（全 push origin main；486 EditMode GREEN；EXE 116.81MB + APK 45MB 重建）：**
+1. **LACERA 斷腳可拖子物件**（`90e53be`）：`BossPart._brokenStub`，斷腳啟用子物件+關原腿圖/碰撞；四腿各建 `stub` 子物件，導演手調位置/粗細/旋轉存檔。
+2. **PartGate 執行引擎**（`8d379e9`，+10測試）：`PartStateSystem` HittableWhen（關=全攻擊無效）/BreakableWhen（關=只擋破壞值、雷射熱仍軟化）；即時判定、RequireAll、壞id視ungated不soft-lock；public `IsPartCurrentlyHittable`。
+3. **3頭目 gate 資料**（`0d012c5`，+1測試→480）：潮顎 heart_core=Hittable/dorsal_plate破；燼使 wing_vent_l2/r2=Breakable/翼根破；稜殼 weak_node=Hittable/任一facet軟化或剝甲（新增 enum `PartGateCond.GatePartSoftenedOrStripped`）。
+4. **HittableWhen 場景 collider+sprite 開關**（`3ab168a`+`9c07d89`）：`BossPart.SetHittable` 每幀關collider+renderer（關時隱藏+子彈穿過），破壞後no-op；`BossController.SyncPartVisuals` 驅動。
+5. **稜殼晶面軟化停火**（`0e774a1`）：4片facet emitter FireGate=SilenceWhenSoftened。
+6. **新5核心經濟sink**（`e6dd4c6`/`cceff5d`/`bfd0a01`，+6測試→486）：`UtilityUpgrades` 加5條核心軌（各吃自己核心、成本(lv+1)×4、上限5、存flag）。強化商店UI +5行。**全5項in-run生效**：Ember移速/Abyss無敵/Void開場火力(1+lvl，不升上限)/Swarm副武冷卻(不碰飛彈數)/Crystal道具磁吸。**忠於主題重對應**：副武無彈匣系統→改冷卻縮短；材料非實體拾取(破部位直接記帳)→改P/M/W道具磁吸。皆非killpower、不重疊in-run軸。
+7. **Play 實測**：TIDEMAW HittableWhen 閘門 runtime 驗證(gate註冊、`IsPartCurrentlyHittable(heart_core)=False`、SyncPartVisuals後心核collider+renderer關=藏背甲後+不可命中)、全5 utility 消費者即時反應、截圖印證。**★失焦節流**：Unity 失焦不跑Update(非bug，前景遊玩正常)。
+8. **state 檔更新**（`31b46db`）+ 重建 EXE/APK + Obsidian 備份。
 
-**⬜ 待辦（下一步，導演定方向）：**
-- **新 5 核心經濟 sink**（session 9 定案=機體/utility 養成軸，與武器殺傷力分開）：**需先決定「5 核心各升什麼 utility + 成本」才能實作**。現有 `UtilityUpgrades`(開火速度/掉落率)吃 shard；要把 5 新核心接成升級貨幣。
-- **PartGate 純視覺 polish**：不可命中↔可命中的暗淡/亮白脈動提示；稜殼晶面「剝甲也停火」(需擴 FireGate enum)。
-- 可選：進 Play 實測 3 頭目閘門 + LACERA 斷腳外觀。
-- 沿用舊待辦：5 頭目 bespoke 美術、音樂/音效、UI 改 UGUI+TMP、手機實測難度/FPS 微調。
+**⬜ 待辦（導演定方向）：**
+- PartGate 純視覺 polish：不可命中↔可命中的暗淡/亮白脈動提示；稜殼晶面「剝甲也停火」(需擴 FireGate enum)。
+- utility 手感微調旋鈕：`MoveSpeedMult`(×0.06/lv)·`IFrameMult`(×0.15)·`PowerUpItem.MagnetRadius` K=2·`SecondaryCooldownMult`(×0.1)·`CoreCostFor`((lv+1)×4)·`StartPowerLevel`。若要「真彈匣/實體材料掉落物」= 更大獨立工程。
+- 5頭目 bespoke 美術、音樂/音效方向、UI 改 UGUI+TMP、手機實測難度/FPS/斷腳/閘門手感。
 
 ---
 
