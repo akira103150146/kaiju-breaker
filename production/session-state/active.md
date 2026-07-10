@@ -1,6 +1,32 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-10 (SESSION 13 — PartGate 純視覺 polish 收尾: 稜殼剝甲也停火(FireGate+4) + 不可命中→可命中揭露白閃脈動. 495 EditMode GREEN. 本地 main e999ef7/2ed01d4 未 push.)*
+*Last updated: 2026-07-10 (SESSION 14 — 導演大回饋一輪：武器四型獨立成長 + 道中清場門控 + 小怪辨識/放大 + 打擊回饋 + 菁英專屬掉落 + 免費音效 + BOSS耐久/血條遞減. 500 EditMode GREEN. 本地 main 8e3b293 未 push. EXE 116.83MB + APK 45MB.)*
+
+## ✅ SESSION 14 (2026-07-10) — 導演回饋大整理（武器/道中/手感/音效/BOSS）
+
+**⚠️ 環境同前**：Unity 綁主 checkout `C:\Game\kaiju-breaker`(main)。本次腳本改動用 harness Edit/Write（未觸發攔截）＋ MCP refresh/run_tests/execute_code(資料)。**未 push**（依 [[commit-often-push-on-request]]）。導演授權全自主（「剩下你全部自己完成」）→ 用 harness task list 逐項執行。
+
+**✅ 已辦（commit `4c987fb` 武器急修 + `8e3b293` 大批次；500 EditMode GREEN；EXE 116.83MB + APK 重建）：**
+1. **主武器四型獨立成長身分**（導演明訂規則，修「全部都變散彈」重大 bug）：L1散波=加彈數/L2集束=數量不變只變大一點+傷害爆增/L3波動=充能上限(cap隨power)集滿更痛/L4穿透=平行直射+可穿透數增加。副武M1-4=純加數量+傷害。穿透從 bool 改「可穿透次數」。
+2. **冷暖色統一**：玩家全冷色(飛彈青綠teal/雷射青藍)、敵彈全暖色(mob/boss 各一套依 emitter 型別染色)。
+3. **道中清場門控**（不重疊）：`WaveSpawner` 改 wave-by-wave，下一波要「場上敵人≤門檻 或 等待上限」且過最小間隔才放。純函式 `WavePacing` +4 回歸測試。
+4. **菁英穿插**：`WavePlanner` 菁英混進普通波隨機位置；5段中3段(s1_02/03/05)有菁英波。菁英 HpMult 3.0 / DensityMult 1.6（資料）→更肥更密+光環+放大。
+5. **小怪辨識+放大**：EnemyDef 加 Shape/Color/Size；`EnemyShapeSprites` 程序化形狀(方/圓/三角/菱/六角/箭)；11 隻各設獨特形狀+顏色+體型(0.55~0.95 world)。
+6. **打擊回饋**：小怪被打閃白+squash-回彈(`TickHitPop`)；超出±5.2X 失效；`GameBootstrap` 畫左右邊界標示。
+7. **難度=彈幕密度**：mob emitter 基數降到 D1≈單發(Wall1/Ring2/MobSpiral1/DeathRing3/Aimed1/TriFan1)，密度[1,2,3,4]往上加。
+8. **掉落只從菁英**：一般小怪不掉；菁英掉 武器艙+火力+飛彈。
+9. **免費音效系統**：純Python合成6個SFX(shoot/hit/explode/player-hit/part-break/pickup)→`Resources/Sfx`；`SfxPlayer`(GameBootstrap擁有,非singleton)訂閱事件匯流排+直呼。
+10. **手感尺寸**：玩家 2.8125→2.15、子彈 1→0.7、小怪放大 → 目標明顯大於子彈好瞄準。
+11. **BOSS 耐久+血條**：破壞條改**遞減**(血條用扣的,過熱條仍累積,破壞後藏條)；破壞門檻~2x(200/320/420)因武器 buff 後太脆。破壞機制測試 pin 舊門檻(`BalanceClassicBreak`)。
+
+**⬜ 待辦（導演實測後微調）：**
+- 各數值旋鈕微調：武器成長倍率(L2/L3/L4)、`WaveTimingConfig`門控(門檻2/等待8s/最小間隔2.2s/波內錯開0.14s)、小怪 BodySize/顏色、emitter 基數、菁英 HpMult 3.0、BOSS 破壞門檻 200/320/420、玩家/子彈縮放。
+- 音效：目前道中小怪「命中」逐發音效未接(只有爆炸/玩家中彈/破部位/拾取)；BGM 未做；可再補 shoot 以外的層次。
+- 5 新頭目 bespoke 美術、UI 改 UGUI+TMP、手機實測(FPS/門控/難度/斷腳/新音效)。
+
+---
+
+*(SESSION 13 — PartGate 純視覺 polish 收尾: 稜殼剝甲也停火(FireGate+4) + 不可命中→可命中揭露白閃脈動.)*
 
 *(SESSION 12 — LACERA 斷腳可拖 + PartGate 跨部位閘門(6c)全線 + 新5核心經濟sink + Play實測 + 重建EXE/APK. 486 EditMode GREEN. 全 push origin main. EXE 116.81MB + APK 45MB.)*
 
