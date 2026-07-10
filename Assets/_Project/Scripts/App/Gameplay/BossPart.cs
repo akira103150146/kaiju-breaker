@@ -26,6 +26,11 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("Pure-white silhouette flashed on a hit (a white tint is invisible on coloured art).")]
         [SerializeField] private Sprite _hitWhiteSprite;
         [SerializeField] private float _hitFlashSeconds = 0.06f;
+        [Tooltip("Bright-white reveal pulse shown when a cross-part gate opens and this part first " +
+                 "becomes hittable, to pull the player's eye to the newly-exposed weak point. Longer than " +
+                 "a hit flash so it reads as a reveal, not a hit; cooldown-guarded so a flickering gate " +
+                 "can't strobe.")]
+        [SerializeField] private float _revealFlashSeconds = 0.35f;
 
         [Tooltip("Target WORLD size (units) for untuned placeholder parts (those left at Unity's default 1×1 box " +
                  "collider). They shipped with Unity's tiny built-in sprite (~0.16 world), so scaling the transform " +
@@ -55,6 +60,10 @@ namespace KaijuBreaker.App.Gameplay
         private bool _stripped;
         private bool _softened;
         private bool _broken;
+        // Cross-part HittableWhen reveal cue: pulse white when the gate opens (un-hittable -> hittable).
+        private bool _hittable = true;
+        private float _revealCooldownRemaining;
+        private const float RevealCooldown = 1.5f;
 
         // Per-part gauges (heat = orange soften track / break = red destroy track), like the prototype meters.
         private SpriteRenderer _heatFill, _breakFill;
@@ -225,9 +234,18 @@ namespace KaijuBreaker.App.Gameplay
         public void SetHittable(bool hittable)
         {
             if (_broken) return;
+            bool wasHittable = _hittable;
+            _hittable = hittable;
             var col = GetComponent<Collider2D>();
             if (col != null && col.enabled != hittable) col.enabled = hittable;
             if (_sr != null && _sr.enabled != hittable) _sr.enabled = hittable;
+            // Reveal pulse: a gated part just became hittable (its shell opened) — flash bright white to draw the
+            // eye to the newly-exposed weak point. Cooldown-guarded so an oscillating gate can't strobe.
+            if (hittable && !wasHittable && _revealCooldownRemaining <= 0f)
+            {
+                _flashRemaining = Mathf.Max(_flashRemaining, _revealFlashSeconds);
+                _revealCooldownRemaining = RevealCooldown;
+            }
         }
 
 
@@ -273,6 +291,7 @@ namespace KaijuBreaker.App.Gameplay
         private void Update()
         {
             if (_sr == null) return;
+            if (_revealCooldownRemaining > 0f) _revealCooldownRemaining -= Time.deltaTime;
 
             // Hit juice: a quick scale pop on every hit (decays back to the authored scale).
             if (_popRemaining > 0f)
