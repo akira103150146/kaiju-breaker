@@ -31,6 +31,20 @@ namespace KaijuBreaker.Stage
         [Tooltip("Y below which the enemy has escaped off the bottom and is despawned (no score).")]
         [SerializeField] private float _despawnBelowY = -8f;
 
+        [Tooltip("Absolute X beyond which the enemy has left the play field sideways and is despawned — stops " +
+                 "unreachable off-map mobs from firing at the player (who is clamped to ±4).")]
+        [SerializeField] private float _despawnBeyondX = 5.2f;
+
+        [Tooltip("Extra body-size multiplier applied to an elite variant so it reads as the bigger threat.")]
+        [SerializeField] private float _eliteSizeMult = 1.35f;
+
+        [Tooltip("Collider full-size as a fraction of the visual body size (slightly < 1 = fair hit box).")]
+        [SerializeField] private float _hitboxBodyFraction = 0.82f;
+
+        private BoxCollider2D _box;
+        private Vector3 _bodyScale = Vector3.one;   // the resting scale set at Init; the hit-pop animates around it
+        private float _popRemaining;                // hit squash-and-recover timer (seconds)
+        private const float PopDuration = 0.13f;
         private int _maxHp;
         private float _flashRemaining;
         private Color _baseColor = Color.white;
@@ -76,6 +90,7 @@ namespace KaijuBreaker.Stage
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.gravityScale = 0f;
             rb.useFullKinematicContacts = true; // kinematic↔kinematic trigger events vs player + player projectiles
+            _box = GetComponent<BoxCollider2D>();
         }
 
         /// <summary>Inject the def + wire its pattern SOs. Called by <see cref="WaveSpawner"/> right after Instantiate.</summary>
@@ -93,11 +108,33 @@ namespace KaijuBreaker.Stage
             _maxHp = isElite && def != null ? Mathf.CeilToInt(baseHp * def.EliteHpMult) : baseHp;
             Hp = _maxHp;
 
+            // Visual identity (placeholder): a distinct silhouette + tint + size per type so mobs are told apart
+            // at a glance even though they share one prefab. Elites take the aura colour and grow bigger.
             if (_sprite == null) _sprite = GetComponent<SpriteRenderer>();
-            if (_sprite != null)
+            if (_sprite != null && def != null)
             {
-                _sprite.color = isElite && def != null ? def.EliteAuraColor : Color.white;
+                _sprite.sprite = EnemyShapeSprites.For(def.BodyShape);
+                _sprite.color = isElite ? def.EliteAuraColor : def.BodyColor;
                 _baseColor = _sprite.color;
+            }
+            else if (_sprite != null)
+            {
+                _sprite.color = Color.white;
+                _baseColor = _sprite.color;
+            }
+
+            // Body size: the shape sprite is 1 world unit at scale 1, so scale == desired world diameter. Elites
+            // scale up. The trigger box is normalised to a fair fraction of the body (kill zone < visible body).
+            float body = def != null ? def.BodySize : 0.8f;
+            if (isElite) body *= _eliteSizeMult;
+            _bodyScale = new Vector3(body, body, 1f);
+            transform.localScale = _bodyScale;
+            _popRemaining = 0f;
+            if (_box != null)
+            {
+                // localScale already multiplies the collider, so the local size is just the fraction (× scale = world).
+                _box.size = new Vector2(_hitboxBodyFraction, _hitboxBodyFraction);
+                _box.offset = Vector2.zero;
             }
             _flashRemaining = 0f;
         }
@@ -124,6 +161,7 @@ namespace KaijuBreaker.Stage
             if (_dead || amount <= 0f) return;
             Hp = Mathf.Max(0, Hp - Mathf.CeilToInt(amount));
             _flashRemaining = _hitFlashSeconds;
+            _popRemaining = PopDuration; // squash-and-recover so the player sees which enemy got hit
             if (Hp <= 0) Die();
         }
 
@@ -175,8 +213,24 @@ namespace KaijuBreaker.Stage
                 : Vector2.down;
             var vels = EnemyEmission.Velocities(type, count, Emitter.SpreadAngleDeg, speed, aim, _spinPhase);
             float dmg = Def != null ? Def.ContactDamage : 10f;
+            Color tint = BulletTint(type);
             for (int i = 0; i < vels.Length; i++)
-                _bulletPool.Spawn(transform.position, vels[i], dmg, Emitter.BulletLifetimeSeconds);
+                _bulletPool.Spawn(transform.position, vels[i], dmg, Emitter.BulletLifetimeSeconds, tint);
+        }
+
+        // Warm threat-palette tint per firing shape so different attacks read differently (enemy bullets stay
+        // warm by rule — player shots are cold).
+        private static Color BulletTint(EmitterPatternType type)
+        {
+            switch (type)
+            {
+                case EmitterPatternType.Aimed:     return new Color(1f, 0.33f, 0.28f); // red — aimed at you
+                case EmitterPatternType.Linear:    return new Color(1f, 0.74f, 0.24f); // amber — wall
+                case EmitterPatternType.Radial:    return new Color(1f, 0.52f, 0.14f); // orange — ring
+                case EmitterPatternType.Spiral:    return new Color(1f, 0.36f, 0.72f); // magenta — spiral
+                case EmitterPatternType.RingBurst: return new Color(1f, 0.88f, 0.42f); // hot yellow — death burst
+                default:                           return new Color(1f, 0.5f, 0.3f);
+            }
         }
 
         private int HpForTier(EnemyDef def)
@@ -192,11 +246,25 @@ namespace KaijuBreaker.Stage
             float dt = Time.deltaTime;
             transform.position = EnemyMovement.Advance(transform.position, Movement, ref _moveState, dt);
 
-            // Escaped off the bottom — deactivate (no score/drop) so the wave can clear.
-            if (transform.position.y < _despawnBelowY) { gameObject.SetActive(false); return; }
+            // Escaped off the bottom OR sideways out of the play field — deactivate (no score/drop) so it can't
+            // keep firing from a spot the player can't reach, and the wave can still clear.
+            Vector3 pos = transform.position;
+            if (pos.y < _despawnBelowY || Mathf.Abs(pos.x) > _despawnBeyondX) { gameObject.SetActive(false); return; }
 
             if (!_dead) TickEmitter(dt);
             UpdateSpriteState(dt);
+            TickHitPop(dt);
+        }
+
+        // Quick squash-and-recover on hit: scale dips then returns to the resting body scale. Pure visual juice.
+        private void TickHitPop(float dt)
+        {
+            if (_popRemaining <= 0f) return;
+            _popRemaining -= dt;
+            if (_popRemaining <= 0f) { transform.localScale = _bodyScale; return; }
+            float u = 1f - _popRemaining / PopDuration;              // 0 → 1 over the pop
+            float factor = 1f - 0.24f * Mathf.Sin(u * Mathf.PI);     // dip to ~0.76 then back to 1
+            transform.localScale = _bodyScale * factor;
         }
 
         // White on a hit, bright warm while telegraphing an imminent volley, base colour otherwise.

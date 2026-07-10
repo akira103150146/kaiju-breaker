@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Emitter_DeathRing
   m_EditorClassIdentifier: KaijuBreaker.Content::KaijuBreaker.Content.EmitterPatternSO
   _patternType: 3
-  _bulletCountBase: 4
+  _bulletCountBase: 3
   _fireIntervalSeconds: 3
   _bulletSpeedPxPerSec: 100
   _spreadAngleDeg: 360
   _bulletLifetimeSeconds: 5
+  _spinRateDegPerSec: 90
   _eliteDensityMult: 1.5

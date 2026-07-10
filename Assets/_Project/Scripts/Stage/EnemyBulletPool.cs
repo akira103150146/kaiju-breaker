@@ -20,12 +20,12 @@ namespace KaijuBreaker.Stage
         /// <summary>Assign the bullet prefab at runtime (when the pool GameObject is created by the scene director).</summary>
         public void Configure(EnemyBullet bulletPrefab) => _bulletPrefab = bulletPrefab;
 
-        /// <summary>Spawn one bullet travelling at <paramref name="velocity"/>. No-op (returns null) if no prefab.</summary>
-        public EnemyBullet Spawn(Vector2 position, Vector2 velocity, float damage, float lifetime)
+        /// <summary>Spawn one bullet travelling at <paramref name="velocity"/>, tinted <paramref name="tint"/>. No-op (null) if no prefab.</summary>
+        public EnemyBullet Spawn(Vector2 position, Vector2 velocity, float damage, float lifetime, Color tint)
         {
             if (_bulletPrefab == null) return null;
             var b = Rent();
-            b.Launch(position, velocity, damage, lifetime, Return);
+            b.Launch(position, velocity, damage, lifetime, tint, Return);
             return b;
         }
 

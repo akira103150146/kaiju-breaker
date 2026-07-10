@@ -20,7 +20,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7361f417fb848f54ca43e4d19dace11e, type: 2}
   - {fileID: 11400000, guid: 131ad920e4428244f952ba7463b85d82, type: 2}
   _waveCount: 2
-  _eliteWaveIndex: -1
+  _eliteWaveIndex: 1
   _difficultyWeight: 3
   _minDifficultyTier: 0
   _podPoolPreference: 2

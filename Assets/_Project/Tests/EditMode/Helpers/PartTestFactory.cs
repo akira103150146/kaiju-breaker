@@ -55,6 +55,18 @@ namespace KaijuBreaker.Tests.EditMode.Helpers
         public static WeaponBalanceConfig Balance(params (string field, object value)[] overrides)
             => ContentTestFactory.Create<WeaponBalanceConfig>(overrides);
 
+        /// <summary>
+        /// Balance fixture pinned to the CLASSIC break thresholds (Normal 100 / Armored 150 / BossCore 200) so
+        /// break-MECHANICS tests stay independent of the shipped tunable defaults — which were raised (200/320/420)
+        /// to make bosses a real fight after the primary-weapon power buff. Mechanics (fill/clamp/threshold/chain)
+        /// are unchanged; only the numeric durability moved, so these tests pin the numbers they were written for.
+        /// </summary>
+        public static WeaponBalanceConfig BalanceClassicBreak()
+            => Balance(
+                ("_bMaxNormal", 100f), ("_bMaxArmored", 150f), ("_bMaxBossCore", 200f),
+                ("_requiredBreakThresholdNormal", 100f), ("_requiredBreakThresholdArmored", 150f),
+                ("_requiredBreakThresholdBossCore", 200f));
+
         /// <summary>PartSystemConfig fixture with GDD defaults, plus optional (privateField, value) overrides.</summary>
         public static PartSystemConfig PartConfig(params (string field, object value)[] overrides)
             => ContentTestFactory.Create<PartSystemConfig>(overrides);

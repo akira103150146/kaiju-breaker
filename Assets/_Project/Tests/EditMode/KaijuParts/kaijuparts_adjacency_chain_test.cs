@@ -20,7 +20,7 @@ namespace KaijuBreaker.Tests.EditMode.KaijuParts
             params PartDef[] parts)
         {
             bus = new RecordingEventBus();
-            var sys = new PartStateSystem(bus, PartTestFactory.Balance(), cfg);
+            var sys = new PartStateSystem(bus, PartTestFactory.BalanceClassicBreak(), cfg);
             sys.InitializeParts(PartTestFactory.Kaiju("k", parts), Kaiju);
             return sys;
         }

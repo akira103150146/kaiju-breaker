@@ -16,10 +16,14 @@ MonoBehaviour:
   _hpTier: 1
   _contactDamage: 12
   _pointValue: 15
+  _tier: 0
   _isElite: 0
-  _eliteHpMult: 1
-  _eliteDensityMult: 1
+  _eliteHpMult: 3
+  _eliteDensityMult: 1.6
   _eliteShardBonus: 0
   _eliteAuraColor: {r: 1, g: 0.6667, b: 0.2, a: 1}
+  _bodyShape: 3
+  _bodyColor: {r: 0.65, g: 0.3, b: 0.95, a: 1}
+  _bodySize: 0.82
   _movementPattern: {fileID: 11400000, guid: e47e0f10b2892d14a962c3803b2b49df, type: 2}
   _emitterPattern: {fileID: 11400000, guid: 70739296f25c22842b7c8279c9b7f5e2, type: 2}

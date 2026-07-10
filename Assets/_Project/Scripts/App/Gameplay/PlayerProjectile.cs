@@ -21,7 +21,7 @@ namespace KaijuBreaker.App.Gameplay
         private float _heatDelta;   // laser heat vs a boss part
         private float _breakDamage; // missile break units vs a boss part
         private bool _isMissile;
-        private bool _pierce;
+        private int _pierceRemaining; // extra trash enemies this shot can pass through before despawning (0 = none)
         private WeaponId _weaponId;
         private float _life;
         private bool _active;
@@ -50,14 +50,16 @@ namespace KaijuBreaker.App.Gameplay
         {
             // Missiles = GREEN family (chunky), lasers = CYAN/BLUE family (slim) — a strong, unmistakable split
             // while both stay cold (enemy bullets are warm — readability rule).
+            // ALL player shots stay COLD (enemy bullets are warm — the readability rule). Missiles = teal/aqua
+            // (green-dominant cold), lasers = cyan/blue — a clear split while neither strays into the warm range.
             if (isMissile)
             {
                 switch (w)
                 {
-                    case WeaponId.M2: return new Color(0.55f, 1f, 0.35f);   // swarm — bright lime
-                    case WeaponId.M3: return new Color(0.20f, 0.95f, 0.45f); // AP torpedo — emerald
-                    case WeaponId.M4: return new Color(0.70f, 1f, 0.20f);   // cluster — yellow-green
-                    default:          return new Color(0.35f, 1f, 0.45f);   // M1 homing — spring green
+                    case WeaponId.M2: return new Color(0.30f, 1f, 0.80f);   // swarm — bright aqua
+                    case WeaponId.M3: return new Color(0.15f, 0.85f, 0.78f); // AP torpedo — teal
+                    case WeaponId.M4: return new Color(0.40f, 1f, 0.92f);   // cluster — pale aqua
+                    default:          return new Color(0.20f, 1f, 0.72f);   // M1 homing — spring teal
                 }
             }
             switch (w)
@@ -76,7 +78,7 @@ namespace KaijuBreaker.App.Gameplay
         /// wave pulse, a tall piercing lance — instead of every weapon just fanning out more bullets.
         /// </summary>
         public void Launch(Vector3 position, Vector2 velocity, float damage, float heatDelta, float breakDamage,
-                           bool isMissile, bool pierce, WeaponId weaponId, Vector2 sizeScale, Action<PlayerProjectile> onDespawn)
+                           bool isMissile, int pierceCount, WeaponId weaponId, Vector2 sizeScale, Action<PlayerProjectile> onDespawn)
         {
             transform.position = position;
             _velocity = velocity;
@@ -84,7 +86,7 @@ namespace KaijuBreaker.App.Gameplay
             _heatDelta = heatDelta;
             _breakDamage = breakDamage;
             _isMissile = isMissile;
-            _pierce = pierce;
+            _pierceRemaining = Mathf.Max(0, pierceCount);
             _weaponId = weaponId;
             _life = 3f;
             _onDespawn = onDespawn;
@@ -117,7 +119,8 @@ namespace KaijuBreaker.App.Gameplay
             if (enemy != null)
             {
                 enemy.TakeDamage(_damage);
-                if (!_pierce) Despawn(); // piercing shots continue through trash
+                if (_pierceRemaining > 0) { _pierceRemaining--; return; } // pierce: pass through, one fewer left
+                Despawn();
                 return;
             }
 

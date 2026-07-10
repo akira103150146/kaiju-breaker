@@ -138,6 +138,7 @@ namespace KaijuBreaker.App.Gameplay
             _player.ResetShip();
             _player.Died += OnPlayerDied;
             _playerWeapon = _player.GetComponent<PlayerWeaponController>();
+            _playerWeapon?.SetSfx(_bootstrap != null ? _bootstrap.Sfx : null); // shoot blips
         }
 
         /// <summary>Start a run: enter STAGE, build the sequence, and begin spawning waves.</summary>
@@ -195,21 +196,16 @@ namespace KaijuBreaker.App.Gameplay
             _playerWeapon?.SetFiring(true);
         }
 
-        // Enemy death → roll an in-run power-up drop. Rates are placeholder (a meta upgrade tunes drop rate).
+        // Enemy death → in-run power-up drop. Director rule: ONLY the interspersed elites drop upgrades — normal
+        // trash never does (it dropped far too often before). An elite is a meaningful reward: a dwell-cycle
+        // weapon pod PLUS a firepower chip PLUS a missile chip (both tracks advance).
         private void SpawnDrop(Vector3 pos, bool isElite)
         {
-            if (_powerUpPrefab == null) return;
-            if (isElite)
-            {
-                // Elites yield a dwell-cycle weapon pod (the pool-typed target of §F.1) + a firepower chip.
-                SpawnPod(pos);
-                Spawn(pos + Vector3.right * 0.5f, PowerUpKind.Power);
-                return;
-            }
-            float mult = _utility != null ? _utility.DropRateMult : 1f; // meta drop-rate upgrade
-            float r = UnityEngine.Random.value;
-            if (r < 0.16f * mult) Spawn(pos, PowerUpKind.Power);
-            else if (r < 0.26f * mult) Spawn(pos, PowerUpKind.Missile);
+            _bootstrap?.Sfx?.PlayEnemyExplode(isElite ? 0.9f : 0.6f); // every kill goes boom (trash quieter)
+            if (_powerUpPrefab == null || !isElite) return;
+            SpawnPod(pos);
+            Spawn(pos + Vector3.left * 0.5f, PowerUpKind.Power);
+            Spawn(pos + Vector3.right * 0.5f, PowerUpKind.Missile);
         }
 
         private void Spawn(Vector3 pos, PowerUpKind kind)

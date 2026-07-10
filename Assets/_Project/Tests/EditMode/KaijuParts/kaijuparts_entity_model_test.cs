@@ -36,7 +36,7 @@ namespace KaijuBreaker.Tests.EditMode.KaijuParts
             Assert.AreEqual(3f, bal.HDecayRate, "HDecayRate");
             Assert.AreEqual(100f, bal.ThetaS, "ThetaS");
             Assert.AreEqual(80f, bal.ThetaSExit, "ThetaSExit");
-            Assert.AreEqual(100f, bal.BMaxNormal, "BMaxNormal");
+            Assert.AreEqual(200f, bal.BMaxNormal, "BMaxNormal (raised: bosses were too fragile after the weapon buff)");
             Assert.AreEqual(0.35f, bal.BUnsoftenedMult, 1e-5f, "BUnsoftenedMult");
             Assert.AreEqual(1.5f, bal.StaggerBreakMult, 1e-5f, "StaggerBreakMult");
             Assert.AreEqual(2.0f, bal.StaggerDuration, 1e-5f, "StaggerDuration");

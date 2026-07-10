@@ -20,6 +20,7 @@ namespace KaijuBreaker.Stage
         private float _life;
         private bool _active;
         private Action<EnemyBullet> _onDespawn;
+        private SpriteRenderer _sr;
 
         /// <summary>Contact damage this bullet deals to the player.</summary>
         public float Damage => _damage;
@@ -33,10 +34,16 @@ namespace KaijuBreaker.Stage
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.gravityScale = 0f;
             rb.useFullKinematicContacts = true;
+            _sr = GetComponent<SpriteRenderer>();
         }
 
-        /// <summary>Arm the bullet for flight. Called by <see cref="EnemyBulletPool"/> on spawn.</summary>
-        public void Launch(Vector2 position, Vector2 velocity, float damage, float lifetime, Action<EnemyBullet> onDespawn)
+        /// <summary>
+        /// Arm the bullet for flight. Called by <see cref="EnemyBulletPool"/> on spawn. <paramref name="tint"/>
+        /// lets each emitter shape fire a differently-coloured bullet (all in the warm threat palette) so the
+        /// player can read which attack is which at a glance.
+        /// </summary>
+        public void Launch(Vector2 position, Vector2 velocity, float damage, float lifetime, Color tint,
+                           Action<EnemyBullet> onDespawn)
         {
             transform.position = position;
             _velocity = velocity;
@@ -44,6 +51,7 @@ namespace KaijuBreaker.Stage
             _life = lifetime;
             _onDespawn = onDespawn;
             _active = true;
+            if (_sr != null) _sr.color = tint;
             gameObject.SetActive(true);
         }
 

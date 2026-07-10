@@ -65,8 +65,8 @@ namespace KaijuBreaker.App.Gameplay
         private float _revealCooldownRemaining;
         private const float RevealCooldown = 1.5f;
 
-        // Per-part gauges (heat = orange soften track / break = red destroy track), like the prototype meters.
-        private SpriteRenderer _heatFill, _breakFill;
+        // Per-part gauges (heat = orange soften track, fills UP / break = red HP bar, DEPLETES), prototype-style.
+        private SpriteRenderer _heatFill, _breakFill, _heatBg, _breakBg;
         private const float BarW = 1.15f, BarH = 0.13f;
         // Hit juice: a quick scale pop on every hit (works even for placeholder parts with no white silhouette).
         private float _popRemaining;
@@ -138,11 +138,12 @@ namespace KaijuBreaker.App.Gameplay
         private void BuildGauges()
         {
             int order = (_sr != null ? _sr.sortingOrder : 0) + 10;
-            MakeBar("gauge_heat_bg", 0.90f, order, new Color(0f, 0f, 0f, 0.5f));
+            _heatBg = MakeBar("gauge_heat_bg", 0.90f, order, new Color(0f, 0f, 0f, 0.5f));
             _heatFill = MakeBar("gauge_heat", 0.90f, order + 1, new Color(1f, 0.6f, 0.15f, 0.95f));
-            MakeBar("gauge_break_bg", 0.75f, order, new Color(0f, 0f, 0f, 0.5f));
+            _breakBg = MakeBar("gauge_break_bg", 0.75f, order, new Color(0f, 0f, 0f, 0.5f));
             _breakFill = MakeBar("gauge_break", 0.75f, order + 1, new Color(1f, 0.25f, 0.2f, 0.95f));
-            SetFill(_heatFill, 0f); SetFill(_breakFill, 0f);
+            // Heat starts empty (fills up); the break bar is an HP bar and starts FULL (depletes as it's broken).
+            SetFill(_heatFill, 0f); SetFill(_breakFill, 1f);
         }
 
         private SpriteRenderer MakeBar(string n, float y, int order, Color c)
@@ -165,11 +166,25 @@ namespace KaijuBreaker.App.Gameplay
             fill.transform.localPosition = new Vector3(-BarW * 0.5f * (1f - f), fill.transform.localPosition.y, 0f);
         }
 
-        /// <summary>Update the heat + break gauge fractions (0..1). Called each frame by <see cref="BossController"/>.</summary>
+        /// <summary>
+        /// Update the gauges from live fractions (0..1). Heat ACCUMULATES (fills up = closer to soften); the break
+        /// bar is an HP bar that DEPLETES (full → empty as break damage accrues) — the director's "過熱條累積、血條用扣的".
+        /// Once broken, the gauges are hidden entirely.
+        /// </summary>
         public void SetGauge(float heatFrac, float breakFrac)
         {
+            if (_broken) { HideGauges(); return; }
             SetFill(_heatFill, heatFrac);
-            SetFill(_breakFill, breakFrac);
+            SetFill(_breakFill, 1f - Mathf.Clamp01(breakFrac)); // remaining HP = 1 − break progress
+        }
+
+        // Hide all four gauge renderers (a broken/severed part has no bars).
+        private void HideGauges()
+        {
+            if (_heatBg != null) _heatBg.enabled = false;
+            if (_heatFill != null) _heatFill.enabled = false;
+            if (_breakBg != null) _breakBg.enabled = false;
+            if (_breakFill != null) _breakFill.enabled = false;
         }
 
         /// <summary>Bind this scene part to its runtime part id + the bus (called by <see cref="BossController"/>).</summary>
@@ -268,7 +283,7 @@ namespace KaijuBreaker.App.Gameplay
                 var colStub = GetComponent<Collider2D>();
                 if (colStub != null) colStub.enabled = false; // severed — no longer a target
                 _brokenStub.SetActive(true);
-                SetGauge(0f, 0f);
+                HideGauges();
                 return;
             }
 
@@ -280,7 +295,7 @@ namespace KaijuBreaker.App.Gameplay
                 _sr.color = _baseColor;
                 var col = GetComponent<Collider2D>();
                 if (col != null) col.enabled = false; // severed — no longer a target
-                SetGauge(0f, 0f);
+                HideGauges();
             }
             else
             {

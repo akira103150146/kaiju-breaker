@@ -321,8 +321,24 @@ namespace KaijuBreaker.App.Gameplay
             float speed = e.Pattern.BulletSpeedPxPerSec * EnemyMovement.PxToWorld;
             Vector2 aim = _playerTarget != null ? (Vector2)(_playerTarget.position - muzzle) : Vector2.down;
             var vels = EnemyEmission.Velocities(e.Pattern.PatternType, count, e.Pattern.SpreadAngleDeg, speed, aim, e.SpinPhaseDeg);
+            Color tint = BossBulletTint(e.Pattern.PatternType);
             for (int i = 0; i < vels.Length; i++)
-                _bulletPool.Spawn(muzzle, vels[i], _bulletDamage, e.Pattern.BulletLifetimeSeconds);
+                _bulletPool.Spawn(muzzle, vels[i], _bulletDamage, e.Pattern.BulletLifetimeSeconds, tint);
+        }
+
+        // Boss bullets use a hotter, more saturated warm palette than mobs so boss fire reads as the bigger threat
+        // while still obeying the warm-is-incoming rule (player shots are cold).
+        private static Color BossBulletTint(KaijuBreaker.Content.EmitterPatternType type)
+        {
+            switch (type)
+            {
+                case KaijuBreaker.Content.EmitterPatternType.Aimed:     return new Color(1f, 0.24f, 0.28f);  // crimson
+                case KaijuBreaker.Content.EmitterPatternType.Linear:    return new Color(1f, 0.60f, 0.16f);  // hot amber
+                case KaijuBreaker.Content.EmitterPatternType.Radial:    return new Color(1f, 0.40f, 0.10f);  // deep orange
+                case KaijuBreaker.Content.EmitterPatternType.Spiral:    return new Color(0.96f, 0.28f, 0.86f); // violet
+                case KaijuBreaker.Content.EmitterPatternType.RingBurst: return new Color(1f, 0.80f, 0.30f);  // hot flare
+                default:                                                return new Color(1f, 0.38f, 0.24f);
+            }
         }
 
         // Push each part's live armor/heat state into its BossPart so the art swaps (intact↔stripped) and the

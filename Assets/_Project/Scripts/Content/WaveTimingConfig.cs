@@ -15,8 +15,25 @@ namespace KaijuBreaker.Content
         [Tooltip("Base enemies per wave BEFORE the difficulty enemy-count multiplier. Range [1, 20].")]
         [SerializeField, Range(1, 20)] private int _enemiesPerWaveBase = 4;
 
-        [Tooltip("Seconds between the start of consecutive waves within a segment. Must be > 0.")]
+        [Tooltip("Legacy fixed wave cadence (seconds). Retained for reference; the runtime now uses clear-gated " +
+                 "pacing below so a new wave never stacks on an unkilled one. Must be > 0.")]
         [SerializeField] private float _waveIntervalSeconds = 6f;
+
+        [Header("Clear-gated pacing (no wave stacks on an unkilled one)")]
+        [Tooltip("Release the next wave once the alive-enemy count drops to/below this (field mostly clear). " +
+                 "Higher = waves overlap more; 0 = wait until fully clear. Range [0, 12].")]
+        [SerializeField, Range(0, 12)] private int _nextWaveAliveThreshold = 2;
+
+        [Tooltip("Anti-stall cap: release the next wave after this many seconds even if the field isn't clear " +
+                 "(e.g. a straggler stuck at an edge). Must be > 0.")]
+        [SerializeField] private float _maxWaveWaitSeconds = 8f;
+
+        [Tooltip("Minimum seconds between consecutive wave starts — a floor so waves never machine-gun out even " +
+                 "when the field clears instantly. Must be > 0.")]
+        [SerializeField] private float _minWaveGapSeconds = 2.2f;
+
+        [Tooltip("Seconds of stagger between enemies WITHIN a single wave so they don't all pop in on one frame.")]
+        [SerializeField] private float _intraWaveStaggerSeconds = 0.14f;
 
         [Header("Layout")]
         [Tooltip("Default formation for a wave's enemies.")]
@@ -34,8 +51,20 @@ namespace KaijuBreaker.Content
         /// <summary>Base enemies per wave before the difficulty multiplier.</summary>
         public int EnemiesPerWaveBase => _enemiesPerWaveBase;
 
-        /// <summary>Seconds between consecutive waves in a segment.</summary>
+        /// <summary>Legacy fixed cadence (seconds). The runtime uses the clear-gated knobs below instead.</summary>
         public float WaveIntervalSeconds => _waveIntervalSeconds;
+
+        /// <summary>Alive-enemy count at/below which the next wave releases early (field mostly clear).</summary>
+        public int NextWaveAliveThreshold => _nextWaveAliveThreshold;
+
+        /// <summary>Anti-stall cap: release the next wave after this long even if not clear.</summary>
+        public float MaxWaveWaitSeconds => _maxWaveWaitSeconds;
+
+        /// <summary>Minimum seconds between consecutive wave starts (a floor).</summary>
+        public float MinWaveGapSeconds => _minWaveGapSeconds;
+
+        /// <summary>Seconds of stagger between enemies within one wave.</summary>
+        public float IntraWaveStaggerSeconds => _intraWaveStaggerSeconds;
 
         /// <summary>Default formation for a wave.</summary>
         public SpawnLayout DefaultLayout => _defaultLayout;
@@ -55,6 +84,10 @@ namespace KaijuBreaker.Content
                 Debug.LogError($"[WaveTimingConfig] '{name}': WaveIntervalSeconds must be > 0. Current: {_waveIntervalSeconds}.", this);
             if (_columnSpacing <= 0f)
                 Debug.LogError($"[WaveTimingConfig] '{name}': ColumnSpacing must be > 0. Current: {_columnSpacing}.", this);
+            if (_maxWaveWaitSeconds <= 0f)
+                Debug.LogError($"[WaveTimingConfig] '{name}': MaxWaveWaitSeconds must be > 0. Current: {_maxWaveWaitSeconds}.", this);
+            if (_minWaveGapSeconds <= 0f)
+                Debug.LogError($"[WaveTimingConfig] '{name}': MinWaveGapSeconds must be > 0. Current: {_minWaveGapSeconds}.", this);
         }
     }
 }

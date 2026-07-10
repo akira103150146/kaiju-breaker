@@ -56,7 +56,7 @@ namespace KaijuBreaker.Tests.EditMode.Stage
             var plan = planner.Plan(Segment(FourMvpMobs(), waveCount: 2, eliteWaveIndex: 1));
 
             Assert.AreEqual(8, plan.Count, "2 waves × 4 = 8 at D1");
-            Assert.AreEqual(4, plan.Count(i => i.SpawnTime == 0f), "wave 0 has 4");
+            Assert.AreEqual(4, plan.Count(i => i.WaveIndex == 0), "wave 0 has 4");
         }
 
         // ── AC-2: difficulty multiplier + CeilToInt ───────────────────────────
@@ -79,19 +79,33 @@ namespace KaijuBreaker.Tests.EditMode.Stage
             Assert.AreEqual(5, plan.Count, "ceil(4×1.1=4.4)=5, not round(4)");
         }
 
-        // ── AC-4: spawnTime offsets ───────────────────────────────────────────
+        // ── AC-4: waves grouped by index + intra-wave stagger ─────────────────
 
         [Test]
-        public void test_wave_spawn_times_offset_by_interval()
+        public void test_enemies_are_grouped_by_wave_index()
         {
             var planner = new WavePlanner(Timing(baseCount: 2, interval: 4f), new FakeDifficulty(), new Random(1));
             var plan = planner.Plan(Segment(FourMvpMobs(), waveCount: 2, eliteWaveIndex: -1));
 
-            Assert.IsTrue(plan.Where(i => i.SpawnTime == 0f).Any(), "wave 0 at t=0");
-            Assert.IsTrue(plan.Where(i => Mathf.Approximately(i.SpawnTime, 4f)).Any(), "wave 1 at t=interval=4");
+            Assert.AreEqual(2, plan.Count(i => i.WaveIndex == 0), "wave 0 holds its enemies");
+            Assert.AreEqual(2, plan.Count(i => i.WaveIndex == 1), "wave 1 holds its enemies");
+            Assert.IsFalse(plan.Any(i => i.WaveIndex > 1), "no phantom waves");
         }
 
-        // ── Elite flagging (Story 004 owns specifics; here just the wave marker) ──
+        [Test]
+        public void test_spawn_time_is_intra_wave_stagger_not_absolute()
+        {
+            // Each wave's own enemies are staggered from 0; the SpawnTime is a within-wave offset, NOT wave×interval
+            // (between-wave timing is clear-gated at runtime).
+            var planner = new WavePlanner(Timing(baseCount: 3), new FakeDifficulty(), new Random(1));
+            var plan = planner.Plan(Segment(FourMvpMobs(), waveCount: 2, eliteWaveIndex: -1));
+
+            Assert.AreEqual(0f, plan.Where(i => i.WaveIndex == 0).Min(i => i.SpawnTime), "wave 0 starts a spawn at t=0");
+            Assert.AreEqual(0f, plan.Where(i => i.WaveIndex == 1).Min(i => i.SpawnTime), "wave 1 ALSO starts at its own t=0");
+            Assert.Less(plan.Max(i => i.SpawnTime), 6f, "no absolute wave×interval offsets remain");
+        }
+
+        // ── Elite interspersion (mixed into a wave at a random slot, not leading it) ──
 
         [Test]
         public void test_one_elite_seeded_on_the_elite_wave_only()
@@ -101,7 +115,7 @@ namespace KaijuBreaker.Tests.EditMode.Stage
 
             Assert.AreEqual(1, plan.Count(i => i.IsElite), "exactly one elite across the segment");
             var elite = plan.First(i => i.IsElite);
-            Assert.AreEqual(1 * 6f, elite.SpawnTime, "the elite is on wave index 1");
+            Assert.AreEqual(1, elite.WaveIndex, "the elite is on wave index 1");
         }
 
         [Test]

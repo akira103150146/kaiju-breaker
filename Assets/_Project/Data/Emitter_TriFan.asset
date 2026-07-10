@@ -18,4 +18,5 @@ MonoBehaviour:
   _bulletSpeedPxPerSec: 130
   _spreadAngleDeg: 30
   _bulletLifetimeSeconds: 5
+  _spinRateDegPerSec: 90
   _eliteDensityMult: 1.5

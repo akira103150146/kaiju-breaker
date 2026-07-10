@@ -11,15 +11,19 @@ namespace KaijuBreaker.Stage
     {
         public readonly EnemyDef Enemy;
         public readonly Vector2 Position;
+        /// <summary>Stagger offset WITHIN this enemy's wave (seconds from the wave's own start), not an absolute time.</summary>
         public readonly float SpawnTime;
         public readonly bool IsElite;
+        /// <summary>Which wave (0-based) of the segment this instruction belongs to — the runtime gates wave-by-wave.</summary>
+        public readonly int WaveIndex;
 
-        public WaveSpawnInstruction(EnemyDef enemy, Vector2 position, float spawnTime, bool isElite)
+        public WaveSpawnInstruction(EnemyDef enemy, Vector2 position, float spawnTime, bool isElite, int waveIndex)
         {
             Enemy = enemy;
             Position = position;
             SpawnTime = spawnTime;
             IsElite = isElite;
+            WaveIndex = waveIndex;
         }
     }
 
@@ -62,12 +66,15 @@ namespace KaijuBreaker.Stage
             if (pool.Length == 0) return plan; // nothing to spawn (guarded, no crash)
 
             float mult = _difficulty.EnemyCountMult;
+            float stagger = _timing.IntraWaveStaggerSeconds;
 
             for (int wave = 0; wave < segment.WaveCount; wave++)
             {
                 int count = Mathf.CeilToInt(_timing.EnemiesPerWaveBase * mult);
-                float spawnTime = wave * _timing.WaveIntervalSeconds;
                 bool isEliteWave = wave == segment.EliteWaveIndex;
+                // An elite is MIXED INTO the wave at a random slot (not leading it), so it appears interspersed
+                // among the ordinary mobs rather than always first. −1 = no elite this wave.
+                int eliteSlot = isEliteWave && count > 0 ? _rng.Next(count) : -1;
 
                 Vector2[] positions = SpawnLayoutHelper.Positions(
                     _timing.DefaultLayout, count, _timing.FieldWidth, _timing.SpawnY, _timing.ColumnSpacing);
@@ -75,8 +82,9 @@ namespace KaijuBreaker.Stage
                 for (int i = 0; i < count; i++)
                 {
                     EnemyDef enemy = pool[_rng.Next(pool.Length)];
-                    bool isElite = isEliteWave && i == 0; // one elite leads an elite wave (Story 004 details)
-                    plan.Add(new WaveSpawnInstruction(enemy, positions[i], spawnTime, isElite));
+                    bool isElite = i == eliteSlot;
+                    float spawnTime = i * stagger; // stagger WITHIN the wave; between-wave timing is clear-gated at runtime
+                    plan.Add(new WaveSpawnInstruction(enemy, positions[i], spawnTime, isElite, wave));
                 }
             }
             return plan;

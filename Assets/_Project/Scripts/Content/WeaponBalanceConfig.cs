@@ -48,14 +48,15 @@ namespace KaijuBreaker.Content
         [SerializeField] private float _thetaSExit = 80f;
 
         [Header("Break Track — Capacities (BU)")]
-        [Tooltip("Armor-break capacity for Normal parts (BU). Safe range [80, 150].")]
-        [SerializeField] private float _bMaxNormal = 100f;
+        [Tooltip("Armor-break capacity for Normal parts (BU). Safe range [80, 320]. Raised so a boss part is a " +
+                 "real fight (director: bosses died too fast, esp. after the primary-weapon power buff).")]
+        [SerializeField] private float _bMaxNormal = 200f;
 
-        [Tooltip("Armor-break capacity for Armored parts (BU). Safe range [120, 200].")]
-        [SerializeField] private float _bMaxArmored = 150f;
+        [Tooltip("Armor-break capacity for Armored parts (BU). Safe range [120, 450].")]
+        [SerializeField] private float _bMaxArmored = 320f;
 
-        [Tooltip("Armor-break capacity for Boss Core parts (BU). Safe range [160, 280].")]
-        [SerializeField] private float _bMaxBossCore = 200f;
+        [Tooltip("Armor-break capacity for Boss Core parts (BU). Safe range [160, 650].")]
+        [SerializeField] private float _bMaxBossCore = 420f;
 
         [Header("Break Track — Multipliers")]
         [Tooltip("Missile break-fill multiplier when part is NOT softened. Safe range [0.20, 0.50]. " +
@@ -63,14 +64,14 @@ namespace KaijuBreaker.Content
         [SerializeField] private float _bUnsoftenedMult = 0.35f;
 
         [Header("Break Track — Destruction Thresholds (BU)")]
-        [Tooltip("BU required to break a Normal part. Safe range [80, 150]. Default = BMaxNormal.")]
-        [SerializeField] private float _requiredBreakThresholdNormal = 100f;
+        [Tooltip("BU required to break a Normal part. Safe range [80, 320]. Default = BMaxNormal (must be ≤ it).")]
+        [SerializeField] private float _requiredBreakThresholdNormal = 200f;
 
-        [Tooltip("BU required to break an Armored part. Safe range [120, 200]. Default = BMaxArmored.")]
-        [SerializeField] private float _requiredBreakThresholdArmored = 150f;
+        [Tooltip("BU required to break an Armored part. Safe range [120, 450]. Default = BMaxArmored.")]
+        [SerializeField] private float _requiredBreakThresholdArmored = 320f;
 
-        [Tooltip("BU required to break a Boss Core part. Safe range [160, 280]. Default = BMaxBossCore.")]
-        [SerializeField] private float _requiredBreakThresholdBossCore = 200f;
+        [Tooltip("BU required to break a Boss Core part. Safe range [160, 650]. Default = BMaxBossCore.")]
+        [SerializeField] private float _requiredBreakThresholdBossCore = 420f;
 
         [Header("Default Loadout (first-playthrough fallback)")]
         [Tooltip("Primary-pool weapon a fresh save starts with when ISaveService has no stored loadout. " +
@@ -176,13 +177,13 @@ namespace KaijuBreaker.Content
             Validate("HDecayRate",                       _hDecayRate,                       1f,    8f);
             Validate("ThetaS",                           _thetaS,                           80f,   120f);
             Validate("ThetaSExit",                       _thetaSExit,                       60f,   90f);
-            Validate("BMaxNormal",                       _bMaxNormal,                       80f,   150f);
-            Validate("BMaxArmored",                      _bMaxArmored,                      120f,  200f);
-            Validate("BMaxBossCore",                     _bMaxBossCore,                     160f,  280f);
+            Validate("BMaxNormal",                       _bMaxNormal,                       80f,   320f);
+            Validate("BMaxArmored",                      _bMaxArmored,                      120f,  450f);
+            Validate("BMaxBossCore",                     _bMaxBossCore,                     160f,  650f);
             Validate("BUnsoftenedMult",                  _bUnsoftenedMult,                  0.20f, 0.50f);
-            Validate("RequiredBreakThresholdNormal",     _requiredBreakThresholdNormal,     80f,   150f);
-            Validate("RequiredBreakThresholdArmored",    _requiredBreakThresholdArmored,    120f,  200f);
-            Validate("RequiredBreakThresholdBossCore",   _requiredBreakThresholdBossCore,   160f,  280f);
+            Validate("RequiredBreakThresholdNormal",     _requiredBreakThresholdNormal,     80f,   320f);
+            Validate("RequiredBreakThresholdArmored",    _requiredBreakThresholdArmored,    120f,  450f);
+            Validate("RequiredBreakThresholdBossCore",   _requiredBreakThresholdBossCore,   160f,  650f);
             Validate("StaggerDuration",                  _staggerDuration,                  1.5f,  3.0f);
             Validate("StaggerBreakMult",                 _staggerBreakMult,                 1.2f,  2.0f);
 

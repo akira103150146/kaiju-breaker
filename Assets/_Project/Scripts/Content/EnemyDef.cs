@@ -17,6 +17,23 @@ namespace KaijuBreaker.Content
     }
 
     /// <summary>
+    /// Silhouette used to tell trash-enemy types apart at a glance without bespoke art. The Stage system
+    /// rasterises each shape to a small runtime sprite (see <c>EnemyShapeSprites</c>) so a distinct
+    /// <see cref="EnemyDef.BodyShape"/> + <see cref="EnemyDef.BodyColor"/> + <see cref="EnemyDef.BodySize"/>
+    /// combination reads as a different enemy even while all types share one prefab. Placeholder identity —
+    /// replaced by bespoke sprites when art lands. enemy-roster-expansion.md §4.2.
+    /// </summary>
+    public enum EnemyShape
+    {
+        Square,
+        Circle,
+        Triangle,
+        Diamond,
+        Hexagon,
+        Chevron
+    }
+
+    /// <summary>
     /// Data definition for a single trash-enemy type or its elite variant.
     /// Bundles base stats with typed references to shared
     /// <see cref="MovementPatternSO"/> and <see cref="EmitterPatternSO"/> assets.
@@ -79,6 +96,17 @@ namespace KaijuBreaker.Content
                  "stage-system.md §E.3 default: #FFAA33 (warm amber).")]
         [SerializeField] private Color _eliteAuraColor = new Color(1.0f, 0.6667f, 0.2f, 1.0f); // #FFAA33
 
+        [Header("Visual Identity (placeholder — distinct shape/colour/size per type)")]
+        [Tooltip("Silhouette rasterised to a runtime sprite so this type is recognisable at a glance without " +
+                 "bespoke art. Give every mob type a distinct Shape+Color+Size combo. enemy-roster-expansion.md §4.2.")]
+        [SerializeField] private EnemyShape _bodyShape = EnemyShape.Square;
+
+        [Tooltip("Body tint for the placeholder silhouette. Elite variants override this with EliteAuraColor.")]
+        [SerializeField] private Color _bodyColor = new Color(1f, 0.45f, 0.35f, 1f);
+
+        [Tooltip("World-space diameter of the body (sprite + collider). Mobs read clearly at ~0.7–1.0. Range [0.3, 2.0].")]
+        [SerializeField, Range(0.3f, 2.0f)] private float _bodySize = 0.8f;
+
         [Header("Pattern References")]
         [Tooltip("Movement behaviour for this enemy. " +
                  "Required — must not be null. Shared with elite variant.")]
@@ -123,6 +151,15 @@ namespace KaijuBreaker.Content
 
         /// <summary>Warm amber aura colour (#FFAA33) for visual elite recognition.</summary>
         public Color EliteAuraColor => _eliteAuraColor;
+
+        /// <summary>Placeholder silhouette shape used to tell this type apart at a glance.</summary>
+        public EnemyShape BodyShape => _bodyShape;
+
+        /// <summary>Body tint for the placeholder silhouette (elites override with <see cref="EliteAuraColor"/>).</summary>
+        public Color BodyColor => _bodyColor;
+
+        /// <summary>World-space body diameter (sprite + collider). Bigger = easier to read/hit.</summary>
+        public float BodySize => _bodySize;
 
         /// <summary>
         /// Shared movement behaviour SO. Must not be null.

@@ -156,3 +156,5 @@ design/assets/gemini-generation/
 
 # Player builds (EXE/APK) — not versioned
 /Builds/
+.utmp/
+.claude/worktrees/

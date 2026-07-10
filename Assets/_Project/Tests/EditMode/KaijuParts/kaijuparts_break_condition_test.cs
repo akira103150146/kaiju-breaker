@@ -23,7 +23,7 @@ namespace KaijuBreaker.Tests.EditMode.KaijuParts
             var defs = new PartDef[parts.Length];
             for (int i = 0; i < parts.Length; i++)
                 defs[i] = PartTestFactory.Part(parts[i].id, parts[i].type, dropTableId: parts[i].id + "_drop");
-            var sys = new PartStateSystem(bus, PartTestFactory.Balance(), PartTestFactory.PartConfig());
+            var sys = new PartStateSystem(bus, PartTestFactory.BalanceClassicBreak(), PartTestFactory.PartConfig());
             sys.InitializeParts(PartTestFactory.Kaiju("k", defs), Kaiju);
             return sys;
         }
@@ -144,7 +144,7 @@ namespace KaijuBreaker.Tests.EditMode.KaijuParts
         public void DropTableId_NonEmptyGuard()
         {
             var bus = new RecordingEventBus();
-            var sys = new PartStateSystem(bus, PartTestFactory.Balance(), PartTestFactory.PartConfig());
+            var sys = new PartStateSystem(bus, PartTestFactory.BalanceClassicBreak(), PartTestFactory.PartConfig());
             sys.InitializeParts(PartTestFactory.Kaiju("k",
                 PartTestFactory.Part("bad", PartType.Normal, dropTableId: ""), // invalid KaijuDef
                 PartTestFactory.Part("core", PartType.BossCore)), Kaiju);

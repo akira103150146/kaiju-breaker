@@ -21,13 +21,13 @@ MonoBehaviour:
   _hDecayRate: 3
   _thetaS: 100
   _thetaSExit: 80
-  _bMaxNormal: 100
-  _bMaxArmored: 150
-  _bMaxBossCore: 200
+  _bMaxNormal: 200
+  _bMaxArmored: 320
+  _bMaxBossCore: 420
   _bUnsoftenedMult: 0.35
-  _requiredBreakThresholdNormal: 100
-  _requiredBreakThresholdArmored: 150
-  _requiredBreakThresholdBossCore: 200
+  _requiredBreakThresholdNormal: 200
+  _requiredBreakThresholdArmored: 320
+  _requiredBreakThresholdBossCore: 420
   _defaultPrimary: 0
   _defaultSecondary: 4
   _staggerDuration: 2
