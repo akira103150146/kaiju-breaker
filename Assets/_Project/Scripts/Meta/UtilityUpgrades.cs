@@ -61,6 +61,8 @@ namespace KaijuBreaker.Meta
 
         /// <summary>Extra secondary-weapon rounds per magazine (+1 per level) — sustain, not per-hit power.</summary>
         public int SecondaryAmmoBonus => AmmoLevel;
+        /// <summary>Secondary-fire cooldown multiplier (Swarm core; lower = faster missiles, does NOT change missile count). 1.0 at level 0.</summary>
+        public float SecondaryCooldownMult => 1f / (1f + AmmoLevel * 0.1f);
         /// <summary>Material auto-collect radius multiplier (1.0 at level 0).</summary>
         public float MagnetRadiusMult => 1f + MagnetLevel * 0.25f;
         /// <summary>Post-hit invulnerability duration multiplier (1.0 at level 0).</summary>

@@ -157,11 +157,14 @@ namespace KaijuBreaker.App.Gameplay
             }
 
             var content = _bootstrap.Content;
-            _playerWeapon?.ResetArsenal(_selPrimary, _selSecondary); // in-run firepower starts at level 1
+            _playerWeapon?.ResetArsenal(_selPrimary, _selSecondary, _utility != null ? _utility.StartPowerLevel : 0); // Void-core head-start firepower
             _playerWeapon?.SetFireIntervalMult(_utility != null ? _utility.FireIntervalMult : 1f); // meta faster-fire
             _player?.SetUtilityMultipliers(
                 _utility != null ? _utility.MoveSpeedMult : 1f,
                 _utility != null ? _utility.IFrameMult : 1f); // Ember move-speed / Abyss i-frames
+            _playerWeapon?.SetSecondaryCooldownMult(_utility != null ? _utility.SecondaryCooldownMult : 1f); // Swarm-core faster missiles
+            PowerUpItem.MagnetTarget = _player != null ? _player.transform : null; // Crystal-core pickup magnet
+            PowerUpItem.MagnetRadius = _utility != null ? (_utility.MagnetRadiusMult - 1f) * 2f : 0f; // 0 at level 0
 
             // Shared enemy-bullet pool + the drop callback (enemies roll in-run power-ups on death).
             _bulletPool = null;
@@ -447,8 +450,8 @@ namespace KaijuBreaker.App.Gameplay
                 UpgradeRow(panel, 124f, "掉落率  DROP RATE", _utility.DropRateLevel, _utility.CostFor(_utility.DropRateLevel), _utility.BuyDropRate);
 
                 GUI.Label(new Rect(panel.x + 22f, panel.y + 182f, panel.width - 44f, 16f), "頭目核心 · CORES", GameUiSkin.SmallStyle);
-                CoreRow(panel, 202f, "副武彈藥  AMMO", _utility.AmmoLevel, _utility.CoreCostFor(_utility.AmmoLevel), _utility.CoreBalance(MaterialId.CoreSwarm), _utility.BuyAmmo);
-                CoreRow(panel, 250f, "吸取範圍  MAGNET", _utility.MagnetLevel, _utility.CoreCostFor(_utility.MagnetLevel), _utility.CoreBalance(MaterialId.CoreCrystal), _utility.BuyMagnet);
+                CoreRow(panel, 202f, "副武射速  M-RATE", _utility.AmmoLevel, _utility.CoreCostFor(_utility.AmmoLevel), _utility.CoreBalance(MaterialId.CoreSwarm), _utility.BuyAmmo);
+                CoreRow(panel, 250f, "道具吸取  MAGNET", _utility.MagnetLevel, _utility.CoreCostFor(_utility.MagnetLevel), _utility.CoreBalance(MaterialId.CoreCrystal), _utility.BuyMagnet);
                 CoreRow(panel, 298f, "無敵時間  I-FRAME", _utility.IFrameLevel, _utility.CoreCostFor(_utility.IFrameLevel), _utility.CoreBalance(MaterialId.CoreAbyss), _utility.BuyIFrame);
                 CoreRow(panel, 346f, "移動速度  SPEED", _utility.SpeedLevel, _utility.CoreCostFor(_utility.SpeedLevel), _utility.CoreBalance(MaterialId.CoreEmber), _utility.BuySpeed);
                 CoreRow(panel, 394f, "開場火力  HEAD-START", _utility.HeadStartLevel, _utility.CoreCostFor(_utility.HeadStartLevel), _utility.CoreBalance(MaterialId.CoreVoid), _utility.BuyHeadStart);

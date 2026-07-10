@@ -21,6 +21,11 @@ namespace KaijuBreaker.App.Gameplay
 
         private PowerUpKind _kind;
 
+        // Meta pickup-magnet (Crystal core): items within MagnetRadius of MagnetTarget home toward it. Set by the
+        // scene director at run start; static so every spawned item shares one config. Radius 0 = no magnet (level 0).
+        public static Transform MagnetTarget;
+        public static float MagnetRadius;
+
         private static readonly Color PowerColor = new Color(0.45f, 1f, 0.5f);      // P — green
         private static readonly Color MissileColor = new Color(0.45f, 0.7f, 1f);    // M — blue
         private static readonly Color LaserPodColor = new Color(0.75f, 0.5f, 1f);   // W laser — purple
@@ -55,7 +60,21 @@ namespace KaijuBreaker.App.Gameplay
 
         private void Update()
         {
-            transform.position += Vector3.down * (_fallSpeed * Time.deltaTime);
+            float dt = Time.deltaTime;
+
+            // Crystal-core magnet: once the player is within range, the item homes in (a convenience QoL pull — it
+            // never adds power, only makes the P/M/W items easier to grab).
+            if (MagnetTarget != null && MagnetRadius > 0f)
+            {
+                Vector3 to = MagnetTarget.position - transform.position;
+                if (to.sqrMagnitude <= MagnetRadius * MagnetRadius)
+                {
+                    transform.position += to.normalized * (Mathf.Max(_fallSpeed * 2.5f, 5f) * dt);
+                    return;
+                }
+            }
+
+            transform.position += Vector3.down * (_fallSpeed * dt);
             if (transform.position.y < -8f) Destroy(gameObject);
         }
 

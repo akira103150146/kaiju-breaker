@@ -29,10 +29,14 @@ namespace KaijuBreaker.App.Gameplay
         private float _primaryCooldown;
         private float _secondaryCooldown;
         private float _fireIntervalMult = 1f; // meta utility upgrade (lower = faster)
+        private float _secondaryCooldownMult = 1f; // Swarm-core meta utility (lower = faster missiles; count unchanged)
         private bool _firing = true;
 
         /// <summary>Apply the meta faster-fire upgrade multiplier to the primary interval (1 = none).</summary>
         public void SetFireIntervalMult(float mult) => _fireIntervalMult = Mathf.Max(0.2f, mult);
+
+        /// <summary>Apply the Swarm-core secondary-cooldown multiplier (1 = none; lower fires missiles more often).</summary>
+        public void SetSecondaryCooldownMult(float mult) => _secondaryCooldownMult = Mathf.Max(0.2f, mult);
 
         // ── In-run arsenal (resets each run) ──────────────────────────────────────────
         private int _weaponPower = 1;
@@ -55,9 +59,15 @@ namespace KaijuBreaker.App.Gameplay
         public void SetFiring(bool firing) => _firing = firing;
 
         /// <summary>Reset the arsenal to level 1 with the chosen loadout types (call at run start).</summary>
-        public void ResetArsenal(WeaponId primary, WeaponId secondary)
+        /// <summary>
+        /// Reset the arsenal to the chosen loadout types at run start. <paramref name="startPower"/> is the Void-core
+        /// head-start: the run begins at firepower 1 + startPower (clamped to the ceiling) instead of 1. It only moves
+        /// the STARTING point — the in-run ceiling (MaxWeaponPower) is unchanged.
+        /// </summary>
+        public void ResetArsenal(WeaponId primary, WeaponId secondary, int startPower = 0)
         {
-            _weaponPower = 1;
+            int max = _config != null ? _config.MaxWeaponPower : 1 + startPower;
+            _weaponPower = Mathf.Clamp(1 + Mathf.Max(0, startPower), 1, max);
             _missilePower = 1;
             _primaryType = primary;
             _secondaryType = secondary;
@@ -85,7 +95,7 @@ namespace KaijuBreaker.App.Gameplay
 
             _secondaryCooldown -= dt;
             if (_secondaryCooldown <= 0f && _input != null && _input.SecondaryPressedThisFrame)
-            { FireSecondary(); _secondaryCooldown = _config.SecondaryCooldown; }
+            { FireSecondary(); _secondaryCooldown = _config.SecondaryCooldown * _secondaryCooldownMult; }
         }
 
         private void FirePrimary()
