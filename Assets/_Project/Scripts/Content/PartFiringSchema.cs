@@ -76,7 +76,9 @@ namespace KaijuBreaker.Content
         /// <summary>Only fires once this (armored) part's armor has been stripped.</summary>
         RequireArmorStripped = 2,
         /// <summary>Only fires once the part named by <see cref="PartEmitter.GatePartId"/> is broken (BROODCORE core after the veil breaks).</summary>
-        RequireGatePartBroken = 3
+        RequireGatePartBroken = 3,
+        /// <summary>Pauses while the part is heat-softened OR its armor is stripped — either compromises the shell (PRISMSHELL facet stops refracting once over-heated or shattered).</summary>
+        SilenceWhenSoftenedOrStripped = 4
     }
 
     /// <summary>

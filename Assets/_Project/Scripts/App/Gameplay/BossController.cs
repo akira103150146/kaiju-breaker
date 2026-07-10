@@ -303,17 +303,13 @@ namespace KaijuBreaker.App.Gameplay
 
         private bool GateOpen(ActiveEmitter e)
         {
-            switch (e.Gate)
-            {
-                case PartFireGate.SilenceWhenSoftened:
-                    return _comp.Parts.GetHeatState(e.OwnerPartId) != HeatState.Softened;
-                case PartFireGate.RequireArmorStripped:
-                    return _comp.Parts.GetArmorState(e.OwnerPartId) == ArmorState.Stripped;
-                case PartFireGate.RequireGatePartBroken:
-                    return e.GatePartId >= 0 && _brokenPartIds.Contains(e.GatePartId);
-                default:
-                    return true; // AliveOnly (owner-alive already checked by the caller)
-            }
+            // Pure truth-table lives in Content.EmitterGateEval (EditMode-tested); we only feed it live state.
+            bool gatePartBroken = e.GatePartId >= 0 && _brokenPartIds.Contains(e.GatePartId);
+            return EmitterGateEval.IsOpen(
+                e.Gate,
+                _comp.Parts.GetHeatState(e.OwnerPartId),
+                _comp.Parts.GetArmorState(e.OwnerPartId),
+                gatePartBroken);
         }
 
         private void FireVolley(ActiveEmitter e, Vector3 muzzle)

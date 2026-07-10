@@ -55,7 +55,7 @@ MonoBehaviour:
     _dropTableId: boss_drop
     _emitters:
     - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
-      _gate: 1
+      _gate: 4
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
@@ -85,7 +85,7 @@ MonoBehaviour:
     _dropTableId: boss_drop
     _emitters:
     - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
-      _gate: 1
+      _gate: 4
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
@@ -115,7 +115,7 @@ MonoBehaviour:
     _dropTableId: boss_drop
     _emitters:
     - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
-      _gate: 1
+      _gate: 4
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
@@ -145,7 +145,7 @@ MonoBehaviour:
     _dropTableId: boss_drop
     _emitters:
     - _pattern: {fileID: 11400000, guid: d622800bf26020543884950c62b5a387, type: 2}
-      _gate: 1
+      _gate: 4
       _gatePartId: 
       _spawnEnemyId: 
       _spawnCap: 0
