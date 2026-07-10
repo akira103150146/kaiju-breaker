@@ -98,25 +98,44 @@ namespace KaijuBreaker.App.Gameplay
             { FireSecondary(); _secondaryCooldown = _config.SecondaryCooldown * _secondaryCooldownMult; }
         }
 
+        // Each primary type expresses firepower growth ALONG ITS OWN IDENTITY, not "more spread for everyone":
+        //   L1 散彈  — more + wider thin bullets (crowd clear)   → count grows
+        //   L2 集束  — ONE bolt that grows fatter + far stronger  → size & damage grow, count stays 1
+        //   L3 波動  — a few WIDE pulses that grow wider          → width grows, count barely
+        //   L4 穿透  — a long piercing lance that grows longer    → length & damage grow, count stays ~1
+        // t = normalised firepower in [0,1] (lvl1 → max). Per-type flavour multipliers are placeholder-tunable.
         private void FirePrimary()
         {
-            int p = Mathf.Clamp(_weaponPower, 1, _config.MaxWeaponPower);
+            int max = Mathf.Max(1, _config.MaxWeaponPower);
+            int p = Mathf.Clamp(_weaponPower, 1, max);
+            float t = max > 1 ? (p - 1f) / (max - 1f) : 0f;
             float baseSpeed = _config.PrimaryProjectileSpeed, baseDmg = _config.PrimaryDamage, baseHeat = _config.PrimaryHeatDelta;
             float per = _config.PrimarySpreadPerBulletDeg;
-            int count; float spreadPer, speed, dmg, heat; bool pierce = false;
+            int count; float spreadPer, speed, dmg, heat; bool pierce = false; Vector2 size;
 
             switch (_primaryType)
             {
-                case WeaponId.L2: // 集束 — focused: fewer, faster, stronger
-                    count = Mathf.Clamp(1 + p / 2, 1, 4); spreadPer = per * 0.4f; speed = baseSpeed * 1.35f; dmg = baseDmg * 1.5f; heat = baseHeat * 1.4f; break;
-                case WeaponId.L3: // 波動 — wide slow spray
-                    count = Mathf.Clamp(p, 1, _config.MaxPrimaryBullets); spreadPer = per * 1.8f; speed = baseSpeed * 0.85f; dmg = baseDmg * 1.1f; heat = baseHeat * 1.2f; break;
-                case WeaponId.L4: // 穿透 — piercing lance
-                    count = Mathf.Clamp(1 + p / 2, 1, 5); spreadPer = per * 0.6f; speed = baseSpeed * 1.2f; dmg = baseDmg * 1.3f; heat = baseHeat; pierce = true; break;
-                default: // L1 散波 — spread grows with power
-                    count = Mathf.Clamp(p, 1, _config.MaxPrimaryBullets); spreadPer = per; speed = baseSpeed; dmg = baseDmg; heat = baseHeat; break;
+                case WeaponId.L2: // 集束 — a single concentrated bolt: grows BIGGER + much stronger, NEVER fans out.
+                    count = 1; spreadPer = 0f; speed = baseSpeed * 1.35f;
+                    dmg = baseDmg * (1.6f + 2.6f * t); heat = baseHeat * (1.5f + 1.6f * t);
+                    size = new Vector2(1.5f + 1.4f * t, 1.5f + 1.4f * t);      // fat round bolt, grows with power
+                    break;
+                case WeaponId.L3: // 波動 — a few WIDE wave pulses (big & wide), distinct from L1's many thin bullets.
+                    count = Mathf.Clamp(1 + p / 3, 1, 3); spreadPer = per * 2.4f; speed = baseSpeed * 0.9f;
+                    dmg = baseDmg * (1.2f + 0.7f * t); heat = baseHeat * 1.25f;
+                    size = new Vector2(2.2f + 1.6f * t, 1.15f);               // wide pulse, widens with power
+                    break;
+                case WeaponId.L4: // 穿透 — a long piercing lance: stays 1 (→2 at max), grows longer + stronger.
+                    count = p >= max ? 2 : 1; spreadPer = per * 0.5f; speed = baseSpeed * 1.25f;
+                    dmg = baseDmg * (1.4f + 1.8f * t); heat = baseHeat * (1.2f + 0.9f * t); pierce = true;
+                    size = new Vector2(0.85f, 1.9f + 1.8f * t);              // tall lance, lengthens with power
+                    break;
+                default: // L1 散彈 — the spread weapon: MORE + WIDER thin bullets as power grows.
+                    count = Mathf.Clamp(p, 1, _config.MaxPrimaryBullets); spreadPer = per;
+                    speed = baseSpeed; dmg = baseDmg; heat = baseHeat; size = Vector2.one;
+                    break;
             }
-            FireFan(count, spreadPer, speed, dmg, heat, 0f, false, pierce, _primaryType);
+            FireFan(count, spreadPer, speed, dmg, heat, 0f, false, pierce, _primaryType, size);
         }
 
         private void FireSecondary()
@@ -124,12 +143,12 @@ namespace KaijuBreaker.App.Gameplay
             int mp = Mathf.Clamp(_missilePower, 1, _config.MaxMissilePower);
             int count = Mathf.Clamp(1 + (mp - 1) / 2, 1, _config.MaxSecondaryMissiles);
             FireFan(count, 9f, _config.SecondaryProjectileSpeed, _config.SecondaryTrashDamage, 0f,
-                    _config.SecondaryBreakDamage, true, false, _secondaryType);
+                    _config.SecondaryBreakDamage, true, false, _secondaryType, new Vector2(2f, 2f)); // missiles stay chunky
         }
 
-        // Spawn `count` shots in a fan centred straight up (90°).
+        // Spawn `count` shots in a fan centred straight up (90°), each scaled by `size` (per-axis).
         private void FireFan(int count, float perDeg, float speed, float dmg, float heat, float breakDmg,
-                             bool isMissile, bool pierce, WeaponId weaponId)
+                             bool isMissile, bool pierce, WeaponId weaponId, Vector2 size)
         {
             Vector3 origin = transform.position + (Vector3)_muzzleOffset;
             float total = (count - 1) * perDeg;
@@ -138,7 +157,7 @@ namespace KaijuBreaker.App.Gameplay
             {
                 float ang = (count == 1 ? 90f : start + i * perDeg) * Mathf.Deg2Rad;
                 Vector2 vel = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * speed;
-                Rent().Launch(origin, vel, dmg, heat, breakDmg, isMissile, pierce, weaponId, Return);
+                Rent().Launch(origin, vel, dmg, heat, breakDmg, isMissile, pierce, weaponId, size, Return);
             }
         }
 

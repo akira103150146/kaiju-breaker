@@ -69,9 +69,14 @@ namespace KaijuBreaker.App.Gameplay
             }
         }
 
-        /// <summary>Arm this projectile for flight along <paramref name="velocity"/>. Called by the pool on spawn.</summary>
+        /// <summary>
+        /// Arm this projectile for flight along <paramref name="velocity"/>. Called by the pool on spawn.
+        /// <paramref name="sizeScale"/> is a per-axis multiplier on the prefab's base scale so each primary
+        /// weapon can express its power-up as a DIFFERENT shape — a round focus bolt that grows fatter, a wide
+        /// wave pulse, a tall piercing lance — instead of every weapon just fanning out more bullets.
+        /// </summary>
         public void Launch(Vector3 position, Vector2 velocity, float damage, float heatDelta, float breakDamage,
-                           bool isMissile, bool pierce, WeaponId weaponId, Action<PlayerProjectile> onDespawn)
+                           bool isMissile, bool pierce, WeaponId weaponId, Vector2 sizeScale, Action<PlayerProjectile> onDespawn)
         {
             transform.position = position;
             _velocity = velocity;
@@ -85,10 +90,11 @@ namespace KaijuBreaker.App.Gameplay
             _onDespawn = onDespawn;
             _active = true;
 
-            // Colour + size the shot so primary (laser) and secondary (missile) read differently: missiles are
-            // chunkier and blue-white, lasers slimmer and cyan/teal (cold family — enemy bullets are warm).
+            // Colour + size the shot so primary (laser) and secondary (missile) read differently AND so each
+            // primary type's power growth has a distinct silhouette (focus = fat round, wave = wide, pierce = long
+            // lance). Cold family throughout (enemy bullets are warm — readability rule).
             if (_sr != null) _sr.color = TintFor(isMissile, weaponId);
-            transform.localScale = isMissile ? _baseScale * 2.0f : _baseScale; // missiles are visibly chunkier
+            transform.localScale = new Vector3(_baseScale.x * sizeScale.x, _baseScale.y * sizeScale.y, _baseScale.z);
 
             gameObject.SetActive(true);
         }
