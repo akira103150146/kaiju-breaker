@@ -1,6 +1,22 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-10 (SESSION 12 — LACERA 斷腳可拖 + PartGate 跨部位閘門(6c)全線 + 新5核心經濟sink + Play實測 + 重建EXE/APK. 486 EditMode GREEN. 全 push origin main. EXE 116.81MB + APK 45MB.)*
+*Last updated: 2026-07-10 (SESSION 13 — PartGate 純視覺 polish 收尾: 稜殼剝甲也停火(FireGate+4) + 不可命中→可命中揭露白閃脈動. 495 EditMode GREEN. 本地 main e999ef7/2ed01d4 未 push.)*
+
+*(SESSION 12 — LACERA 斷腳可拖 + PartGate 跨部位閘門(6c)全線 + 新5核心經濟sink + Play實測 + 重建EXE/APK. 486 EditMode GREEN. 全 push origin main. EXE 116.81MB + APK 45MB.)*
+
+## ✅ SESSION 13 (2026-07-10) — PartGate 純視覺 polish 收尾（剝甲也停火 + 揭露脈動）
+
+**⚠️ 環境同 session-12**：Unity 綁**主 checkout `C:\Game\kaiju-breaker`(main)**。腳本改動用 **Bash 寫檔到主 checkout + MCP refresh/run_tests**（避開 harness 對 Edit 的攔截 & session-12 記的 MCP script 驗證器誤判）。**未 push**（依 [[commit-often-push-on-request]]，等導演指示）。
+
+**✅ 已辦（本地 main，2 commit，495 EditMode GREEN，0 fail）：**
+1. **稜殼晶面「剝甲也停火」**（`e999ef7`）：`PartFireGate` 加 `SilenceWhenSoftenedOrStripped=4`（軟化**或**剝甲皆停火，原本只軟化停火）。PRISMSHELL 4 片 facet emitter `_gate:1→4`（facet 為 Armored 部位，剝甲成立）。把 emitter gate 真值表抽成純 `Content.EmitterGateEval.IsOpen(gate,heat,armor,gatePartBroken)`，`BossController.GateOpen` 改委派 → 現在可 EditMode 隔離測試。+9 測試 `emitter_gate_eval_test`（486→495）。
+2. **不可命中↔可命中「揭露脈動」**（`2ed01d4`）：跨部位 HittableWhen 閘門開啟（un-hittable→hittable edge）時，`BossPart` 閃白一拍（`_revealFlashSeconds`=0.35s，比 hit flash 0.06s 長=讀作「揭露」非「命中」），把玩家目光拉到剛露出的弱點（潮顎核心從背甲後現身、稜殼 weak_node 於接縫露出）。沿用既有 hit-flash 渲染路徑 + 1.5s 冷卻防 gate 抖動閃爍。**純視覺**，無法 EditMode 測；495 綠(無回歸)。**待導演批次 Play 目視確認**([[verify-without-stealing-focus]]，背景不搶焦點)。
+
+**可調旋鈕**：`BossPart._revealFlashSeconds`(0.35) · `RevealCooldown`(1.5) · PRISMSHELL facet gate。
+
+**⬜ 待辦（同 session-12 剩餘，導演定方向）：** 5頭目 bespoke 美術；utility 手感微調旋鈕（見下）；音樂/音效方向；UI 改 UGUI+TMP；手機實測難度/FPS/斷腳/閘門手感（含本輪揭露脈動目視）；未 push 的本地 commit（`e999ef7`/`2ed01d4`）待導演指示 push + 重建 EXE/APK。
+
+---
 
 ## ✅ SESSION 12 (2026-07-09~10) — LACERA斷腳 + PartGate(6c) + 新5核心sink + Play實測 + 重建
 
