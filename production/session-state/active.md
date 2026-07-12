@@ -19,9 +19,13 @@
 
 **✅ 字型最終定案：Cubic 11 完整繁中像素字型**（`3e51c92`，取代 Ark Pixel）：先試 Ark Pixel 12px(`c923e79`)但缺 12 字(應莢層壞熱殼換殘擊裝勝警，Ark Pixel 任何尺寸/語言變體都沒畫)→掛 Noto fallback→導演反映「勝」平滑很怪。自動把那 12 字從 Noto 像素化在 12px 複雜字(擊19劃/警19劃)糊成一團。**改用 Cubic 11**(ACh-K/Cubic-11，OFL，`fonts/ttf/Cubic_11.ttf` 2.7MB)：**完整繁中像素字型，覆蓋全部 242 字(9159 CJK，同 1200 UPM)**，複雜字也專門設計清楚。`Cubic11 SDF` Dynamic asset 烘焙 337 字 0 缺、設 TMP 預設、**零 fallback**。刪掉 Ark Pixel 12px + Noto(build 省 ~22MB 字型 source，只剩 Cubic 2.7MB)。Play 截圖驗證：勝利/出擊/裝備全一致像素、清晰。**舊 `ArkPixel-16px-zh_tw.ttf`(97字子集)仍留(_uiFont 未用 ref，可日後清)。**
 
-**✅ 建置完成(Cubic 11 版)**：**EXE 121.74MB + APK 49.4MB**(皆 0 錯，驗證 APK PK zip 有效含 libil2cpp.so；比 Ark+Noto 版 135/57MB 省很多)。字型中間版(Noto/Ark)已被覆蓋。
+**✅ 導演實測回饋修正**（`0e8e3e8`）：選裝備選單「主武器/副武器/難度」小標題被下方按鈕蓋住 → 面板加高(900→1000)+行距加大(190→200)+標題上移(+44→+64)+按鈕降高(84→76)+標題加亮加粗(CyanDim→Ink Bold)。Play 截圖驗證清楚不重疊。
 
-**⬜ 待辦**：①導演實測新 UI(手感/中文像素風/手機觸控/各畫面) ②依回饋微調版面(如選項列小標題偏暗) ③push(等指示，現 ~9 commit 未 push) ④5頭目 bespoke 美術(唯一剩的大項)。
+**✅ 建置完成(Cubic 11 + 選裝備修正版)**：**EXE 121.78MB**(0錯) + **APK 重建中**(IL2CPP 重編，因有改 GameUiView.cs)。前面 Cubic 11 版 EXE121.74/APK49.4 已被覆蓋。
+
+**⬜ 待辦（明天繼續）**：①導演繼續實測其他畫面(選頭目/強化/HUD/結算/標題) ②依回饋再微調版面 ③push(等指示，現 ~11 commit 未 push) ④5頭目 bespoke 美術(唯一剩的大項)。
+
+**📌 SESSION 16 收尾（2026-07-12，今天到此）**：UI 全面 UGUI+TMP、IMGUI 清零、中文 Cubic 11 完整像素字、選裝備版面修正、雙平台重建、Obsidian 同步。明天從導演實測回饋繼續。
 
 ---
 
