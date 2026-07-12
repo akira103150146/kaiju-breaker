@@ -13,7 +13,9 @@
         "KaijuBreaker.Difficulty",
         "KaijuBreaker.Input",
         "KaijuBreaker.GameFeel",
-        "KaijuBreaker.UI"
+        "KaijuBreaker.UI",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
