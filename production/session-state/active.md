@@ -1,5 +1,28 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
+*Last updated: 2026-07-12 (SESSION 16 — **UI 全面改 UGUI+TMP（ADR-0006，導演選 B 程式建構案）**。IMGUI 完全移除。編譯0錯、503 EditMode GREEN、6 畫面+觸控+flash 全 Play 截圖驗證、點擊管線驗證。本地 3 commit 未 push。)*
+
+## ✅ SESSION 16 (2026-07-12) — UI 從 IMGUI 全面遷移到 UGUI+TMP（ADR-0006）
+
+**導演本輪指示**：選「先1」= UI 改 UGUI+TMP；架構選 **B｜程式建構 UGUI+TMP**（執行期程式建 Canvas/TMP/Button，不在編輯器手拉階層）。
+
+**⚠️ 關鍵發現（字型）**：repo 的 `ArkPixel-16px-zh_tw.ttf` **只有 97 個 CJK 字**（Ark Pixel 16px 尺寸未完成；10px 缺158/242、16px 缺215/242）。**遊戲中文一直靠 Windows 系統字型 fallback 撐著**（平滑非像素，Android 無保證）。→ 改用 **Noto Sans TC**（`C:\Windows\Fonts\NotoSansTC-VF.ttf`，OFL 可嵌入、完整繁中）複製進 `Art/Fonts/NotoSansTC.ttf`。**遊戲實際只用 242 個中文字**（掃 Scripts/Data/Art 抽出）。
+
+**✅ 已辦（3 commit，全驗證，未 push）：**
+1. **TMP 基建**（`8aaec9e`）：匯入 TMP Essentials（`Assets/TextMesh Pro/`）+ 用 Noto TC 建 `NotoSansTC SDF.asset`（Dynamic 動態圖集、Mobile Distance Field shader）+ 設為 TMP 預設字型 + 預烘焙 337 字(95 ASCII+242 CJK) 0 缺字單張圖集。
+2. **選單+HUD → UGUI**（`6e62ab7`）：新 `GameUiView.cs`（程式建 Overlay Canvas+CanvasScaler 直向參考1080×1920+6畫面：標題/選頭目hub/強化商店/選裝備/HUD/結算，用 TextMeshProUGUI+UGUI Button+EventSystem）。`GameplaySceneDirector` 移除 OnGUI+全部 Draw*，改狀態機驅動 `GameUiView` + `On*` callback。HUD 錨定螢幕上/下緣(任何比例都在畫面內)。符號改 Noto 有的字(⚙→◆、☑/☐→■/□)。App asmdef 加 `UnityEngine.UI`+`Unity.TextMeshPro`。
+3. **觸控+flash → UGUI + 刪 GameUiSkin**（`37bf800`）：`PlayerInputRouter` 觸控搖桿/副武/集氣鈕改 UGUI Image(專屬無 scaler overlay canvas，1單位=1螢幕px，polling 邏輯不動)；`GameBootstrap` flash 改全螢幕 UGUI Image(sortingOrder 200、raycastTarget off、alpha 綁 FlashSystem)。刪掉 `GameUiSkin.cs`。**專案零 OnGUI/GUILayout/GUIStyle**。
+
+**✅ 驗證**：503/503 EditMode 綠(×3)、編譯0錯、**6 畫面+觸控+flash 全部 Play 截圖確認繁中清晰渲染**、**點擊管線端到端驗證**(raycast→Button→callback→director 狀態變:點 Cell5→_selBossIndex 0→5)。
+
+**可調/注意**：字型是一行切換(`TMP_Settings` 預設字型)——若導演要中文也像素風，唯一夠用是 **Ark Pixel 12px 完整版**(35MB、更方、source 較肥)。`GameUiView` 顏色/尺寸/參考解析度皆在該檔內。`ArkPixel-16px-zh_tw.ttf`(舊子集)仍在但已無人用(可日後清)。
+
+**⬜ 待辦**：①build EXE+APK ②導演實測新 UI(手感/中文/手機觸控/各畫面) ③依回饋微調版面 ④commit 後 push(等指示) ⑤(可選)字型改靜態子集省 ~11MB APK ⑥5頭目 bespoke 美術(唯一剩的大項)。
+
+---
+
+*(以下為 SESSION 15)*
+
 *Last updated: 2026-07-12 (SESSION 15 — 導演3輪回饋共10項(波次時限撤退/強化統一+提頻/小怪縮小+留邊界內/①音效逐發命中音+BGM/手機集氣鈕). **編譯乾淨0錯、503 EditMode GREEN、EXE(119MB)+APK(47.5MB)雙平台重建含全部**。已 push origin main `94fc662`。)*
 
 ## ✅ SESSION 15 (2026-07-12) — 導演回饋2輪6修 + 音效補完（編譯綠+503測試綠+已build）
