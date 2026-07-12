@@ -224,28 +224,29 @@ namespace KaijuBreaker.App.Gameplay
         GameObject BuildLoadout(string[] primary, string[] secondary, string[] diff)
         {
             var root = ScreenRoot("Loadout_Screen", withBackdrop: true);
-            float pw = 900f, ph = 900f;
+            float pw = 900f, ph = 1000f;
             var panel = Panel(root.transform, pw, ph, 0f, 0f);
             Txt(panel, "Heading", "選擇裝備  LOADOUT", 50f, Ink, TextAlignmentOptions.Center, FontStyles.Bold, pw, 60f, 0f, ph * 0.5f - 56f);
 
-            float top = ph * 0.5f - 170f;
+            float top = ph * 0.5f - 190f;
             _primaryBtns = BuildOptionRow(panel, "主武器 · 雷射", primary, top, i => OnPrimaryPicked?.Invoke(i));
-            _secondaryBtns = BuildOptionRow(panel, "副武器 · 飛彈", secondary, top - 190f, i => OnSecondaryPicked?.Invoke(i));
-            _difficultyBtns = BuildOptionRow(panel, "難度 · 彈幕密度", diff, top - 380f, i => OnDifficultyPicked?.Invoke(i));
+            _secondaryBtns = BuildOptionRow(panel, "副武器 · 飛彈", secondary, top - 200f, i => OnSecondaryPicked?.Invoke(i));
+            _difficultyBtns = BuildOptionRow(panel, "難度 · 彈幕密度", diff, top - 400f, i => OnDifficultyPicked?.Invoke(i));
 
             // Skip toggle
-            var skip = Btn(panel, "□  跳過道中 · 直達 BOSS (測試)", pw - 120f, 56f, 0f, top - 520f, 28f, () => OnSkipToggled?.Invoke());
+            var skip = Btn(panel, "□  跳過道中 · 直達 BOSS (測試)", pw - 120f, 56f, 0f, top - 540f, 28f, () => OnSkipToggled?.Invoke());
             _skipBox = skip.GetComponent<Image>();
             _skipLabel = skip.GetComponentInChildren<TextMeshProUGUI>();
 
-            Btn(panel, "出擊  START", 380f, 92f, 0f, -ph * 0.5f + 70f, 40f, () => OnStart?.Invoke());
+            Btn(panel, "出擊  START", 380f, 88f, 0f, -ph * 0.5f + 66f, 40f, () => OnStart?.Invoke());
             return root.gameObject;
         }
 
         Image[] BuildOptionRow(RectTransform panel, string title, string[] labels, float y, Action<int> onPick)
         {
             float pw = panel.sizeDelta.x;
-            Txt(panel, "RT:" + title, title, 30f, CyanDim, TextAlignmentOptions.Left, FontStyles.Normal, pw - 120f, 34f, 0f, y + 44f);
+            // Title sits clearly ABOVE the button band (buttons are 76 tall → ±38; title bottom must clear +38).
+            Txt(panel, "RT:" + title, title, 28f, Ink, TextAlignmentOptions.Left, FontStyles.Bold, pw - 120f, 32f, 0f, y + 64f);
             int n = labels.Length;
             float rowW = pw - 120f;
             float bw = (rowW - (n - 1) * 16f) / n;
@@ -254,7 +255,7 @@ namespace KaijuBreaker.App.Gameplay
             for (int i = 0; i < n; i++)
             {
                 int idx = i;
-                var btn = Btn(panel, labels[i], bw, 84f, startX + i * (bw + 16f), y, 30f, () => onPick(idx));
+                var btn = Btn(panel, labels[i], bw, 76f, startX + i * (bw + 16f), y, 30f, () => onPick(idx));
                 imgs[i] = btn.GetComponent<Image>();
             }
             return imgs;
