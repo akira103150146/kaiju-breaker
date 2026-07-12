@@ -1,4 +1,6 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KaijuBreaker.App.Gameplay
 {
@@ -79,6 +81,9 @@ namespace KaijuBreaker.App.Gameplay
                 else if (InCircle(m, _fireCenter, _fireRadius)) _secondaryHeld = true; // click-hold the on-screen button
                 else if (ChargeControlVisible && InCircle(m, _chargeCenter, _chargeRadius)) _primaryHeld = true;
             }
+
+            EnsureTouchUi();
+            UpdateTouchUi();
         }
 
         private void LayoutControls()
@@ -125,40 +130,94 @@ namespace KaijuBreaker.App.Gameplay
 
         private static bool Key(KeyCode k) => Input.GetKey(k);
 
-        private Texture2D _tex;
-        private void OnGUI()
+        // ── On-screen touch controls (UGUI + TMP, ADR-0006) ─────────────────────────
+        private Canvas _touchCanvas;
+        private Image _joyBaseImg, _joyHandleImg, _fireImg, _chargeImg;
+        private TextMeshProUGUI _chargeLabel;
+        private static Sprite _discSprite;
+        private bool _touchUiBuilt;
+
+        // Build the touch widgets once (mobile only). A dedicated overlay canvas with NO CanvasScaler, so 1 unit
+        // == 1 screen pixel and the discs can be placed/sized directly in the same screen coordinates the input
+        // polling already uses (bottom-left origin, matching Input.mousePosition / Touch.position).
+        private void EnsureTouchUi()
         {
-            if (!TouchUiActive) return;
-            if (_tex == null) { _tex = new Texture2D(1, 1); _tex.SetPixel(0, 0, Color.white); _tex.Apply(); }
-            var disc = GameUiSkin.Ring != null ? GameUiSkin.Ring : _tex; // soft radial disc from the shared skin
-            // IMGUI y is top-down; screen coords are bottom-up.
-            DrawDisc(disc, _joyBase, _joyRadius, new Color(0.35f, 0.85f, 1f, 0.30f));                 // joystick base
-            DrawDisc(disc, _joyBase + _joyAxis * _joyRadius, _joyRadius * 0.5f, new Color(0.5f, 0.97f, 1f, 0.85f)); // handle
-            DrawDisc(disc, _fireCenter, _fireRadius, new Color(1f, 0.55f, 0.32f, 0.55f));             // fire button
-            // Charge (集氣) button — only when the run's primary is the 波動 charge weapon. Brightens while held.
+            if (_touchUiBuilt || !TouchUiActive) return;
+            _touchUiBuilt = true;
+
+            var go = new GameObject("TouchControls", typeof(RectTransform));
+            _touchCanvas = go.AddComponent<Canvas>();
+            _touchCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _touchCanvas.sortingOrder = 90; // below the menu/HUD canvas (100)
+
+            var sprite = DiscSprite();
+            _joyBaseImg = MakeDisc(go.transform, sprite, new Color(0.35f, 0.85f, 1f, 0.30f));
+            _joyHandleImg = MakeDisc(go.transform, sprite, new Color(0.5f, 0.97f, 1f, 0.85f));
+            _fireImg = MakeDisc(go.transform, sprite, new Color(1f, 0.55f, 0.32f, 0.55f));
+            _chargeImg = MakeDisc(go.transform, sprite, new Color(0.4f, 0.8f, 1f, 0.5f));
+
+            var lgo = new GameObject("Label", typeof(RectTransform));
+            lgo.transform.SetParent(_chargeImg.transform, false);
+            _chargeLabel = lgo.AddComponent<TextMeshProUGUI>();
+            _chargeLabel.text = "集氣";
+            _chargeLabel.alignment = TextAlignmentOptions.Center;
+            _chargeLabel.color = Color.white;
+            _chargeLabel.enableAutoSizing = true;
+            _chargeLabel.fontSizeMin = 8f; _chargeLabel.fontSizeMax = 40f;
+            _chargeLabel.raycastTarget = false;
+            var lrt = _chargeLabel.rectTransform;
+            lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one; lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+        }
+
+        private void UpdateTouchUi()
+        {
+            if (!_touchUiBuilt) return;
+            Place(_joyBaseImg, _joyBase, _joyRadius * 2f);
+            Place(_joyHandleImg, _joyBase + _joyAxis * _joyRadius, _joyRadius);
+            Place(_fireImg, _fireCenter, _fireRadius * 2f);
+            _chargeImg.gameObject.SetActive(ChargeControlVisible);
             if (ChargeControlVisible)
             {
-                var cc = _primaryHeld ? new Color(0.6f, 0.95f, 1f, 0.85f) : new Color(0.4f, 0.8f, 1f, 0.5f);
-                DrawDisc(disc, _chargeCenter, _chargeRadius, cc);
-                DrawChargeLabel(_chargeCenter, _chargeRadius);
+                Place(_chargeImg, _chargeCenter, _chargeRadius * 2f);
+                _chargeImg.color = _primaryHeld ? new Color(0.6f, 0.95f, 1f, 0.85f) : new Color(0.4f, 0.8f, 1f, 0.5f);
             }
         }
 
-        // Small "集氣" caption centred on the charge button so its purpose is unambiguous on touch.
-        private void DrawChargeLabel(Vector2 screenCenter, float r)
+        // Overlay canvas (no scaler): RectTransform.position is in screen pixels, so place discs directly.
+        private static void Place(Image img, Vector2 screenPos, float diameter)
         {
-            var style = GameUiSkin.LabelStyle != null ? GameUiSkin.LabelStyle : GUI.skin.label;
-            var prev = style.alignment; var prevColor = GUI.color;
-            style.alignment = TextAnchor.MiddleCenter; GUI.color = Color.white;
-            GUI.Label(new Rect(screenCenter.x - r, Screen.height - screenCenter.y - r, r * 2f, r * 2f), "集氣", style);
-            style.alignment = prev; GUI.color = prevColor;
+            var rt = img.rectTransform;
+            rt.sizeDelta = new Vector2(diameter, diameter);
+            rt.position = new Vector3(screenPos.x, screenPos.y, 0f);
         }
 
-        private void DrawDisc(Texture2D tex, Vector2 screenCenter, float r, Color c)
+        private static Image MakeDisc(Transform parent, Sprite sprite, Color color)
         {
-            var prev = GUI.color; GUI.color = c;
-            GUI.DrawTexture(new Rect(screenCenter.x - r, Screen.height - screenCenter.y - r, r * 2f, r * 2f), tex);
-            GUI.color = prev;
+            var go = new GameObject("Disc", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var img = go.AddComponent<Image>();
+            img.sprite = sprite; img.color = color; img.raycastTarget = false;
+            img.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            img.rectTransform.anchorMin = img.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            return img;
+        }
+
+        // Soft radial disc sprite (bright centre → transparent edge), generated once and shared.
+        private static Sprite DiscSprite()
+        {
+            if (_discSprite != null) return _discSprite;
+            const int size = 64; float r = size * 0.5f;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Mathf.Sqrt((x - r + 0.5f) * (x - r + 0.5f) + (y - r + 0.5f) * (y - r + 0.5f)) / r;
+                    float a = d > 1f ? 0f : Mathf.SmoothStep(0f, 1f, 1f - d) * 0.7f + (d > 0.82f && d <= 1f ? 0.3f : 0f);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(a)));
+                }
+            tex.Apply(); tex.filterMode = FilterMode.Bilinear;
+            _discSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+            return _discSprite;
         }
     }
 }

@@ -1,5 +1,6 @@
 using KaijuBreaker.Content;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KaijuBreaker.App
 {
@@ -52,7 +53,8 @@ namespace KaijuBreaker.App
         private UnityTimeScaleControl _timeScale;
         private Vector3 _cameraBasePosition;
         private bool _hasCameraBase;
-        private Texture2D _whiteTex;
+        private Canvas _flashCanvas;
+        private Image _flashImage;
 
         /// <summary>The live composed system graph (null until Awake, or if no ContentRegistry is assigned).</summary>
         public GameComposition Composition => _composition;
@@ -94,6 +96,8 @@ namespace KaijuBreaker.App
             _sfx = sfxGo.AddComponent<SfxPlayer>();
             _sfx.Init(_composition.Bus);
 
+            BuildFlashUi();
+
             Debug.Log("[GameBootstrap] System graph composed (event bus + Meta/Difficulty/KaijuParts/Economy/GameFeel/Run + SFX).");
         }
 
@@ -127,6 +131,7 @@ namespace KaijuBreaker.App
             _composition.Stage?.Tick(Time.deltaTime);          // pre-boss lull on game time
             FitCameraToField();
             ApplyShake();
+            UpdateFlash();
         }
 
         // Size the orthographic camera so the whole vertical play field fits on ANY aspect ratio: portrait phones
@@ -154,23 +159,34 @@ namespace KaijuBreaker.App
             cam.transform.position = _cameraBasePosition + offset;
         }
 
-        // GameFeel flash adapter: a full-screen white overlay whose alpha follows FlashSystem (§D.3).
-        // Capped at FlashMaxAlpha by the system, so the player's hitpoint stays identifiable at peak flash.
-        private void OnGUI()
+        // GameFeel flash adapter (ADR-0006, UGUI): a full-screen white overlay whose alpha follows FlashSystem
+        // (§D.3). Highest sorting order so it sits over the HUD; never blocks input (raycastTarget off). Capped at
+        // FlashMaxAlpha by the system, so the player's hitpoint stays identifiable at peak flash.
+        private void BuildFlashUi()
         {
-            if (_composition == null) return;
+            var go = new GameObject("FlashOverlay", typeof(RectTransform));
+            DontDestroyOnLoad(go);
+            _flashCanvas = go.AddComponent<Canvas>();
+            _flashCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _flashCanvas.sortingOrder = 200; // above menus/HUD (100) and touch controls (90)
+
+            var imgGo = new GameObject("Flash", typeof(RectTransform));
+            imgGo.transform.SetParent(go.transform, false);
+            _flashImage = imgGo.AddComponent<Image>();
+            _flashImage.color = new Color(1f, 1f, 1f, 0f);
+            _flashImage.raycastTarget = false;
+            var rt = _flashImage.rectTransform;
+            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+        }
+
+        private void UpdateFlash()
+        {
+            if (_flashImage == null) return;
             float alpha = _composition.Flash.Alpha;
-            if (alpha <= 0.001f) return;
-            if (_whiteTex == null)
-            {
-                _whiteTex = new Texture2D(1, 1);
-                _whiteTex.SetPixel(0, 0, Color.white);
-                _whiteTex.Apply();
-            }
-            var prev = GUI.color;
-            GUI.color = new Color(1f, 1f, 1f, alpha);
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _whiteTex);
-            GUI.color = prev;
+            var c = _flashImage.color;
+            if (c.a == alpha) return;
+            c.a = alpha; _flashImage.color = c;
         }
 
         private void OnApplicationPause(bool pauseStatus)
