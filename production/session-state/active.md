@@ -17,9 +17,11 @@
 
 **可調/注意**：字型是一行切換(`TMP_Settings` 預設字型)——若導演要中文也像素風，唯一夠用是 **Ark Pixel 12px 完整版**(35MB、更方、source 較肥)。`GameUiView` 顏色/尺寸/參考解析度皆在該檔內。`ArkPixel-16px-zh_tw.ttf`(舊子集)仍在但已無人用(可日後清)。
 
-**✅ 建置完成**：EXE 130.5MB(0錯,+11MB=Noto字型隨build) + APK 56.3MB(0錯,+8.8MB字型；驗證 PK zip 有效、含新 libil2cpp.so+AndroidManifest)。雙平台皆含新 UGUI+TMP UI。
+**✅ 導演定案：中文字型改 Ark Pixel 12px 像素風**（`c923e79`）：Ark Pixel 12px zh_tw(18299 CJK)蓋 230/242 遊戲字，缺的 12 字(應莢層壞熱殼換殘擊裝勝警，Ark Pixel 所有尺寸/語言變體都沒繪)掛 **Noto Sans TC 當 fallback**。Ark Pixel SDF 設 TMP 預設。Play 截圖驗證標題/選裝備/結算像素字清晰、fallback 12 字(出擊/裝備/勝利)無豆腐。**注意**：現雙 TTF 都出貨(~5MB Ark+~12MB Noto)；日後可把 Noto 縮成靜態 12 字子集省 APK。字集抽取/建 asset 流程見 scratchpad + memory [[drive-unity-mcp-over-http]]。
 
-**⬜ 待辦**：①導演實測新 UI(手感/中文/手機觸控/各畫面) ②依回饋微調版面 ③push(等指示) ④(可選)字型改靜態子集省 ~11MB APK ⑤(待導演定)中文字型 Noto 黑體 vs Ark Pixel 12px 像素風 ⑥5頭目 bespoke 美術(唯一剩的大項)。
+**✅ 建置**：EXE 130.5→**135.28MB**(Ark Pixel 版,0錯) + APK 重建中(Ark Pixel 版)。前一版(Noto)EXE 130.5/APK 56.3 已被覆蓋。
+
+**⬜ 待辦**：①導演實測新 UI(手感/中文像素風/手機觸控/各畫面) ②依回饋微調版面 ③push(等指示,現 6 commit 未 push) ④(可選)Noto fallback 改靜態 12 字省 ~11MB APK ⑤5頭目 bespoke 美術(唯一剩的大項)。
 
 ---
 
