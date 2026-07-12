@@ -17,7 +17,9 @@
 
 **可調/注意**：字型是一行切換(`TMP_Settings` 預設字型)——若導演要中文也像素風，唯一夠用是 **Ark Pixel 12px 完整版**(35MB、更方、source 較肥)。`GameUiView` 顏色/尺寸/參考解析度皆在該檔內。`ArkPixel-16px-zh_tw.ttf`(舊子集)仍在但已無人用(可日後清)。
 
-**⬜ 待辦**：①build EXE+APK ②導演實測新 UI(手感/中文/手機觸控/各畫面) ③依回饋微調版面 ④commit 後 push(等指示) ⑤(可選)字型改靜態子集省 ~11MB APK ⑥5頭目 bespoke 美術(唯一剩的大項)。
+**✅ 建置完成**：EXE 130.5MB(0錯,+11MB=Noto字型隨build) + APK 56.3MB(0錯,+8.8MB字型；驗證 PK zip 有效、含新 libil2cpp.so+AndroidManifest)。雙平台皆含新 UGUI+TMP UI。
+
+**⬜ 待辦**：①導演實測新 UI(手感/中文/手機觸控/各畫面) ②依回饋微調版面 ③push(等指示) ④(可選)字型改靜態子集省 ~11MB APK ⑤(待導演定)中文字型 Noto 黑體 vs Ark Pixel 12px 像素風 ⑥5頭目 bespoke 美術(唯一剩的大項)。
 
 ---
 
