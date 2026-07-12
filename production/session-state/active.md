@@ -1,6 +1,6 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
-*Last updated: 2026-07-12 (SESSION 16 — **UI 全面改 UGUI+TMP（ADR-0006，導演選 B 程式建構案）**。IMGUI 完全移除。編譯0錯、503 EditMode GREEN、6 畫面+觸控+flash 全 Play 截圖驗證、點擊管線驗證。本地 3 commit 未 push。)*
+*Last updated: 2026-07-12 (SESSION 16 — **UI 全面改 UGUI+TMP（ADR-0006，B 程式建構案）+ 中文字型 Cubic 11 完整繁中像素字**。IMGUI 完全移除。編譯0錯、503 EditMode GREEN、全畫面+觸控+flash Play 截圖驗證、點擊管線驗證。EXE 121.74MB + APK 49.4MB 重建。本地 ~9 commit 未 push。)*
 
 ## ✅ SESSION 16 (2026-07-12) — UI 從 IMGUI 全面遷移到 UGUI+TMP（ADR-0006）
 
@@ -17,11 +17,11 @@
 
 **可調/注意**：字型是一行切換(`TMP_Settings` 預設字型)——若導演要中文也像素風，唯一夠用是 **Ark Pixel 12px 完整版**(35MB、更方、source 較肥)。`GameUiView` 顏色/尺寸/參考解析度皆在該檔內。`ArkPixel-16px-zh_tw.ttf`(舊子集)仍在但已無人用(可日後清)。
 
-**✅ 導演定案：中文字型改 Ark Pixel 12px 像素風**（`c923e79`）：Ark Pixel 12px zh_tw(18299 CJK)蓋 230/242 遊戲字，缺的 12 字(應莢層壞熱殼換殘擊裝勝警，Ark Pixel 所有尺寸/語言變體都沒繪)掛 **Noto Sans TC 當 fallback**。Ark Pixel SDF 設 TMP 預設。Play 截圖驗證標題/選裝備/結算像素字清晰、fallback 12 字(出擊/裝備/勝利)無豆腐。**注意**：現雙 TTF 都出貨(~5MB Ark+~12MB Noto)；日後可把 Noto 縮成靜態 12 字子集省 APK。字集抽取/建 asset 流程見 scratchpad + memory [[drive-unity-mcp-over-http]]。
+**✅ 字型最終定案：Cubic 11 完整繁中像素字型**（`3e51c92`，取代 Ark Pixel）：先試 Ark Pixel 12px(`c923e79`)但缺 12 字(應莢層壞熱殼換殘擊裝勝警，Ark Pixel 任何尺寸/語言變體都沒畫)→掛 Noto fallback→導演反映「勝」平滑很怪。自動把那 12 字從 Noto 像素化在 12px 複雜字(擊19劃/警19劃)糊成一團。**改用 Cubic 11**(ACh-K/Cubic-11，OFL，`fonts/ttf/Cubic_11.ttf` 2.7MB)：**完整繁中像素字型，覆蓋全部 242 字(9159 CJK，同 1200 UPM)**，複雜字也專門設計清楚。`Cubic11 SDF` Dynamic asset 烘焙 337 字 0 缺、設 TMP 預設、**零 fallback**。刪掉 Ark Pixel 12px + Noto(build 省 ~22MB 字型 source，只剩 Cubic 2.7MB)。Play 截圖驗證：勝利/出擊/裝備全一致像素、清晰。**舊 `ArkPixel-16px-zh_tw.ttf`(97字子集)仍留(_uiFont 未用 ref，可日後清)。**
 
-**✅ 建置**：EXE 130.5→**135.28MB**(Ark Pixel 版,0錯) + APK 重建中(Ark Pixel 版)。前一版(Noto)EXE 130.5/APK 56.3 已被覆蓋。
+**✅ 建置完成(Cubic 11 版)**：**EXE 121.74MB + APK 49.4MB**(皆 0 錯，驗證 APK PK zip 有效含 libil2cpp.so；比 Ark+Noto 版 135/57MB 省很多)。字型中間版(Noto/Ark)已被覆蓋。
 
-**⬜ 待辦**：①導演實測新 UI(手感/中文像素風/手機觸控/各畫面) ②依回饋微調版面 ③push(等指示,現 6 commit 未 push) ④(可選)Noto fallback 改靜態 12 字省 ~11MB APK ⑤5頭目 bespoke 美術(唯一剩的大項)。
+**⬜ 待辦**：①導演實測新 UI(手感/中文像素風/手機觸控/各畫面) ②依回饋微調版面(如選項列小標題偏暗) ③push(等指示，現 ~9 commit 未 push) ④5頭目 bespoke 美術(唯一剩的大項)。
 
 ---
 
