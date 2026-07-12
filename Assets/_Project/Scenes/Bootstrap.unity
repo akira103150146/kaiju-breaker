@@ -171,6 +171,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -396,6 +397,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -583,6 +585,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -770,6 +773,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -957,6 +961,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -1327,6 +1332,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -1514,6 +1520,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -1740,6 +1747,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -1927,6 +1935,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -2206,6 +2215,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
   _brokenStub: {fileID: 1543169763}
@@ -2484,6 +2494,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -2928,6 +2939,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
   _brokenStub: {fileID: 833862389}
@@ -3115,6 +3127,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -3302,6 +3315,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -3489,6 +3503,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -3676,6 +3691,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 21300000, guid: 1bbf589cfaf2a2f44be0a70a985ae8a5, type: 3}
   _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -3863,6 +3879,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -4050,6 +4067,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -4237,6 +4255,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -4424,6 +4443,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 516496f3c10143a4db7ae1b5d1f936b7, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -4648,6 +4668,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -4946,6 +4967,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -5133,6 +5155,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: b164e9e6418f1494794d63be482898e9, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -5320,6 +5343,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -5507,6 +5531,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -5694,6 +5719,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -5881,6 +5907,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -6068,6 +6095,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -6255,6 +6283,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -6443,6 +6472,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 1338c6fe3c249bf42a9c58d5b6cc6098, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
   _brokenStub: {fileID: 420543092}
@@ -6630,6 +6660,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -6817,6 +6848,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 21300000, guid: 1bbf589cfaf2a2f44be0a70a985ae8a5, type: 3}
   _hitWhiteSprite: {fileID: 21300000, guid: f148ed90c2b6fd8448096f5f1f5f0be3, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -7005,6 +7037,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 428c5139400cf0d45a8eabb01f2a963d, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 21300000, guid: 0e295df0cdaa18141b3c101552b0a228, type: 3}
   _brokenStub: {fileID: 710578682}
@@ -7192,6 +7225,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 9d5fa090fb735964a85d5d4fda39f54d, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -7379,6 +7413,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -7657,6 +7692,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -7844,6 +7880,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -8165,6 +8202,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -8352,6 +8390,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: b1ad583e2e3c19445b4ea21ca01bca04, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -8576,6 +8615,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -8763,6 +8803,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -8950,6 +8991,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -9137,6 +9179,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 21300000, guid: cb065300eb7a23b4a87becdbdb36e5d7, type: 3}
   _hitWhiteSprite: {fileID: 21300000, guid: aabd6318a625ca64cbc4881994d28d5f, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -9324,6 +9367,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -9511,6 +9555,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 21300000, guid: 2181fafe0542d6645bd6763f08ce45af, type: 3}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -9698,6 +9743,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -9867,6 +9913,9 @@ MonoBehaviour:
   _fitCameraToField: 1
   _fieldHalfWidth: 4.5
   _fieldHalfHeight: 7
+  _showBoundaries: 1
+  _boundaryX: 4.3
+  _boundaryColor: {r: 0.45, g: 0.65, b: 1, a: 0.5}
   _maxFrameRate: 120
 --- !u!4 &1889951835
 Transform:
@@ -9935,6 +9984,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}
@@ -10106,6 +10156,8 @@ MonoBehaviour:
   _enemyBulletPrefab: {fileID: 4855459094042239723, guid: 22ffe98064bb3634c9444512e3b59dcf, type: 3}
   _bossController: {fileID: 1175540647}
   _powerUpPrefab: {fileID: 8230485887740383509, guid: 24921e21d6983204ea6ff9a5fe8aa39b, type: 3}
+  _eliteStrengthenCount: 2
+  _trashStrengthenChance: 0.14
   _weaponPodPrefab: {fileID: 4614761996418620448, guid: 1243431ed382fb2468cff09e0653bb2c, type: 3}
   _autoStart: 0
   _uiFont: {fileID: 12800000, guid: 6221f8879498494ea089843d2f4b4011, type: 3}
@@ -10176,6 +10228,7 @@ MonoBehaviour:
   _strippedSprite: {fileID: 0}
   _hitWhiteSprite: {fileID: 0}
   _hitFlashSeconds: 0.06
+  _revealFlashSeconds: 0.35
   _placeholderWorldSize: 2
   _brokenSprite: {fileID: 0}
   _brokenStub: {fileID: 0}

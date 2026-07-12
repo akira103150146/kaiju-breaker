@@ -21,5 +21,10 @@ namespace KaijuBreaker.App.Gameplay
 
         /// <summary>Edge-triggered: true for the single frame the secondary-fire input was pressed.</summary>
         bool SecondaryPressedThisFrame { get; }
+
+        /// <summary>True while the CHARGE (集氣) input is held — the 波動 primary charges while held and fires on
+        /// release. PC: hold left mouse / J. Mobile: hold the on-screen charge button. Ignored by non-charge
+        /// primaries (they auto-fire), so it is safe to read every frame.</summary>
+        bool PrimaryHeld { get; }
     }
 }

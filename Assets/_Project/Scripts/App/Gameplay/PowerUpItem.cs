@@ -84,7 +84,9 @@ namespace KaijuBreaker.App.Gameplay
             if (weapon == null) return;
             switch (_kind)
             {
-                case PowerUpKind.Power: weapon.AddWeaponPower(); break;
+                // Power is the single generic strengthen chip — it raises the player's CURRENT loadout (both the
+                // primary firepower and the missile level), so it's never "the wrong weapon" (session 15).
+                case PowerUpKind.Power: weapon.AddArsenalPower(); break;
                 case PowerUpKind.Missile: weapon.AddMissilePower(); break;
                 case PowerUpKind.WeaponLaser: weapon.CyclePrimary(); break;
                 case PowerUpKind.WeaponMissile: weapon.CycleSecondary(); break;

@@ -33,10 +33,16 @@ namespace KaijuBreaker.App.Gameplay
         [Range(0f, 0.3f)]
         [SerializeField] private float _joyDeadzone = 0.12f;
 
-        private Vector2 _joyBase, _fireCenter;
-        private float _joyRadius, _fireRadius;
+        private Vector2 _joyBase, _fireCenter, _chargeCenter;
+        private float _joyRadius, _fireRadius, _chargeRadius;
         private Vector2 _joyAxis;   // computed each frame
         private bool _secondaryHeld; // fire input held this frame (touch in button region / key held)
+        private bool _primaryHeld;   // charge (集氣) input held this frame
+
+        /// <summary>Show + poll the on-screen charge (集氣) button. Set true only when the run's primary is the
+        /// 波動 charge weapon (L3); other primaries auto-fire and need no charge control. Set by the scene at run
+        /// start (the primary is fixed for the whole run — no in-run weapon switching).</summary>
+        public bool ChargeControlVisible { get; set; }
 
         private void Update()
         {
@@ -44,8 +50,15 @@ namespace KaijuBreaker.App.Gameplay
             // Hold-to-fire: true while the secondary input is HELD (keyboard/mouse on PC; the on-screen button on mobile).
             _secondaryHeld = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(1);
 
-            if (!TouchUiActive) return; // PC: keyboard/mouse only — no on-screen joystick polling.
+            if (!TouchUiActive)
+            {
+                // PC: no on-screen controls. Charge (集氣) = hold left mouse or J (left mouse is free here —
+                // PlayerInputRouter is axis-based, HasPointerTarget is false — unlike KeyboardMouseInput).
+                _primaryHeld = Input.GetMouseButton(0) || Input.GetKey(KeyCode.J);
+                return;
+            }
 
+            _primaryHeld = false;
             LayoutControls();
             // Touch first (mobile); mouse fallback lets the layout be tested in-editor when forced on.
             if (Input.touchCount > 0)
@@ -56,6 +69,7 @@ namespace KaijuBreaker.App.Gameplay
                     if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) continue;
                     if (InCircle(t.position, _joyBase, _joyRadius * (_joyTravelMult + 0.4f))) _joyAxis = AxisFrom(t.position);
                     if (InCircle(t.position, _fireCenter, _fireRadius)) _secondaryHeld = true; // any phase = held
+                    if (ChargeControlVisible && InCircle(t.position, _chargeCenter, _chargeRadius)) _primaryHeld = true;
                 }
             }
             else if (Input.GetMouseButton(0))
@@ -63,6 +77,7 @@ namespace KaijuBreaker.App.Gameplay
                 Vector2 m = Input.mousePosition;
                 if (InCircle(m, _joyBase, _joyRadius * (_joyTravelMult + 0.4f))) _joyAxis = AxisFrom(m);
                 else if (InCircle(m, _fireCenter, _fireRadius)) _secondaryHeld = true; // click-hold the on-screen button
+                else if (ChargeControlVisible && InCircle(m, _chargeCenter, _chargeRadius)) _primaryHeld = true;
             }
         }
 
@@ -71,8 +86,11 @@ namespace KaijuBreaker.App.Gameplay
             float w = Screen.width, h = Screen.height;
             _joyRadius = Mathf.Min(w, h) * 0.10f;
             _fireRadius = _joyRadius * 0.9f;
+            _chargeRadius = _joyRadius * 0.82f;
             _joyBase = new Vector2(w * 0.16f, h * 0.20f);
-            _fireCenter = new Vector2(w * 0.84f, h * 0.20f);
+            _fireCenter = new Vector2(w * 0.84f, h * 0.18f);
+            // Charge button sits just above the secondary-fire button (both right-thumb, stacked — director layout).
+            _chargeCenter = new Vector2(w * 0.84f, h * 0.18f + (_fireRadius + _chargeRadius) * 1.25f);
         }
 
         private Vector2 AxisFrom(Vector2 screenPos)
@@ -103,6 +121,7 @@ namespace KaijuBreaker.App.Gameplay
         public bool HasPointerTarget => false; // axis-based movement (keyboard / joystick); no drag-to-point
         public Vector2 PointerWorld => Vector2.zero;
         public bool SecondaryPressedThisFrame => _secondaryHeld;
+        public bool PrimaryHeld => _primaryHeld;
 
         private static bool Key(KeyCode k) => Input.GetKey(k);
 
@@ -116,6 +135,23 @@ namespace KaijuBreaker.App.Gameplay
             DrawDisc(disc, _joyBase, _joyRadius, new Color(0.35f, 0.85f, 1f, 0.30f));                 // joystick base
             DrawDisc(disc, _joyBase + _joyAxis * _joyRadius, _joyRadius * 0.5f, new Color(0.5f, 0.97f, 1f, 0.85f)); // handle
             DrawDisc(disc, _fireCenter, _fireRadius, new Color(1f, 0.55f, 0.32f, 0.55f));             // fire button
+            // Charge (集氣) button — only when the run's primary is the 波動 charge weapon. Brightens while held.
+            if (ChargeControlVisible)
+            {
+                var cc = _primaryHeld ? new Color(0.6f, 0.95f, 1f, 0.85f) : new Color(0.4f, 0.8f, 1f, 0.5f);
+                DrawDisc(disc, _chargeCenter, _chargeRadius, cc);
+                DrawChargeLabel(_chargeCenter, _chargeRadius);
+            }
+        }
+
+        // Small "集氣" caption centred on the charge button so its purpose is unambiguous on touch.
+        private void DrawChargeLabel(Vector2 screenCenter, float r)
+        {
+            var style = GameUiSkin.LabelStyle != null ? GameUiSkin.LabelStyle : GUI.skin.label;
+            var prev = style.alignment; var prevColor = GUI.color;
+            style.alignment = TextAnchor.MiddleCenter; GUI.color = Color.white;
+            GUI.Label(new Rect(screenCenter.x - r, Screen.height - screenCenter.y - r, r * 2f, r * 2f), "集氣", style);
+            style.alignment = prev; GUI.color = prevColor;
         }
 
         private void DrawDisc(Texture2D tex, Vector2 screenCenter, float r, Color c)

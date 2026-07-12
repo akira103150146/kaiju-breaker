@@ -24,7 +24,7 @@ namespace KaijuBreaker.Stage
         private int _currentWave;
         private int _spawnedInWave;
         private float _waveElapsed;         // seconds since the current wave started
-        private float _sinceFullySpawned;   // seconds since the current wave finished spawning (−1 until it does)
+        private bool _retreating;           // the current wave timed out; leftovers are fleeing before the next
         private bool _running;
         private bool _lastWaveSpawned;
         private int _plannedCount;
@@ -77,7 +77,7 @@ namespace KaijuBreaker.Stage
             _currentWave = 0;
             _spawnedInWave = 0;
             _waveElapsed = 0f;
-            _sinceFullySpawned = -1f;
+            _retreating = false;
             _running = false;
             _lastWaveSpawned = waveCount == 0; // an empty plan is trivially complete
             Spawned.Clear();
@@ -101,20 +101,35 @@ namespace KaijuBreaker.Stage
             }
             if (_spawnedInWave < wave.Count) return; // still spawning the current wave
 
-            // Current wave fully spawned — track how long we've been waiting to release the next one.
-            _sinceFullySpawned = _sinceFullySpawned < 0f ? 0f : _sinceFullySpawned + dt;
-
+            // Last wave: once fully spawned the segment can complete (field-clear gating lives in the sequence
+            // runner). No between-wave retreat applies to the final wave — there is no next wave to make room for.
             if (_currentWave >= _waves.Count - 1) { _lastWaveSpawned = true; _running = false; return; }
 
-            // Release the next wave once the field is mostly clear OR we've waited too long (anti-stall), but
-            // never before the minimum gap — so waves never stack on an unkilled one, nor machine-gun out.
-            if (WavePacing.ShouldReleaseNextWave(AliveCount(), _timing.NextWaveAliveThreshold, _sinceFullySpawned,
-                                                 _timing.MaxWaveWaitSeconds, _waveElapsed, _timing.MinWaveGapSeconds))
+            // Timed clear-gated pacing: clear the wave → next wave now; run out the wave's time limit → the
+            // leftovers retreat off the top and only then does the next wave enter (never stacks on an unkilled one).
+            switch (WavePacing.Decide(AliveCount(), _timing.NextWaveAliveThreshold, _waveElapsed,
+                                      _timing.MinWaveGapSeconds, _timing.WaveTimeLimitSeconds, _retreating))
             {
-                _currentWave++;
-                _spawnedInWave = 0;
-                _waveElapsed = 0f;
-                _sinceFullySpawned = -1f;
+                case WaveAdvance.RetreatLeftovers:
+                    RetreatAllAlive();
+                    _retreating = true;
+                    break;
+                case WaveAdvance.ReleaseNext:
+                    _currentWave++;
+                    _spawnedInWave = 0;
+                    _waveElapsed = 0f;
+                    _retreating = false;
+                    break;
+            }
+        }
+
+        /// <summary>Order every still-alive spawned enemy to flee off the top so the next wave can enter.</summary>
+        private void RetreatAllAlive()
+        {
+            for (int i = 0; i < Spawned.Count; i++)
+            {
+                var e = Spawned[i];
+                if (e != null && e.gameObject.activeSelf && !e.IsDead) e.BeginRetreat();
             }
         }
 
@@ -131,7 +146,7 @@ namespace KaijuBreaker.Stage
             {
                 controller.Init(instruction.Enemy, instruction.IsElite);
                 controller.SetCombatContext(_context?.BulletPool, _context?.PlayerTarget, _context?.OnEnemyKilled,
-                                            _context?.BulletDensityMult ?? 1f);
+                                            _context?.BulletDensityMult ?? 1f, _context?.OnEnemyHit);
                 Spawned.Add(controller);
             }
         }

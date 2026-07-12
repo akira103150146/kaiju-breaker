@@ -83,6 +83,13 @@ namespace KaijuBreaker.App.Gameplay
         public void AddWeaponPower() { if (_config != null) _weaponPower = Mathf.Min(_weaponPower + 1, _config.MaxWeaponPower); }
         /// <summary>Collect an M item: +1 missile level (clamped).</summary>
         public void AddMissilePower() { if (_config != null) _missilePower = Mathf.Min(_missilePower + 1, _config.MaxMissilePower); }
+
+        /// <summary>
+        /// Collect a strengthen chip: raise the player's CURRENT arsenal by one step — both the primary firepower
+        /// and the secondary (missile) level at once. Director rule (session 15): there is one generic strengthen
+        /// pickup that boosts whatever loadout the player is running, so no pickup is ever "the wrong weapon".
+        /// </summary>
+        public void AddArsenalPower() { AddWeaponPower(); AddMissilePower(); }
         /// <summary>Collect a laser W pod: cycle the primary among L1→L4.</summary>
         public void CyclePrimary() => _primaryType = (WeaponId)(((int)_primaryType + 1) % 4);
         /// <summary>Collect a missile W pod: cycle the secondary among M1→M4.</summary>
@@ -155,28 +162,39 @@ namespace KaijuBreaker.App.Gameplay
             }
         }
 
-        // 波動 L3: charge fills over time; power raises the CAP so a full charge releases a stronger, wider wave
-        // (director rule: 集氣上限增加→集滿傷害更高). The faster-fire meta upgrade shortens the fill time.
+        private const float MinWaveCharge = 0.12f; // below this a release is treated as a stray tap → no shot
+
+        // 波動 L3 is a MANUAL charge weapon (director, session 15): HOLD the charge input (集氣 button / left-mouse /
+        // J) to build charge, RELEASE to unleash the wave — the longer the hold, the stronger/wider the wave, up to
+        // a power-scaled cap (集氣上限隨 power 增加). The faster-fire meta upgrade builds charge quicker.
         private void TickWaveCharge(float dt)
         {
             int max = Mathf.Max(1, _config.MaxWeaponPower);
             int p = Mathf.Clamp(_weaponPower, 1, max);
             float t = max > 1 ? (p - 1f) / (max - 1f) : 0f;
             float cap = Mathf.Lerp(0.55f, 1.6f, t);                          // charge-seconds cap grows with power
-            _waveCharge += dt / Mathf.Max(0.2f, _fireIntervalMult);
-            if (_waveCharge < cap) return;
+
+            bool held = _input != null && _input.PrimaryHeld;
+            if (held)
+            {
+                _waveCharge = Mathf.Min(cap, _waveCharge + dt / Mathf.Max(0.2f, _fireIntervalMult));
+                return;                                                      // keep charging while held
+            }
+            if (_waveCharge <= 0f) return;                                   // idle, nothing charged
+            float charge = _waveCharge;                                      // released → fire what was built
             _waveCharge = 0f;
+            if (charge < MinWaveCharge) return;
             _sfx?.PlayShoot();
-            FireWave(cap);
+            FireWave(charge);
         }
 
-        private void FireWave(float cap)
+        private void FireWave(float charge)
         {
-            // A full charge to a higher cap = a stronger, wider wave.
-            float dmg = _config.PrimaryDamage * (1.4f + 3.2f * cap);
-            float heat = _config.PrimaryHeatDelta * (1.4f + 2.0f * cap);
+            // The longer the hold (more charge) the stronger + wider the wave.
+            float dmg = _config.PrimaryDamage * (1.4f + 3.2f * charge);
+            float heat = _config.PrimaryHeatDelta * (1.4f + 2.0f * charge);
             float speed = _config.PrimaryProjectileSpeed * 0.9f;
-            Vector2 size = new Vector2(2.4f + 2.2f * cap, 1.2f + 0.4f * cap); // big wide pulse; wider at higher cap
+            Vector2 size = new Vector2(2.4f + 2.2f * charge, 1.2f + 0.4f * charge); // big wide pulse; wider at more charge
             FireFan(1, 0f, 0f, speed, dmg, heat, 0f, false, 0, WeaponId.L3, size);
         }
 

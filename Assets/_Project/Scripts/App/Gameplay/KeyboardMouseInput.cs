@@ -42,6 +42,9 @@ namespace KaijuBreaker.App.Gameplay
         public bool SecondaryPressedThisFrame =>
             Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1);
 
+        // Left mouse is drag-to-move here, so the charge input is a key (J) on this provider.
+        public bool PrimaryHeld => Key(KeyCode.J);
+
         private static bool Key(KeyCode k) => Input.GetKey(k);
     }
 }

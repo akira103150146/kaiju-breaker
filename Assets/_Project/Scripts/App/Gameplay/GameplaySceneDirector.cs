@@ -42,7 +42,15 @@ namespace KaijuBreaker.App.Gameplay
         [Tooltip("In-run power-up item prefab (PowerUpItem) that enemies drop. Optional — no drops if unassigned.")]
         [SerializeField] private PowerUpItem _powerUpPrefab;
 
-        [Tooltip("Dwell-cycle weapon pod prefab (WeaponPodController) that elites drop. Optional.")]
+        [Tooltip("Number of strengthen chips an ELITE drops on death (each raises the whole current arsenal by 1). " +
+                 "Director tuning — a meaningful reward for the tougher kill.")]
+        [SerializeField, Range(1, 5)] private int _eliteStrengthenCount = 2;
+
+        [Tooltip("Chance [0..1] that an ordinary TRASH kill drops one strengthen chip. Gives the player far more " +
+                 "frequent strengthen chances than elite-only drops, without carpeting the field. Director tuning.")]
+        [SerializeField, Range(0f, 1f)] private float _trashStrengthenChance = 0.14f;
+
+        [Tooltip("Dwell-cycle weapon pod prefab (WeaponPodController) — legacy, no longer dropped (session 15). Optional.")]
         [SerializeField] private WeaponPodController _weaponPodPrefab;
 
         [Tooltip("Skip the title screen and begin immediately on Play (e.g. for tests).")]
@@ -159,6 +167,10 @@ namespace KaijuBreaker.App.Gameplay
 
             var content = _bootstrap.Content;
             _playerWeapon?.ResetArsenal(_selPrimary, _selSecondary, _utility != null ? _utility.StartPowerLevel : 0); // Void-core head-start firepower
+            // Show the mobile 集氣 button only when this run's primary is the 波動 charge weapon (L3). The primary
+            // is fixed for the whole run (no in-run switching), so this is set once here.
+            var inputRouter = _player != null ? _player.GetComponent<PlayerInputRouter>() : null;
+            if (inputRouter != null) inputRouter.ChargeControlVisible = _selPrimary == WeaponId.L3;
             _playerWeapon?.SetFireIntervalMult(_utility != null ? _utility.FireIntervalMult : 1f); // meta faster-fire
             _player?.SetUtilityMultipliers(
                 _utility != null ? _utility.MoveSpeedMult : 1f,
@@ -176,7 +188,9 @@ namespace KaijuBreaker.App.Gameplay
                 _bulletPool.Configure(_enemyBulletPrefab);
             }
             var combat = new EnemyCombatContext(_bulletPool, _player != null ? _player.transform : null, SpawnDrop,
-                                                _comp != null && _comp.Difficulty != null ? _comp.Difficulty.BulletDensityMult : 1f);
+                                                _comp != null && _comp.Difficulty != null ? _comp.Difficulty.BulletDensityMult : 1f,
+                                                () => _bootstrap?.Sfx?.PlayEnemyHit()); // per-hit mob blip
+
 
             if (_skipToBoss)
             {
@@ -186,6 +200,7 @@ namespace KaijuBreaker.App.Gameplay
             }
             else
             {
+                _bootstrap?.Sfx?.PlayMusic("Music/bgm_stage", 0.5f); // 道中 BGM
                 var runnerGo = new GameObject("WaveRunner");
                 _waveRunner = runnerGo.AddComponent<SegmentSequenceRunner>();
                 _waveRunner.Run(sequence, _comp.Difficulty, content.WaveTiming, _enemyPrefab,
@@ -196,16 +211,29 @@ namespace KaijuBreaker.App.Gameplay
             _playerWeapon?.SetFiring(true);
         }
 
-        // Enemy death → in-run power-up drop. Director rule: ONLY the interspersed elites drop upgrades — normal
-        // trash never does (it dropped far too often before). An elite is a meaningful reward: a dwell-cycle
-        // weapon pod PLUS a firepower chip PLUS a missile chip (both tracks advance).
+        // Enemy death → in-run strengthen drop (session 15). There is ONE generic strengthen chip (PowerUpKind.Power)
+        // that raises the player's CURRENT loadout — both primary firepower and missile level — so no drop is ever
+        // "the wrong weapon". Elites drop several (a real reward); ordinary trash has a modest per-kill chance, which
+        // gives the player far more frequent strengthen chances than the old elite-only rule while staying readable.
+        // The old L1→L4 type-switching pod is gone: you keep the loadout you picked and just make it stronger.
         private void SpawnDrop(Vector3 pos, bool isElite)
         {
             _bootstrap?.Sfx?.PlayEnemyExplode(isElite ? 0.9f : 0.6f); // every kill goes boom (trash quieter)
-            if (_powerUpPrefab == null || !isElite) return;
-            SpawnPod(pos);
-            Spawn(pos + Vector3.left * 0.5f, PowerUpKind.Power);
-            Spawn(pos + Vector3.right * 0.5f, PowerUpKind.Missile);
+            if (_powerUpPrefab == null) return;
+
+            if (isElite)
+            {
+                int count = Mathf.Max(1, _eliteStrengthenCount);
+                for (int i = 0; i < count; i++)
+                {
+                    float x = count == 1 ? 0f : Mathf.Lerp(-0.6f, 0.6f, i / (float)(count - 1));
+                    Spawn(pos + new Vector3(x, 0f, 0f), PowerUpKind.Power);
+                }
+            }
+            else if (UnityEngine.Random.value < _trashStrengthenChance)
+            {
+                Spawn(pos, PowerUpKind.Power);
+            }
         }
 
         private void Spawn(Vector3 pos, PowerUpKind kind)
@@ -234,6 +262,7 @@ namespace KaijuBreaker.App.Gameplay
         private void OnWavesCleared()
         {
             Debug.Log("[GameplaySceneDirector] 道中 CLEAR — entering boss fight.");
+            _bootstrap?.Sfx?.PlayMusic("Music/bgm_boss", 0.55f); // switch to the boss loop
             if (_bossController != null)
                 _bossController.BeginBossFight(_comp, _selBossIndex, _bulletPool,
                                                _player != null ? _player.transform : null);
@@ -244,7 +273,11 @@ namespace KaijuBreaker.App.Gameplay
         {
             _runState = evt.To;
             if (_player != null) _player.SetBossPhase(evt.To == RunState.Boss);
-            if (evt.To == RunState.Results) { _showResults = true; _resultWin = !_defeated; }
+            if (evt.To == RunState.Results)
+            {
+                _showResults = true; _resultWin = !_defeated;
+                _bootstrap?.Sfx?.StopMusic(); // silence the loop on the results screen (win or lose)
+            }
         }
 
         private void OnPlayerDied()

@@ -1,5 +1,37 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
+*Last updated: 2026-07-12 (SESSION 15 — 導演3輪回饋共10項(波次時限撤退/強化統一+提頻/小怪縮小+留邊界內/①音效逐發命中音+BGM/手機集氣鈕). **編譯乾淨0錯、503 EditMode GREEN、EXE(119MB)+APK(47.5MB)雙平台重建含全部**。本地 commit 完成、未 push。)*
+
+## ✅ SESSION 15 (2026-07-12) — 導演回饋2輪6修 + 音效補完（編譯綠+503測試綠+已build）
+
+**⚠️ 環境+關鍵解法**：Unity MCP(UnityMCP server)開場沒被索引進 session→工具呼叫不到。**不必重開**：改用 curl/python 直打 `http://127.0.0.1:8080/mcp` 走 JSON-RPC 驅動 refresh/run_tests/manage_build（見 memory [[drive-unity-mcp-over-http]]，客戶端 `scratchpad/mcp_call.py`）。editor state resource 是 `mcpforunity://editor/state`；build 是 async 用 job_id 輪詢，Android 期間 bridge 忙→看 `Builds/**` 檔案 mtime。
+
+**✅ 驗證結果**：refresh force+compile → `read_console` **0 error/0 warning**；`run_tests EditMode` → **503 passed / 0 failed / 0 skipped**(8.46s)；`manage_scene save` Bootstrap；`manage_build windows64` → 成功，`Builds/Windows`(119MB，App/Content/Stage.dll+level0 全 10:17 重建)；Android APK 建置中。
+
+**✅ 已辦（純 harness Edit/Write + Python 合成，全部存檔，未編譯驗證）：**
+1. **道中波次時限撤退**（導演#1）：`WavePacing` 改純函式 `Decide()`→`Hold/ReleaseNext/RetreatLeftovers`。每波有時間上限 `WaveTimingConfig.WaveTimeLimitSeconds`(預設12s)；清完(alive≤門檻)即放下一波；**時間到還沒清→存活敵人撤退飛離(上緣)**，清空後才放下一波(不疊波)。最後一波不套用。`EnemyController.BeginRetreat()`(停火+直上飛出+新頂部despawn界線)、`WaveSpawner.RetreatAllAlive()`。重寫 `wave_pacing_test.cs`(7測試)。舊 `ShouldReleaseNextWave/_sinceFullySpawned/MaxWaveWaitSeconds` 移除(MaxWaveWaitSeconds 保留 deprecated 屬性給 .asset 相容)。
+2. **關卡內強化簡化**（導演#2）：`GameplaySceneDirector.SpawnDrop` 菁英只掉**兩種強化**(火力P=強化當下主武器 / 飛彈M=強化當下副武器)。**移除 L1→L4 / M1→M4 武器型別切換艙掉落**(WeaponPod系統程式保留但休眠)。玩家維持選裝備所選武器，只變強不換型。
+3. **小怪縮小**（導演#3，過頭了）：`EnemyController` 加全域 `_bodySizeMult`(預設0.72)套在 EnemyDef.BodySize 上，一個旋鈕整批縮小+保留11隻相對大小。原 0.55~0.95 → 約0.40~0.68。
+4. **①音效-逐發命中音**：`SfxPlayer.PlayEnemyHit()`(節流0.04s，enemy_hit 音檔本就在但沒接)；`EnemyCombatContext.OnEnemyHit` 回呼→`EnemyController.SetCombatContext(...onHit)`→`TakeDamage` 非致命命中時播；`GameplaySceneDirector` 傳 `()=>Sfx.PlayEnemyHit()`。
+5. **①音效-BGM**：Python 合成兩段無縫循環(`scratchpad/gen_bgm.py`)→`Resources/Music/bgm_stage.wav`(道中,Am進行,140bpm,13.7s)+`bgm_boss.wav`(168bpm,三全音張力,11.4s)，PCM16 mono 44100 配管線，附匯入 meta(2D/背景載入)。`SfxPlayer` 加第二個 loop AudioSource + `PlayMusic/StopMusic`；道中開始播 stage、進BOSS切 boss、進結算停。
+
+**✅ 導演第二輪 3 追加回饋（同 session，程式已改存檔）：**
+6. **強化統一(看當下武器就強化)**：移除 P(主)/M(副)分開掉落；改**單一綠色強化片** `PowerUpKind.Power`→`PlayerWeaponController.AddArsenalPower()`(同時+1主火力&+1副飛彈)。玩家不管什麼配備撿到都不浪費。
+7. **強化次數提高**：`GameplaySceneDirector` 加旋鈕 `_eliteStrengthenCount`(2,菁英掉2片) + `_trashStrengthenChance`(0.14,一般小怪每隻14%掉1片)。比原「只菁英掉」頻繁很多。
+8. **小怪留在邊界內**：`EnemyController` 每幀把 x 夾在 ±`_fieldHalfWidth`(4.3,對齊 GameBootstrap 邊界條)，移動模式再也不會把小怪帶出可及範圍(上下進出自由)。原 ±5.2 側向 despawn 留作保險(不再觸發)。
+9. **小怪再更小**：`_bodySizeMult` 0.72→**0.6**(原0.55~0.95 → 約0.33~0.57)。
+
+**✅ 導演第三輪回饋（同 session）：手機集氣鈕**
+10. **L3 波動改手動集氣**（導演選項A，取代原自動充能）：`IPlayerInput.PrimaryHeld`；PC=按住滑鼠左鍵/J、手機=右下新增「集氣」按鈕(疊在副武器鈕上方)。`TickWaveCharge` 改按住充能、放開發射(充越久越強，達 power cap)；MinWaveCharge 0.12 防誤觸。`PlayerInputRouter.ChargeControlVisible`(僅主武器=L3 才顯示/輪詢，由 `GameplaySceneDirector` run 開始依 `_selPrimary==L3` 設定；主武器整場固定不切換)。L1/L2/L4 維持自動開火不受影響。KeyboardMouseInput 也補 PrimaryHeld(=J，因其左鍵是拖曳移動)。
+
+**可調旋鈕**：`WaveTimingConfig.WaveTimeLimitSeconds`(12)·`EnemyController._bodySizeMult`(0.6)/`_fieldHalfWidth`(4.3)/`_retreatSpeed`(6.5)/`_despawnAboveY`(9)·`GameplaySceneDirector._eliteStrengthenCount`(2)/`_trashStrengthenChance`(0.14)·`SfxPlayer` HitMinInterval(0.04)+BGM 音量(stage0.5/boss0.55)。
+
+**⬜ 待辦（重開 session 後）：** ①refresh 編譯②跑 EditMode(應 ~502+ 綠，含改寫的 wave_pacing 7測試)③存Bootstrap→build EXE+APK④導演實測(撤退手感/縮小尺寸/兩種強化/命中音+BGM)⑤commit⑥**③UI改UGUI+TMP**(大工程,建議 Unity 可驅動時做,靠截圖迭代)⑦5頭目bespoke美術。
+
+---
+
+*(以下為 SESSION 14)*
+
 *Last updated: 2026-07-10 (SESSION 14 — 導演大回饋一輪：武器四型獨立成長 + 道中清場門控 + 小怪辨識/放大 + 打擊回饋 + 菁英專屬掉落 + 免費音效 + BOSS耐久/血條遞減. 500 EditMode GREEN. 全 push origin main (ef313f2). EXE 116.83MB + APK 45MB.)*
 
 ## ✅ SESSION 14 (2026-07-10) — 導演回饋大整理（武器/道中/手感/音效/BOSS）

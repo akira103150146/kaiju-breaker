@@ -35,6 +35,24 @@ namespace KaijuBreaker.Stage
                  "unreachable off-map mobs from firing at the player (who is clamped to ±4).")]
         [SerializeField] private float _despawnBeyondX = 5.2f;
 
+        [Tooltip("Y above which the enemy has left the play field off the TOP and is despawned. Used both by " +
+                 "retreating mobs fleeing back the way they came and by any U-turn path that exits upward.")]
+        [SerializeField] private float _despawnAboveY = 9f;
+
+        [Tooltip("Global body-size multiplier applied to every mob's authored EnemyDef.BodySize, so all mobs can " +
+                 "be scaled together from ONE knob without editing each def (director tuning). 1 = authored size; " +
+                 "relative size differences between mob types are preserved.")]
+        [SerializeField] private float _bodySizeMult = 0.6f;
+
+        [Tooltip("Half-width of the reachable play field (world units). A mob's X is clamped to ±this every frame " +
+                 "(except while retreating) so movement patterns can never wander a mob off-screen where the " +
+                 "player can't reach it. Matches GameBootstrap's boundary bars (±4.3).")]
+        [SerializeField] private float _fieldHalfWidth = 4.3f;
+
+        [Tooltip("Upward world speed a mob flees at when the wave times out and the leftovers must clear off " +
+                 "before the next wave (stage-system wave pacing).")]
+        [SerializeField] private float _retreatSpeed = 6.5f;
+
         [Tooltip("Extra body-size multiplier applied to an elite variant so it reads as the bigger threat.")]
         [SerializeField] private float _eliteSizeMult = 1.35f;
 
@@ -49,10 +67,12 @@ namespace KaijuBreaker.Stage
         private float _flashRemaining;
         private Color _baseColor = Color.white;
         private bool _dead;
+        private bool _retreating; // fleeing off the top because the wave timed out; ignores normal move/fire
         private EnemyMovementState _moveState;
         private EnemyBulletPool _bulletPool;
         private Transform _playerTarget;
         private System.Action<Vector3, bool> _onKilled;
+        private System.Action _onHit; // plays the throttled per-hit blip (scene-owned SfxPlayer)
         private float _bulletDensityMult = 1f; // difficulty bullet-density scale (D1 = 1.0)
         private float _fireCooldown;
         private float _telegraphRemaining;
@@ -101,6 +121,7 @@ namespace KaijuBreaker.Stage
             Emitter = def != null ? def.EmitterPattern : null;
             IsElite = isElite;
             _dead = false;
+            _retreating = false;
             _moveState = default;
 
             // Elite instances scale HP by the def's elite_hp_mult (stage-system.md §E.3; data-driven).
@@ -123,9 +144,10 @@ namespace KaijuBreaker.Stage
                 _baseColor = _sprite.color;
             }
 
-            // Body size: the shape sprite is 1 world unit at scale 1, so scale == desired world diameter. Elites
-            // scale up. The trigger box is normalised to a fair fraction of the body (kill zone < visible body).
-            float body = def != null ? def.BodySize : 0.8f;
+            // Body size: the shape sprite is 1 world unit at scale 1, so scale == desired world diameter. A single
+            // global multiplier scales every mob together (director tuning) while keeping their relative sizes;
+            // elites then scale up. The trigger box is a fair fraction of the body (kill zone < visible body).
+            float body = (def != null ? def.BodySize : 0.8f) * Mathf.Max(0.1f, _bodySizeMult);
             if (isElite) body *= _eliteSizeMult;
             _bodyScale = new Vector3(body, body, 1f);
             transform.localScale = _bodyScale;
@@ -144,15 +166,32 @@ namespace KaijuBreaker.Stage
         /// <see cref="EmitterPatternSO"/>. Called by <see cref="WaveSpawner"/> right after <see cref="Init"/>.
         /// </summary>
         public void SetCombatContext(EnemyBulletPool pool, Transform playerTarget,
-                                     System.Action<Vector3, bool> onKilled = null, float bulletDensityMult = 1f)
+                                     System.Action<Vector3, bool> onKilled = null, float bulletDensityMult = 1f,
+                                     System.Action onHit = null)
         {
             _bulletPool = pool;
             _playerTarget = playerTarget;
             _onKilled = onKilled;
+            _onHit = onHit;
             _bulletDensityMult = bulletDensityMult > 0f ? bulletDensityMult : 1f;
             _fireCooldown = Emitter != null ? Emitter.FireIntervalSeconds : 0f;
             _telegraphing = false;
             _telegraphRemaining = 0f;
+        }
+
+        /// <summary>True once this mob has been told to flee off the top (wave timed out).</summary>
+        public bool IsRetreating => _retreating;
+
+        /// <summary>
+        /// Order this mob to withdraw: it stops firing and flees straight up off the top of the field, then
+        /// despawns. Called by <see cref="WaveSpawner"/> when a wave's time limit expires so the leftovers clear
+        /// off before the next wave enters (director rule: 時間到，上一梯次的要離開，才能進入下一梯次).
+        /// </summary>
+        public void BeginRetreat()
+        {
+            if (_dead) return;
+            _retreating = true;
+            _telegraphing = false;
         }
 
         /// <summary>Apply damage. Destroys the enemy (raising <see cref="Died"/>) when HP reaches 0.</summary>
@@ -163,6 +202,7 @@ namespace KaijuBreaker.Stage
             _flashRemaining = _hitFlashSeconds;
             _popRemaining = PopDuration; // squash-and-recover so the player sees which enemy got hit
             if (Hp <= 0) Die();
+            else _onHit?.Invoke(); // non-lethal hit → throttled blip (kills play the explode sound instead)
         }
 
         private void Die()
@@ -244,12 +284,27 @@ namespace KaijuBreaker.Stage
         private void Update()
         {
             float dt = Time.deltaTime;
-            transform.position = EnemyMovement.Advance(transform.position, Movement, ref _moveState, dt);
 
-            // Escaped off the bottom OR sideways out of the play field — deactivate (no score/drop) so it can't
-            // keep firing from a spot the player can't reach, and the wave can still clear.
-            Vector3 pos = transform.position;
-            if (pos.y < _despawnBelowY || Mathf.Abs(pos.x) > _despawnBeyondX) { gameObject.SetActive(false); return; }
+            // Retreating (wave timed out): flee straight up, no firing, no normal path — despawn once off the top.
+            if (_retreating)
+            {
+                transform.position += Vector3.up * (_retreatSpeed * dt);
+                if (transform.position.y > _despawnAboveY) { gameObject.SetActive(false); return; }
+                UpdateSpriteState(dt);
+                TickHitPop(dt);
+                return;
+            }
+
+            Vector3 pos = EnemyMovement.Advance(transform.position, Movement, ref _moveState, dt);
+            // Keep the mob inside the reachable field horizontally — a movement pattern must never carry it off the
+            // side where the player (clamped to ±4) can't answer it. Vertical entry/exit (top & bottom) is free.
+            pos.x = Mathf.Clamp(pos.x, -_fieldHalfWidth, _fieldHalfWidth);
+            transform.position = pos;
+
+            // Escaped off the bottom or the top — deactivate (no score/drop) so the wave can still clear. (Sideways
+            // escape is now prevented by the clamp above; the ±X guard stays as a cheap safety net.)
+            if (pos.y < _despawnBelowY || pos.y > _despawnAboveY || Mathf.Abs(pos.x) > _despawnBeyondX)
+            { gameObject.SetActive(false); return; }
 
             if (!_dead) TickEmitter(dt);
             UpdateSpriteState(dt);

@@ -24,8 +24,13 @@ namespace KaijuBreaker.Content
                  "Higher = waves overlap more; 0 = wait until fully clear. Range [0, 12].")]
         [SerializeField, Range(0, 12)] private int _nextWaveAliveThreshold = 2;
 
-        [Tooltip("Anti-stall cap: release the next wave after this many seconds even if the field isn't clear " +
-                 "(e.g. a straggler stuck at an edge). Must be > 0.")]
+        [Tooltip("Per-wave TIME LIMIT (seconds from the wave starting). If the player hasn't cleared the wave by " +
+                 "then, the surviving enemies RETREAT off the top and the next wave only enters once they've " +
+                 "cleared — a wave never stacks on an unkilled one. Must be > 0. (Director rule, session 15.)")]
+        [SerializeField] private float _waveTimeLimitSeconds = 12f;
+
+        [Tooltip("DEPRECATED (was the anti-stall cap). Superseded by WaveTimeLimitSeconds + the retreat rule; " +
+                 "kept only so old serialized assets still load. Unused at runtime.")]
         [SerializeField] private float _maxWaveWaitSeconds = 8f;
 
         [Tooltip("Minimum seconds between consecutive wave starts — a floor so waves never machine-gun out even " +
@@ -57,7 +62,10 @@ namespace KaijuBreaker.Content
         /// <summary>Alive-enemy count at/below which the next wave releases early (field mostly clear).</summary>
         public int NextWaveAliveThreshold => _nextWaveAliveThreshold;
 
-        /// <summary>Anti-stall cap: release the next wave after this long even if not clear.</summary>
+        /// <summary>Per-wave time budget; when it expires with enemies alive, the leftovers retreat off the top.</summary>
+        public float WaveTimeLimitSeconds => _waveTimeLimitSeconds;
+
+        /// <summary>Deprecated anti-stall cap (unused at runtime; retained for asset back-compat).</summary>
         public float MaxWaveWaitSeconds => _maxWaveWaitSeconds;
 
         /// <summary>Minimum seconds between consecutive wave starts (a floor).</summary>
@@ -84,8 +92,8 @@ namespace KaijuBreaker.Content
                 Debug.LogError($"[WaveTimingConfig] '{name}': WaveIntervalSeconds must be > 0. Current: {_waveIntervalSeconds}.", this);
             if (_columnSpacing <= 0f)
                 Debug.LogError($"[WaveTimingConfig] '{name}': ColumnSpacing must be > 0. Current: {_columnSpacing}.", this);
-            if (_maxWaveWaitSeconds <= 0f)
-                Debug.LogError($"[WaveTimingConfig] '{name}': MaxWaveWaitSeconds must be > 0. Current: {_maxWaveWaitSeconds}.", this);
+            if (_waveTimeLimitSeconds <= 0f)
+                Debug.LogError($"[WaveTimingConfig] '{name}': WaveTimeLimitSeconds must be > 0. Current: {_waveTimeLimitSeconds}.", this);
             if (_minWaveGapSeconds <= 0f)
                 Debug.LogError($"[WaveTimingConfig] '{name}': MinWaveGapSeconds must be > 0. Current: {_minWaveGapSeconds}.", this);
         }
