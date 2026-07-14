@@ -46,6 +46,9 @@ namespace KaijuBreaker.App.Gameplay
         /// start (the primary is fixed for the whole run — no in-run weapon switching).</summary>
         public bool ChargeControlVisible { get; set; }
 
+        /// <summary>波動 charge fill [0,1] pushed in by the scene each frame — brightens the 集氣 button as it fills.</summary>
+        public float ChargeFill { get; set; }
+
         private void Update()
         {
             _joyAxis = Vector2.zero;
@@ -179,7 +182,11 @@ namespace KaijuBreaker.App.Gameplay
             if (ChargeControlVisible)
             {
                 Place(_chargeImg, _chargeCenter, _chargeRadius * 2f);
-                _chargeImg.color = _primaryHeld ? new Color(0.6f, 0.95f, 1f, 0.85f) : new Color(0.4f, 0.8f, 1f, 0.5f);
+                // Brighten with charge fill so the button itself reads as a charge meter; flash white-hot at full.
+                float f = Mathf.Clamp01(ChargeFill);
+                _chargeImg.color = f >= 0.999f
+                    ? new Color(0.8f, 1f, 1f, 0.95f)
+                    : Color.Lerp(new Color(0.4f, 0.8f, 1f, 0.5f), new Color(0.6f, 0.95f, 1f, 0.9f), f);
             }
         }
 

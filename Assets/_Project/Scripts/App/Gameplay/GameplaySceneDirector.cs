@@ -62,6 +62,7 @@ namespace KaijuBreaker.App.Gameplay
         private GameComposition _comp;
         private PlayerShip _player;
         private PlayerWeaponController _playerWeapon;
+        private PlayerInputRouter _inputRouter; // cached at run start; drives the 集氣 button glow from charge fill
         private EnemyBulletPool _bulletPool;
         private SegmentSequenceRunner _waveRunner;
         private Action<RunStateChanged> _onRunStateChanged;
@@ -147,8 +148,12 @@ namespace KaijuBreaker.App.Gameplay
             else if (_screen == GameUiView.Screen.Hud)
             {
                 if (_player != null && _playerWeapon != null)
+                {
                     _ui?.SetHud(_player.Hp, _player.MaxHp, _playerWeapon.WeaponPower, _playerWeapon.MissilePower,
                                 _playerWeapon.PrimaryType.ToString(), _playerWeapon.SecondaryType.ToString(), _runState);
+                    _ui?.SetCharge(_playerWeapon.ChargeActive, _playerWeapon.ChargeFraction01); // 波動 L3 charge bar
+                    if (_inputRouter != null) _inputRouter.ChargeFill = _playerWeapon.ChargeFraction01;
+                }
             }
             else if (_screen == GameUiView.Screen.Results)
             {
@@ -261,8 +266,8 @@ namespace KaijuBreaker.App.Gameplay
             _playerWeapon?.ResetArsenal(_selPrimary, _selSecondary, _utility != null ? _utility.StartPowerLevel : 0); // Void-core head-start firepower
             // Show the mobile 集氣 button only when this run's primary is the 波動 charge weapon (L3). The primary
             // is fixed for the whole run (no in-run switching), so this is set once here.
-            var inputRouter = _player != null ? _player.GetComponent<PlayerInputRouter>() : null;
-            if (inputRouter != null) inputRouter.ChargeControlVisible = _selPrimary == WeaponId.L3;
+            _inputRouter = _player != null ? _player.GetComponent<PlayerInputRouter>() : null;
+            if (_inputRouter != null) _inputRouter.ChargeControlVisible = _selPrimary == WeaponId.L3;
             _playerWeapon?.SetFireIntervalMult(_utility != null ? _utility.FireIntervalMult : 1f); // meta faster-fire
             _player?.SetUtilityMultipliers(
                 _utility != null ? _utility.MoveSpeedMult : 1f,

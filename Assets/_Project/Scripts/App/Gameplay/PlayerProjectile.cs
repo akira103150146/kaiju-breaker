@@ -27,6 +27,21 @@ namespace KaijuBreaker.App.Gameplay
         private bool _active;
         private Action<PlayerProjectile> _onDespawn;
 
+        // ── Optional per-shot behaviours (secondary weapon identity) ──────────────────
+        // M1 追蹤: steer toward the nearest enemy / boss part each frame. M4 叢集: on the shot's first hit, fire
+        // an explosion callback at the hit point (the weapon controller spawns a small fragment ring there).
+        private bool _homing;
+        private float _homingTurnDeg;      // max turn rate (deg/s) while homing
+        private Action<Vector3> _onExplode; // M4 cluster: invoked once at the hit position, then cleared
+        private const float HomingScanRadius = 6.5f;
+        private static readonly Collider2D[] HomingBuf = new Collider2D[24];
+
+        /// <summary>M1: make this shot steer toward the nearest enemy/part at up to <paramref name="turnDeg"/> deg/s.</summary>
+        public void EnableHoming(float turnDeg) { _homing = true; _homingTurnDeg = Mathf.Max(0f, turnDeg); }
+
+        /// <summary>M4: on this shot's first hit, invoke <paramref name="onExplode"/> at the hit point (spawns fragments).</summary>
+        public void EnableCluster(Action<Vector3> onExplode) { _onExplode = onExplode; }
+
         /// <summary>Heat contribution this projectile carries to a boss part (soften track).</summary>
         public float HeatDelta => _heatDelta;
 
@@ -91,6 +106,8 @@ namespace KaijuBreaker.App.Gameplay
             _life = 3f;
             _onDespawn = onDespawn;
             _active = true;
+            _homing = false;        // opt-in per shot via EnableHoming (pooled reuse must not inherit)
+            _onExplode = null;      // opt-in per shot via EnableCluster
 
             // Colour + size the shot so primary (laser) and secondary (missile) read differently AND so each
             // primary type's power growth has a distinct silhouette (focus = fat round, wave = wide, pierce = long
@@ -105,10 +122,36 @@ namespace KaijuBreaker.App.Gameplay
         {
             if (!_active) return;
             float dt = Time.deltaTime;
+            if (_homing) SteerTowardNearest(dt);
             transform.position += (Vector3)_velocity * dt;
             _life -= dt;
             Vector3 p = transform.position;
             if (_life <= 0f || p.y > 7.5f || p.y < -8f || p.x < -6f || p.x > 6f) Despawn();
+        }
+
+        // M1 追蹤: rotate the velocity toward the nearest enemy / boss part (constant speed, capped turn rate). Uses a
+        // non-alloc overlap so a handful of homing missiles cost no per-frame GC. Non-enemy colliders (player, other
+        // shots, power-ups) are skipped, so the missile only ever chases valid targets.
+        private void SteerTowardNearest(float dt)
+        {
+            Vector3 pos = transform.position;
+            int n = Physics2D.OverlapCircleNonAlloc(pos, HomingScanRadius, HomingBuf);
+            float best = float.MaxValue; Vector2 bestDir = Vector2.zero; bool found = false;
+            for (int i = 0; i < n; i++)
+            {
+                var c = HomingBuf[i];
+                if (c == null) continue;
+                if (c.GetComponentInParent<EnemyController>() == null && c.GetComponentInParent<BossPart>() == null) continue;
+                Vector2 to = (Vector2)c.transform.position - (Vector2)pos;
+                float d = to.sqrMagnitude;
+                if (d < best) { best = d; bestDir = to; found = true; }
+            }
+            if (!found || bestDir.sqrMagnitude < 1e-4f) return;
+            float speed = _velocity.magnitude;
+            float cur = Mathf.Atan2(_velocity.y, _velocity.x) * Mathf.Rad2Deg;
+            float tgt = Mathf.Atan2(bestDir.y, bestDir.x) * Mathf.Rad2Deg;
+            float na = Mathf.MoveTowardsAngle(cur, tgt, _homingTurnDeg * dt) * Mathf.Deg2Rad;
+            _velocity = new Vector2(Mathf.Cos(na), Mathf.Sin(na)) * speed;
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -120,6 +163,7 @@ namespace KaijuBreaker.App.Gameplay
             {
                 enemy.TakeDamage(_damage);
                 if (_pierceRemaining > 0) { _pierceRemaining--; return; } // pierce: pass through, one fewer left
+                Explode();
                 Despawn();
                 return;
             }
@@ -130,8 +174,17 @@ namespace KaijuBreaker.App.Gameplay
             {
                 if (_isMissile) part.ReceiveMissile(_breakDamage, _weaponId);
                 else part.ReceiveLaser(_heatDelta);
+                Explode();
                 Despawn();
             }
+        }
+
+        // M4 叢集: fire the explosion callback once at the hit point, then clear it (so a pooled reuse can't re-fire).
+        private void Explode()
+        {
+            var cb = _onExplode;
+            _onExplode = null;
+            cb?.Invoke(transform.position);
         }
 
         private void Despawn()

@@ -53,6 +53,8 @@ namespace KaijuBreaker.App.Gameplay
         TextMeshProUGUI _hpLabel, _arsenalLabel, _phaseLabel;
         RectTransform _hpFill; float _hpFullWidth;
         RectTransform _phaseBox;
+        // L3 波動 charge bar (only shown when the 波動 charge weapon is equipped)
+        GameObject _chargeBar; RectTransform _chargeFill; float _chargeFullWidth; TextMeshProUGUI _chargeLabel;
         // results
         TextMeshProUGUI _resultTitle, _resultSub;
         // loadout / boss select selection highlighting
@@ -308,7 +310,42 @@ namespace KaijuBreaker.App.Gameplay
             _hpFill.pivot = new Vector2(0f, 0.5f);
             _hpFill.sizeDelta = new Vector2(_hpFullWidth, 28f);
             _hpFill.anchoredPosition = new Vector2(3f, 0f);
+
+            // 波動 charge bar — sits just above the arsenal readout, only visible when the 波動 (L3) weapon is equipped.
+            _chargeFullWidth = 520f;
+            _chargeBar = Img(root.transform, "ChargeBarBg", new Color(0f, 0f, 0f, 0.6f)).gameObject;
+            var cbBg = _chargeBar.GetComponent<Image>(); cbBg.raycastTarget = false;
+            AnchorBottom(cbBg.rectTransform, _chargeFullWidth + 6f, 26f, 176f);
+            var cFill = Img(_chargeBar.transform, "ChargeFill", new Color(0.20f, 0.85f, 1f, 1f)); cFill.raycastTarget = false;
+            _chargeFill = cFill.rectTransform;
+            _chargeFill.anchorMin = new Vector2(0f, 0.5f); _chargeFill.anchorMax = new Vector2(0f, 0.5f);
+            _chargeFill.pivot = new Vector2(0f, 0.5f);
+            _chargeFill.sizeDelta = new Vector2(0f, 20f);
+            _chargeFill.anchoredPosition = new Vector2(3f, 0f);
+            _chargeLabel = Txt(_chargeBar.transform, "ChargeLabel", "集氣", 20f, Ink, TextAlignmentOptions.Center, FontStyles.Bold);
+            Stretch(_chargeLabel.rectTransform);
+            _chargeBar.SetActive(false);
             return root.gameObject;
+        }
+
+        /// <summary>Drive the 波動 charge bar: show it only when the charge weapon is equipped, fill it by [0,1], and
+        /// flash it bright when full so the player knows it's ready to release. Called every frame while the HUD is up.</summary>
+        public void SetCharge(bool active, float frac)
+        {
+            if (_chargeBar == null) return;
+            if (_chargeBar.activeSelf != active) _chargeBar.SetActive(active);
+            if (!active) return;
+            frac = Mathf.Clamp01(frac);
+            if (_chargeFill != null)
+            {
+                _chargeFill.sizeDelta = new Vector2(_chargeFullWidth * frac, 20f);
+                var img = _chargeFill.GetComponent<Image>();
+                if (img != null)
+                    img.color = frac >= 0.999f
+                        ? new Color(0.7f, 1f, 1f, 1f)                 // full — bright flash (ready to release)
+                        : new Color(0.20f, 0.85f, 1f, 1f);           // charging — sky blue
+            }
+            if (_chargeLabel != null) _chargeLabel.text = frac >= 0.999f ? "放開發射！" : "集氣";
         }
 
         public void SetHud(int hp, int maxHp, int weaponPower, int missilePower, string primaryType, string secondaryType, RunState run)

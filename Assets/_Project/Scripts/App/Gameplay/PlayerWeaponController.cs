@@ -54,6 +54,12 @@ namespace KaijuBreaker.App.Gameplay
         /// <summary>Current secondary (missile-family) weapon type.</summary>
         public WeaponId SecondaryType => _secondaryType;
 
+        private float _waveChargeCap = 1f; // current 波動 charge ceiling (grows with firepower) — for the HUD bar
+        /// <summary>True while the equipped primary is the 波動 charge weapon (L3) — the HUD shows its charge bar then.</summary>
+        public bool ChargeActive => _primaryType == WeaponId.L3;
+        /// <summary>波動 charge fill in [0,1] (current hold vs the power-scaled cap); 0 for every non-charge primary.</summary>
+        public float ChargeFraction01 => ChargeActive && _waveChargeCap > 0f ? Mathf.Clamp01(_waveCharge / _waveChargeCap) : 0f;
+
         private SfxPlayer _sfx;
 
         private void Awake() => _input = GetComponent<IPlayerInput>();
@@ -122,8 +128,10 @@ namespace KaijuBreaker.App.Gameplay
         // four primaries feel distinct (not "everyone just fans out more bullets"):
         //   L1 散波 — MORE spread bullets (count grows, fan widens)
         //   L2 集束 — count stays 1; grows only a LITTLE bigger, damage much higher
-        //   L4 穿透 — MORE parallel straight shots (no fan) + more pierce-through
-        //   L3 波動 — a charge weapon handled in TickWaveCharge/FireWave (cap grows → full charge hits harder)
+        //   L4 穿透 — the ONLY piercing primary: fast, narrow parallel lances that punch through a whole column of
+        //             enemies (pierce count grows with power) — a sustained single-lane DPS weapon (director).
+        //   L3 波動 — a charge burst handled in TickWaveCharge/FireWave: hold to build a huge WIDE wave; it does NOT
+        //             pierce (its raw power is already high — piercing too would break balance, per the director).
         // t = normalised firepower in [0,1] (lvl1 → max). Per-type multipliers are placeholder-tunable.
         private void FirePrimary()
         {
@@ -144,13 +152,13 @@ namespace KaijuBreaker.App.Gameplay
                     FireFan(1, 0f, 0f, baseSpeed * 1.35f, dmg, heat, 0f, false, 0, WeaponId.L2, size);
                     break;
                 }
-                case WeaponId.L4: // 穿透 — more PARALLEL straight shots (never a fan) + more pierce-through per shot.
-                {
+                case WeaponId.L4: // 穿透 — the ONLY piercing primary: fast, narrow parallel lances that punch through
+                {                 // a whole column. Pierce depth scales hard with power (the weapon's identity).
                     int count = Mathf.Clamp(1 + p / 2, 1, _config.MaxPrimaryBullets);
-                    int pierce = 1 + p / 2;                                   // enemies each shot passes through grows
-                    float dmg = baseDmg * 1.3f;
-                    Vector2 size = new Vector2(0.8f, 1.8f);                    // tall lance
-                    FireFan(count, 0f, 0.30f, baseSpeed * 1.25f, dmg, baseHeat, 0f, false, pierce, WeaponId.L4, size);
+                    int pierce = 1 + p;                                       // enemies each lance passes through grows fast
+                    float dmg = baseDmg * 1.25f;
+                    Vector2 size = new Vector2(0.7f, 2.0f);                    // tall thin lance
+                    FireFan(count, 0f, 0.28f, baseSpeed * 1.4f, dmg, baseHeat, 0f, false, pierce, WeaponId.L4, size);
                     break;
                 }
                 default: // L1 散波 — the spread weapon: MORE + WIDER thin bullets as power grows.
@@ -173,6 +181,7 @@ namespace KaijuBreaker.App.Gameplay
             int p = Mathf.Clamp(_weaponPower, 1, max);
             float t = max > 1 ? (p - 1f) / (max - 1f) : 0f;
             float cap = Mathf.Lerp(0.55f, 1.6f, t);                          // charge-seconds cap grows with power
+            _waveChargeCap = cap;                                            // expose to the HUD charge bar
 
             bool held = _input != null && _input.PrimaryHeld;
             if (held)
@@ -190,30 +199,91 @@ namespace KaijuBreaker.App.Gameplay
 
         private void FireWave(float charge)
         {
-            // The longer the hold (more charge) the stronger + wider the wave.
-            float dmg = _config.PrimaryDamage * (1.4f + 3.2f * charge);
-            float heat = _config.PrimaryHeatDelta * (1.4f + 2.0f * charge);
-            float speed = _config.PrimaryProjectileSpeed * 0.9f;
-            Vector2 size = new Vector2(2.4f + 2.2f * charge, 1.2f + 0.4f * charge); // big wide pulse; wider at more charge
+            // The longer the hold (more charge) the stronger + WIDER the wave. It is deliberately a slow, huge, wide
+            // wall of energy that does NOT pierce (pierce = 0) — a big charged burst, the opposite of L4's fast thin
+            // piercing lances. Raw power is high; piercing on top would be overtuned (director).
+            float dmg = _config.PrimaryDamage * (1.6f + 3.4f * charge);
+            float heat = _config.PrimaryHeatDelta * (1.5f + 2.2f * charge);
+            float speed = _config.PrimaryProjectileSpeed * 0.8f;                     // slow, heavy wall
+            Vector2 size = new Vector2(3.0f + 3.0f * charge, 1.3f + 0.5f * charge);   // very wide pulse; wider at full charge
             FireFan(1, 0f, 0f, speed, dmg, heat, 0f, false, 0, WeaponId.L3, size);
         }
 
-        // 副武器 M1–M4: firepower simply adds MORE missiles + MORE damage (uniform rule across all four types).
+        // 副武器 M1–M4 — each type is a DIFFERENT mechanic (director), not just a recolour:
+        //   M1 追蹤飛彈 — few missiles that STEER toward the nearest target (homing).
+        //   M2 蜂群飛彈 — many small missiles firing STRAIGHT forward (no homing) in a tight column.
+        //   M3 穿甲魚雷 — ONE big slow torpedo that PIERCES a whole column, huge break damage vs boss parts.
+        //   M4 叢集炸彈 — a shell that, on its first hit, bursts into a small ring of fragments (a mini-explosion).
+        // Missile level (mp) scales the payload of whichever type is equipped.
         private void FireSecondary()
         {
             int maxp = Mathf.Max(1, _config.MaxMissilePower);
             int mp = Mathf.Clamp(_missilePower, 1, maxp);
             float t = maxp > 1 ? (mp - 1f) / (maxp - 1f) : 0f;
-            int count = Mathf.Clamp(1 + (mp - 1) / 2, 1, _config.MaxSecondaryMissiles);
-            float dmg = _config.SecondaryTrashDamage * (1f + 0.9f * t);      // damage grows with missile level
-            float breakDmg = _config.SecondaryBreakDamage * (1f + 0.9f * t);
-            FireFan(count, 9f, 0f, _config.SecondaryProjectileSpeed, dmg, 0f, breakDmg, true, 0, _secondaryType, new Vector2(2f, 2f));
+            float baseDmg = _config.SecondaryTrashDamage, baseBreak = _config.SecondaryBreakDamage;
+            float spd = _config.SecondaryProjectileSpeed;
+
+            switch (_secondaryType)
+            {
+                case WeaponId.M2: // 蜂群 — MANY small straight missiles in a tight fast column (no homing).
+                {
+                    int count = Mathf.Clamp(2 + mp, 2, _config.MaxSecondaryMissiles);
+                    float dmg = baseDmg * (0.7f + 0.5f * t), brk = baseBreak * (0.7f + 0.5f * t);
+                    FireFan(count, 0f, 0.32f, spd * 1.25f, dmg, 0f, brk, true, 0, WeaponId.M2, new Vector2(1.3f, 1.6f));
+                    break;
+                }
+                case WeaponId.M3: // 穿甲魚雷 — ONE big slow torpedo, pierces a whole column, massive break damage.
+                {
+                    int pierce = 3 + mp;                                       // punches through the column
+                    float dmg = baseDmg * (1.6f + 1.4f * t), brk = baseBreak * (2.2f + 2.0f * t);
+                    FireFan(1, 0f, 0f, spd * 0.8f, dmg, 0f, brk, true, pierce, WeaponId.M3, new Vector2(2.6f, 3.2f));
+                    break;
+                }
+                case WeaponId.M4: // 叢集炸彈 — bursts into a fragment ring on its first hit (mini-explosion).
+                {
+                    int count = Mathf.Clamp(1 + (mp - 1) / 2, 1, _config.MaxSecondaryMissiles);
+                    float dmg = baseDmg * (1f + 0.8f * t), brk = baseBreak * (1f + 0.8f * t);
+                    FireFan(count, 9f, 0f, spd, dmg, 0f, brk, true, 0, WeaponId.M4, new Vector2(2.2f, 2.2f),
+                            pr => pr.EnableCluster(SpawnClusterFragments));
+                    break;
+                }
+                default: // M1 追蹤 — a few homing missiles that steer to the nearest target.
+                {
+                    int count = Mathf.Clamp(1 + (mp - 1) / 2, 1, _config.MaxSecondaryMissiles);
+                    float dmg = baseDmg * (1f + 0.9f * t), brk = baseBreak * (1f + 0.9f * t);
+                    FireFan(count, 16f, 0f, spd, dmg, 0f, brk, true, 0, WeaponId.M1, new Vector2(2f, 2f),
+                            pr => pr.EnableHoming(_secondaryHomingTurnDeg));
+                    break;
+                }
+            }
+        }
+
+        private const float _secondaryHomingTurnDeg = 220f; // M1 homing turn rate (deg/s) — tunable feel knob
+
+        // M4 叢集: spawn a small ring of short-lived fragment shots at the burst point. Fragments are plain missiles
+        // (no homing, no further cluster) so there is no chain reaction; they carry a fraction of the shell's payload.
+        private void SpawnClusterFragments(Vector3 at)
+        {
+            if (_config == null) return;
+            const int frags = 6;
+            float dmg = _config.SecondaryTrashDamage * 0.6f, brk = _config.SecondaryBreakDamage * 0.6f;
+            float spd = _config.SecondaryProjectileSpeed * 0.9f;
+            for (int i = 0; i < frags; i++)
+            {
+                float ang = (90f + i * (360f / frags)) * Mathf.Deg2Rad;
+                Vector2 vel = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * spd;
+                var pr = Rent();
+                pr.Launch(at, vel, dmg, 0f, brk, true, 0, WeaponId.M4, new Vector2(1.1f, 1.1f), Return);
+            }
         }
 
         // Spawn `count` shots. lateralSpacing > 0 => PARALLEL shots offset horizontally, all straight up (穿透);
         // lateralSpacing == 0 => an angular fan spaced perDeg, centred straight up. Each shot scaled by `size`.
+        // `configure` (optional) runs on each spawned shot right after Launch — used to opt a shot into homing (M1)
+        // or cluster-burst (M4) without widening the hot Launch signature.
         private void FireFan(int count, float perDeg, float lateralSpacing, float speed, float dmg, float heat,
-                             float breakDmg, bool isMissile, int pierceCount, WeaponId weaponId, Vector2 size)
+                             float breakDmg, bool isMissile, int pierceCount, WeaponId weaponId, Vector2 size,
+                             System.Action<PlayerProjectile> configure = null)
         {
             Vector3 origin = transform.position + (Vector3)_muzzleOffset;
             if (lateralSpacing > 0f)
@@ -223,7 +293,9 @@ namespace KaijuBreaker.App.Gameplay
                 for (int i = 0; i < count; i++)
                 {
                     Vector3 o = origin + new Vector3(x0 + i * lateralSpacing, 0f, 0f);
-                    Rent().Launch(o, up, dmg, heat, breakDmg, isMissile, pierceCount, weaponId, size, Return);
+                    var pr = Rent();
+                    pr.Launch(o, up, dmg, heat, breakDmg, isMissile, pierceCount, weaponId, size, Return);
+                    configure?.Invoke(pr);
                 }
                 return;
             }
@@ -233,7 +305,9 @@ namespace KaijuBreaker.App.Gameplay
             {
                 float ang = (count == 1 ? 90f : start + i * perDeg) * Mathf.Deg2Rad;
                 Vector2 vel = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)) * speed;
-                Rent().Launch(origin, vel, dmg, heat, breakDmg, isMissile, pierceCount, weaponId, size, Return);
+                var pr = Rent();
+                pr.Launch(origin, vel, dmg, heat, breakDmg, isMissile, pierceCount, weaponId, size, Return);
+                configure?.Invoke(pr);
             }
         }
 
