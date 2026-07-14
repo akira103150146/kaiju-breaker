@@ -1,5 +1,41 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
+*Last updated: 2026-07-14 (SESSION 17b 收尾 — SESSION 17 全部 commit+push origin main（`5da0ec2`），雙平台重建（Win EXE 18s 成功 / Android APK 252s 成功 49.4MB）。**修掉導演回報的 Android build 卡住對話框**（Active Input Handling Both→Old，`098eee2`）——⚠️**需下次重啟 Unity 一次才生效**。今天到此，過段時間再繼續。)*
+
+## ✅ SESSION 17b (2026-07-14) — 收尾：commit / push / build / 輸入設定根治
+
+**導演指示**：先停下來、今天先這樣 → COMMIT / PUSH / BUILD / 更新已辦待辦 / 同步 Obsidian。
+
+**✅ 已辦：**
+1. **Commit + Push**：SESSION 17 六檔程式+Cubic11 字型圖集 commit `5da0ec2`（L3/L4 差異化、集氣條、M1–M4、強化片重寫）→ `git push origin main` 成功（`94fc662..5da0ec2`，清掉累積 14 commit）。
+2. **雙平台重建**（MCP over HTTP，editor 在線）：refresh force+compile → **0 error**（1 既有空 asmdef warning）；存 Bootstrap；`manage_build windows64` **成功 18s**；`manage_build android` **成功 252s**、APK `Builds/Android/kaiju-breaker.apk` **49.4MB**（0 error, mtime 17:17:33）。
+3. **🔧 根治「Android build 卡住的輸入對話框」**（導演回報「常出現這段話然後卡住」）：訊息 = *"Active Input Handling is set to Both, unsupported on Android…"*。查明**專案輸入全是 legacy**（gameplay 用 `UnityEngine.Input.*`、UGUI 用 `StandaloneInputModule`，**零 `UnityEngine.InputSystem` 依賴**）→ 把 `ProjectSettings.activeInputHandler` **2(Both)→0(Old)**（磁碟+in-memory PlayerSettings 皆已=0，確認 Unity 關閉不會覆蓋回去）。commit `098eee2`。**零風險**：所有輸入/UI 照常，Android 效能反而更好。
+
+**⚠️ 關鍵待辦（下次一開 Unity 先做）**：**重啟 Unity 一次**讓 Old input backend 生效 → 之後 Android build 不再跳那個對話框。**重啟後重跑一次 `manage_build android` 驗證對話框確實消失**（本 session 無法驗證：切輸入後端 Unity 規定要重啟；當前記憶體仍載 Both backend，硬 build 只會再跳對話框）。現有 49.4MB APK（Both 版）功能完全正常可用。
+
+**踩雷紀錄**：用 SerializedObject 改 activeInputHandler 後**沒重啟就直接 build** → build log 仍讀到 Both + 觸發暫時性「script class layout is incompatible between editor and player」→ Android build failed（4 errors）。**refresh force + compile 重新編譯 domain reload 後 console 已清乾淨（0/0）**。教訓：切 input handler 一律要重啟編輯器，別在同 session 硬 build。
+
+**環境**：Editor 需手動開；MCP 走 HTTP `127.0.0.1:8080/mcp`（client `scratchpad/mcp_call.py`；`refresh_unity` 新簽名 `mode:force/compile:request`、`execute_code` 需 `action:execute` 且程式要有 `return`；輸出設 `PYTHONIOENCODING=utf-8` 免 cp950 爆）。Android build 期間 bridge 忙→看 `Builds/Android/*.apk` mtime。**未追蹤的 `Assets/_Recovery/0.unity`** 是 Unity 當機還原暫存，已排除不 commit（可日後刪）。
+
+---
+
+*Last updated: 2026-07-14 (SESSION 17 — 導演4項武器/UI回饋全部改完並驗證：**編譯0錯、503 EditMode GREEN、Windows EXE(123MB)+Android APK(49.4MB,PK有效)雙平台重建成功**。導演待實測手感後微調。已 commit `5da0ec2` + push。)*
+
+## ✅ SESSION 17 (2026-07-14) — 導演4項調整（已改+編譯+503綠+重建）
+
+**✅ 驗證**：`refresh_unity force+compile` → console **0 error**；`run_tests EditMode` → **503 passed / 0 failed / 0 skipped**(9.08s)；`manage_scene save` Bootstrap；`manage_build windows64` → **成功(31s)** `Builds/StandaloneWindows64/kaiju-breaker.exe`；Android APK **成功** `Builds/Android/kaiju-breaker.apk`(49,419,733 bytes, PK 有效)。環境：Editor 需手動開，MCP 走 HTTP(8080，Accept 要 application/json+text/event-stream，client `scratchpad/mcp_call.py`，Android build 期間 bridge 會斷線→看 `Builds/Android/*.apk` mtime)。
+
+**導演回饋4項 → 已改程式：**
+1. **主武器 L3/L4 差異化**（`PlayerWeaponController.FirePrimary/FireWave`）：定案「只有 L4 穿透」。L4 = 唯一穿透武器，快速、窄、平行光矛，穿透數 `1+p` 隨火力大增、射速 ×1.4；L3 波動 = **不穿透**（威力已高，穿透會破壞平衡），改成更寬更慢的大集氣寬波（寬 3.0+3.0×charge、傷害 1.6+3.4×charge、速度 ×0.8）。
+2. **集氣條**（新增）：`PlayerWeaponController.ChargeActive`/`ChargeFraction01`（暴露當前 charge/cap）；`GameUiView` HUD 加 `SetCharge(active,frac)` 集氣條（只在裝 L3 時顯示、滿了變亮+「放開發射！」）；`GameplaySceneDirector` HUD 迴圈每幀餵值；手機集氣鈕依 `PlayerInputRouter.ChargeFill` 隨進度變亮。
+3. **副武器 M1–M4 差異化**（`PlayerWeaponController.FireSecondary` 改 switch + `PlayerProjectile` 加追蹤/爆炸）：M1 追蹤（`EnableHoming`，每幀 `OverlapCircleNonAlloc` 找最近敵/部位轉向，220°/s）、M2 直線前進（多發窄柱快速、無追蹤）、M3 單顆可穿透（大魚雷、pierce `3+mp`、破壞值超高）、M4 打到小爆炸（`EnableCluster`→命中點 `SpawnClusterFragments` 6 片碎片環）。`FireFan` 加 optional `configure` 回呼掛 per-shot 行為。
+4. **強化片樣式**（`PowerUpItem.cs` 重寫）：改成明顯道具——放大(0.58 world)＋程序化圓角晶片＋白外框＋亮綠核心＋「強」字(TMP 3D,Cubic11)＋柔光暈＋自轉＋脈動。不動任何子彈樣式。各 kind 各自字(強/飛/雷/彈)+色。程序生成貼圖(圓角方+radial halo)，無美術相依。
+
+**⬜ 待辦**：①**導演實測手感**(L3寬波/集氣條/M1追蹤/M2直線/M3穿甲/M4小爆炸/強化片外觀是否明顯區隔敵彈)②依回饋微調旋鈕③commit(等指示)④push(等指示,累積 ~11+ commit 未 push)⑤5頭目 bespoke 美術(唯一剩的大項)。**可調旋鈕**：`_secondaryHomingTurnDeg`(220)·M3 pierce(3+mp)·M4 frags(6)·L4 pierce(1+p)·L3 wave 寬/傷·`PowerUpItem.ChipWorld`(0.58)/`SpinDegPerSec`(90)/`PulseHz`(2.2)。
+**改到的檔**：PlayerWeaponController.cs·PlayerProjectile.cs·GameUiView.cs·GameplaySceneDirector.cs·PlayerInputRouter.cs·PowerUpItem.cs。
+
+---
+
 *Last updated: 2026-07-12 (SESSION 16 — **UI 全面改 UGUI+TMP（ADR-0006，B 程式建構案）+ 中文字型 Cubic 11 完整繁中像素字**。IMGUI 完全移除。編譯0錯、503 EditMode GREEN、全畫面+觸控+flash Play 截圖驗證、點擊管線驗證。EXE 121.74MB + APK 49.4MB 重建。本地 ~9 commit 未 push。)*
 
 ## ✅ SESSION 16 (2026-07-12) — UI 從 IMGUI 全面遷移到 UGUI+TMP（ADR-0006）
