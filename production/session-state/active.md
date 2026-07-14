@@ -13,7 +13,8 @@
 
 **⚠️ activeInputHandler 又變 2(Both)**：查 `git show 098eee2:ProjectSettings/ProjectSettings.asset` 是 0，但**現磁碟被還原成 2**——執行中的編輯器(記憶體仍 Both backend、從沒重啟)把 in-memory 的 2 寫回磁碟蓋掉 commit 的 0。已用 SerializedObject 改回 0(in-memory+磁碟皆=0)。**Android build 卡住→已根治**：第一次試建 → Unity 主執行緒被 modal 對話框擋住 ~18 分鐘、bridge 不回 ping、報 `script class layout is incompatible between editor and player` + `DebugActionDesc.axisTrigger` 序列化不符（輸入 backend 中途改過沒重啟）。MCP 無法點掉 modal。**導演走正規流程根治**：`Edit▸Project Settings▸Player▸Other Settings▸Active Input Handling→Input Manager (Old)`→Unity 提示重啟→重啟。重啟後 in-memory activeInputHandler=0、console 只剩「Input Manager 淘汰」提示。**重建 Android APK→成功（errors:0, 95s, 49.4MB, PK 有效）**。教訓見 memory [[input-handler-both-revert-trap]]：別用 SerializedObject 硬改+同 session 硬建，要走 UI+重啟。
 
-**⬜ 待辦**：①導演實測**雙平台**(EXE+APK：Z集氣/集氣條可視/圓盤徽章)②commit(等指示，本輪：4腳本+ProjectSettings輸入修正+state)③push(累積未push)④5頭目 bespoke 美術(唯一大項)。~~重啟 Unity+雙平台重建~~✅已完成。**可調旋鈕**：`PowerUpItem.ChipWorld`(0.58)/core比例(0.64)/glyph(5.4)·`GameUiView` 集氣條 cbH(34)/cbY(184)/顏色·Z鍵綁定。
+**✅ 本輪已 commit+push**：`1423b18`（4腳本+ProjectSettings輸入修正+state）→ `git push origin main` 成功（`805174e..1423b18`，0 未push）。
+**⬜ 待辦**：①導演實測**雙平台**(EXE+APK：Z集氣/集氣條可視/圓盤徽章)②5頭目 bespoke 美術(唯一剩的大項)。~~重啟 Unity+雙平台重建+commit+push~~✅已完成。**可調旋鈕**：`PowerUpItem.ChipWorld`(0.58)/core比例(0.64)/glyph(5.4)·`GameUiView` 集氣條 cbH(34)/cbY(184)/顏色·Z鍵綁定。
 
 ---
 
