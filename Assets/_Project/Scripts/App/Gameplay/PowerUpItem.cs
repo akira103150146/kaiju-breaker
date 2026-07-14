@@ -92,25 +92,28 @@ namespace KaijuBreaker.App.Gameplay
                 _sprite.transform.localScale = new Vector3(hs, hs, 1f);
             }
 
-            // Spin pivot holds the frame + core so they rotate together (the glyph stays upright).
-            var spinGo = new GameObject("ChipSpin");
+            // Pulse pivot holds the frame + core so they breathe together. It is a DISC (not a rounded square):
+            // a spinning square reads as a rotating diamond, which the director mistook for a bullet/menu marker —
+            // a disc badge keeps one silhouette no matter what, so it can only read as a collectible medal.
+            var spinGo = new GameObject("ChipPulse");
             _spin = spinGo.transform;
             _spin.SetParent(transform, false);
 
-            var frame = MakeSprite("Frame", _spin, RoundedSquareSprite(), Color.white, order + 1, ChipWorld);
-            _chipSr = MakeSprite("Core", _spin, RoundedSquareSprite(), PowerCore, order + 2, ChipWorld * 0.72f);
+            // White disc = the medal body; the coloured core is smaller so the white shows as a bold ring border.
+            MakeSprite("Frame", _spin, DiscSprite(), Color.white, order + 1, ChipWorld);
+            _chipSr = MakeSprite("Core", _spin, DiscSprite(), PowerCore, order + 2, ChipWorld * 0.64f);
 
-            // Upright glyph on the container (not the spin pivot) so 「強」never rotates. Uses the TMP default font
-            // (Cubic 11 pixel font) so it matches the game's type.
+            // Upright glyph on the container (not the pulse pivot) so 「強」never distorts. Uses the TMP default font
+            // (Cubic 11 pixel font) so it matches the game's type. Sized to nearly fill the core = unmistakable.
             var glyphGo = new GameObject("Glyph");
             glyphGo.transform.SetParent(transform, false);
             _glyph = glyphGo.AddComponent<TextMeshPro>();
             _glyph.text = "強";
             _glyph.alignment = TextAlignmentOptions.Center;
-            _glyph.fontSize = 4.2f;
+            _glyph.fontSize = 5.4f;
             _glyph.color = Color.white;
             _glyph.enableWordWrapping = false;
-            _glyph.rectTransform.sizeDelta = new Vector2(1.4f, 1.4f);
+            _glyph.rectTransform.sizeDelta = new Vector2(1.6f, 1.6f);
             var glyphMr = glyphGo.GetComponent<MeshRenderer>();
             if (glyphMr != null) glyphMr.sortingOrder = order + 3;
         }
@@ -157,9 +160,9 @@ namespace KaijuBreaker.App.Gameplay
             float dt = Time.deltaTime;
             _phase += dt;
 
-            // Spin + breathe so the chip reads as a collectible, not a projectile.
-            if (_spin != null) _spin.Rotate(0f, 0f, SpinDegPerSec * dt);
-            float pulse = 1f + 0.10f * Mathf.Sin((_phase) * PulseHz * Mathf.PI * 2f);
+            // Breathe (no spin) so the badge reads as a collectible, not a projectile. A disc badge does not need to
+            // rotate — and rotating it was exactly what made it look like a diamond — so we pulse the scale instead.
+            float pulse = 1f + 0.12f * Mathf.Sin((_phase) * PulseHz * Mathf.PI * 2f);
             if (_spin != null) _spin.localScale = new Vector3(pulse, pulse, 1f);
             if (_haloSr != null)
             {
@@ -201,7 +204,27 @@ namespace KaijuBreaker.App.Gameplay
         }
 
         // ── Procedural sprites (generated once, shared) ───────────────────────────────
-        private static Sprite _roundedSquare, _halo;
+        private static Sprite _roundedSquare, _halo, _disc;
+
+        // Solid anti-aliased disc — the medal body/ring. A disc has one silhouette at any rotation, so the badge
+        // can never be mistaken for a rotating diamond the way the old rounded square could.
+        private static Sprite DiscSprite()
+        {
+            if (_disc != null) return _disc;
+            const int N = 64; float c = (N - 1) * 0.5f; float r = N * 0.5f - 1f;
+            var tex = new Texture2D(N, N, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            var px = new Color32[N * N];
+            for (int y = 0; y < N; y++)
+                for (int x = 0; x < N; x++)
+                {
+                    float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c));
+                    float a = Mathf.Clamp01(r - d);   // 1 inside, soft 1px edge
+                    px[y * N + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+                }
+            tex.SetPixels32(px); tex.Apply();
+            _disc = Sprite.Create(tex, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), 100f);
+            return _disc;
+        }
 
         private static Sprite RoundedSquareSprite()
         {

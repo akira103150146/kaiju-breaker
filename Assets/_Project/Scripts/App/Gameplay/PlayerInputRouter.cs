@@ -57,9 +57,10 @@ namespace KaijuBreaker.App.Gameplay
 
             if (!TouchUiActive)
             {
-                // PC: no on-screen controls. Charge (集氣) = hold left mouse or J (left mouse is free here —
-                // PlayerInputRouter is axis-based, HasPointerTarget is false — unlike KeyboardMouseInput).
-                _primaryHeld = Input.GetMouseButton(0) || Input.GetKey(KeyCode.J);
+                // PC: no on-screen controls. Charge (集氣) = hold left mouse, J, or Z (left mouse is free here —
+                // PlayerInputRouter is axis-based, HasPointerTarget is false — unlike KeyboardMouseInput). Z sits next
+                // to the movement keys so the charge weapon is one-handed on keyboard (director request).
+                _primaryHeld = Input.GetMouseButton(0) || Input.GetKey(KeyCode.J) || Input.GetKey(KeyCode.Z);
                 return;
             }
 

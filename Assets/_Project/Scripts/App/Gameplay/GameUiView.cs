@@ -311,18 +311,28 @@ namespace KaijuBreaker.App.Gameplay
             _hpFill.sizeDelta = new Vector2(_hpFullWidth, 28f);
             _hpFill.anchoredPosition = new Vector2(3f, 0f);
 
-            // 波動 charge bar — sits just above the arsenal readout, only visible when the 波動 (L3) weapon is equipped.
+            // 波動 charge bar — a framed cyan meter just above the arsenal readout. Built to read clearly even when
+            // EMPTY: a bright cyan frame + a dim always-on track give it a visible extent, where the old unframed
+            // dark bar (zero fill on the dark playfield) was effectively invisible until charged (director: 有選 L3
+            // 但看不到). Only shown when the 波動 (L3) weapon is equipped.
             _chargeFullWidth = 520f;
-            _chargeBar = Img(root.transform, "ChargeBarBg", new Color(0f, 0f, 0f, 0.6f)).gameObject;
-            var cbBg = _chargeBar.GetComponent<Image>(); cbBg.raycastTarget = false;
-            AnchorBottom(cbBg.rectTransform, _chargeFullWidth + 6f, 26f, 176f);
-            var cFill = Img(_chargeBar.transform, "ChargeFill", new Color(0.20f, 0.85f, 1f, 1f)); cFill.raycastTarget = false;
+            const float cbH = 34f, cbY = 184f, cbFillH = 24f;
+            _chargeBar = Img(root.transform, "ChargeFrame", new Color(0.20f, 0.85f, 1f, 0.95f)).gameObject; // cyan outline = toggled root
+            var cbFrame = _chargeBar.GetComponent<Image>(); cbFrame.raycastTarget = false;
+            AnchorBottom(cbFrame.rectTransform, _chargeFullWidth + 12f, cbH + 8f, cbY);
+            var cbBg = Img(_chargeBar.transform, "ChargeBarBg", new Color(0.02f, 0.10f, 0.14f, 0.98f)); cbBg.raycastTarget = false;
+            var bgRt = cbBg.rectTransform; bgRt.anchorMin = bgRt.anchorMax = new Vector2(0.5f, 0.5f); bgRt.pivot = new Vector2(0.5f, 0.5f);
+            bgRt.sizeDelta = new Vector2(_chargeFullWidth + 4f, cbH); bgRt.anchoredPosition = Vector2.zero;
+            var cbTrack = Img(cbBg.transform, "ChargeTrack", new Color(0.20f, 0.85f, 1f, 0.16f)); cbTrack.raycastTarget = false; // dim always-on track
+            var trkRt = cbTrack.rectTransform; trkRt.anchorMin = trkRt.anchorMax = new Vector2(0f, 0.5f); trkRt.pivot = new Vector2(0f, 0.5f);
+            trkRt.sizeDelta = new Vector2(_chargeFullWidth, cbFillH); trkRt.anchoredPosition = new Vector2(3f, 0f);
+            var cFill = Img(cbBg.transform, "ChargeFill", new Color(0.20f, 0.85f, 1f, 1f)); cFill.raycastTarget = false;
             _chargeFill = cFill.rectTransform;
             _chargeFill.anchorMin = new Vector2(0f, 0.5f); _chargeFill.anchorMax = new Vector2(0f, 0.5f);
             _chargeFill.pivot = new Vector2(0f, 0.5f);
-            _chargeFill.sizeDelta = new Vector2(0f, 20f);
+            _chargeFill.sizeDelta = new Vector2(0f, cbFillH);
             _chargeFill.anchoredPosition = new Vector2(3f, 0f);
-            _chargeLabel = Txt(_chargeBar.transform, "ChargeLabel", "集氣", 20f, Ink, TextAlignmentOptions.Center, FontStyles.Bold);
+            _chargeLabel = Txt(cbBg.transform, "ChargeLabel", "集氣 CHARGE", 22f, Ink, TextAlignmentOptions.Center, FontStyles.Bold);
             Stretch(_chargeLabel.rectTransform);
             _chargeBar.SetActive(false);
             return root.gameObject;
@@ -336,16 +346,21 @@ namespace KaijuBreaker.App.Gameplay
             if (_chargeBar.activeSelf != active) _chargeBar.SetActive(active);
             if (!active) return;
             frac = Mathf.Clamp01(frac);
+            bool full = frac >= 0.999f;
             if (_chargeFill != null)
             {
-                _chargeFill.sizeDelta = new Vector2(_chargeFullWidth * frac, 20f);
+                _chargeFill.sizeDelta = new Vector2(_chargeFullWidth * frac, 24f);
                 var img = _chargeFill.GetComponent<Image>();
                 if (img != null)
-                    img.color = frac >= 0.999f
+                    img.color = full
                         ? new Color(0.7f, 1f, 1f, 1f)                 // full — bright flash (ready to release)
                         : new Color(0.20f, 0.85f, 1f, 1f);           // charging — sky blue
             }
-            if (_chargeLabel != null) _chargeLabel.text = frac >= 0.999f ? "放開發射！" : "集氣";
+            if (_chargeLabel != null)
+            {
+                _chargeLabel.text = full ? "放開發射！" : "集氣 CHARGE";
+                _chargeLabel.color = full ? new Color(0.02f, 0.10f, 0.14f, 1f) : Ink; // dark on the bright full-bar
+            }
         }
 
         public void SetHud(int hp, int maxHp, int weaponPower, int missilePower, string primaryType, string secondaryType, RunState run)

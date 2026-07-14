@@ -1,5 +1,22 @@
 # Active Session State — 殲獸戰機 / KAIJU BREAKER
 
+*Last updated: 2026-07-14 (SESSION 18 — 導演3項微調全部完成+雙平台重建成功：①強化片綠菱形→圓盤徽章 ②集氣條看不到→亮青外框可視化(根因:空條在深色背景隱形，非邏輯bug) ③PC加Z集氣鍵。編譯0錯、503 EditMode綠、Play截圖視覺驗證。**Win EXE 121.78MB + Android APK 49.4MB(0錯,PK有效) 雙平台重建成功**。輸入後端坑徹底根治:導演走 Player Settings UI 改 Old + 重啟→backend 生效。**導演要求再建置一次確認→雙平台皆 errors:0(Win 74s / Android 31s 增量) 二次確認乾淨**。待導演實測後 commit/push。)*
+
+## ✅ SESSION 18 (2026-07-14) — 導演3項微調（強化片/集氣條/Z集氣）
+
+**導演回報3項 → 已改+驗證：**
+1. **強化片還是綠菱形**（`PowerUpItem.cs`）：根因＝**自轉的圓角方塊在旋轉中就是菱形錯覺**。改成**不自轉的圓盤徽章**（`DiscSprite()` 圓盤，圓盤旋轉不變輪廓）＝白環(0.64 core 露出白框)＋放大「強」字(4.2→5.4)＋綠光暈脈動；移除 `_spin.Rotate`（改純脈動 breathe）。Play 截圖確認：明確是可拾取獎章，非菱形/子彈。
+2. **集氣條看不到**（`GameUiView.cs`）：**不是邏輯bug**——`SetCharge` 每幀有餵值、`ChargeActive=(_primaryType==L3)` 正確、`PrimaryLabels[2]="L3 波動"`→`(WeaponId)2`=L3 對應正確。真因＝**空條視覺太弱**：黑色60%半透明底框＋fill寬0(無青色)＋疊在深色戰場＝隱形（Play截圖證實只有充能時才看得到青色）。修：改成**亮青外框(toggled root)＋暗青常駐軌道＋加大(H34/y184)＋亮字「集氣 CHARGE」**，空的時候也一眼可見。Play 截圖(強制L3+timeScale0凍結)確認清楚。
+3. **PC 加 Z 集氣**（`PlayerInputRouter.cs` L62 + `KeyboardMouseInput.cs` L46）：`_primaryHeld = 左鍵 || J || Z`（真正跑的是 PlayerInputRouter；KeyboardMouseInput 也補）。
+
+**✅ 驗證**：`refresh force+compile`→0 error；`run_tests EditMode`→**503/503 綠**；`manage_scene save` Bootstrap；`manage_build windows64`→**成功 25.3s 121.78MB 0錯**。Play 截圖視覺驗證集氣條+圓盤徽章(見 scratchpad hud4.png/chip.png)。
+
+**⚠️ activeInputHandler 又變 2(Both)**：查 `git show 098eee2:ProjectSettings/ProjectSettings.asset` 是 0，但**現磁碟被還原成 2**——執行中的編輯器(記憶體仍 Both backend、從沒重啟)把 in-memory 的 2 寫回磁碟蓋掉 commit 的 0。已用 SerializedObject 改回 0(in-memory+磁碟皆=0)。**Android build 卡住→已根治**：第一次試建 → Unity 主執行緒被 modal 對話框擋住 ~18 分鐘、bridge 不回 ping、報 `script class layout is incompatible between editor and player` + `DebugActionDesc.axisTrigger` 序列化不符（輸入 backend 中途改過沒重啟）。MCP 無法點掉 modal。**導演走正規流程根治**：`Edit▸Project Settings▸Player▸Other Settings▸Active Input Handling→Input Manager (Old)`→Unity 提示重啟→重啟。重啟後 in-memory activeInputHandler=0、console 只剩「Input Manager 淘汰」提示。**重建 Android APK→成功（errors:0, 95s, 49.4MB, PK 有效）**。教訓見 memory [[input-handler-both-revert-trap]]：別用 SerializedObject 硬改+同 session 硬建，要走 UI+重啟。
+
+**⬜ 待辦**：①導演實測**雙平台**(EXE+APK：Z集氣/集氣條可視/圓盤徽章)②commit(等指示，本輪：4腳本+ProjectSettings輸入修正+state)③push(累積未push)④5頭目 bespoke 美術(唯一大項)。~~重啟 Unity+雙平台重建~~✅已完成。**可調旋鈕**：`PowerUpItem.ChipWorld`(0.58)/core比例(0.64)/glyph(5.4)·`GameUiView` 集氣條 cbH(34)/cbY(184)/顏色·Z鍵綁定。
+
+---
+
 *Last updated: 2026-07-14 (SESSION 17b 收尾 — SESSION 17 全部 commit+push origin main（`5da0ec2`），雙平台重建（Win EXE 18s 成功 / Android APK 252s 成功 49.4MB）。**修掉導演回報的 Android build 卡住對話框**（Active Input Handling Both→Old，`098eee2`）——⚠️**需下次重啟 Unity 一次才生效**。今天到此，過段時間再繼續。)*
 
 ## ✅ SESSION 17b (2026-07-14) — 收尾：commit / push / build / 輸入設定根治
