@@ -3,6 +3,7 @@ using KaijuBreaker.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace KaijuBreaker.App.Gameplay
@@ -545,7 +546,11 @@ namespace KaijuBreaker.App.Gameplay
         static void EnsureEventSystem()
         {
             if (FindFirstObjectByType<EventSystem>() != null) return;
-            var go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            // New Input System backend (activeInputHandler = 1): UGUI must be driven by InputSystemUIInputModule,
+            // not the legacy StandaloneInputModule (which reads UnityEngine.Input and throws under New-only).
+            var go = new GameObject("EventSystem", typeof(EventSystem));
+            var module = go.AddComponent<InputSystemUIInputModule>();
+            module.AssignDefaultActions(); // no action asset is baked in the scene, so build the default point/click/navigate set
         }
     }
 }

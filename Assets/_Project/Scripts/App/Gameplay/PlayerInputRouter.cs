@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace KaijuBreaker.App.Gameplay
@@ -52,35 +53,40 @@ namespace KaijuBreaker.App.Gameplay
         private void Update()
         {
             _joyAxis = Vector2.zero;
+            var kb = Keyboard.current;
+            var mouse = Mouse.current;
             // Hold-to-fire: true while the secondary input is HELD (keyboard/mouse on PC; the on-screen button on mobile).
-            _secondaryHeld = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(1);
+            _secondaryHeld = (kb != null && kb.spaceKey.isPressed) || (mouse != null && mouse.rightButton.isPressed);
 
             if (!TouchUiActive)
             {
                 // PC: no on-screen controls. Charge (集氣) = hold left mouse, J, or Z (left mouse is free here —
                 // PlayerInputRouter is axis-based, HasPointerTarget is false — unlike KeyboardMouseInput). Z sits next
                 // to the movement keys so the charge weapon is one-handed on keyboard (director request).
-                _primaryHeld = Input.GetMouseButton(0) || Input.GetKey(KeyCode.J) || Input.GetKey(KeyCode.Z);
+                _primaryHeld = (mouse != null && mouse.leftButton.isPressed) || KeyHeld(Key.J) || KeyHeld(Key.Z);
                 return;
             }
 
             _primaryHeld = false;
             LayoutControls();
             // Touch first (mobile); mouse fallback lets the layout be tested in-editor when forced on.
-            if (Input.touchCount > 0)
+            var ts = Touchscreen.current;
+            bool hadTouch = false;
+            if (ts != null)
             {
-                for (int i = 0; i < Input.touchCount; i++)
+                foreach (var t in ts.touches)
                 {
-                    var t = Input.GetTouch(i);
-                    if (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled) continue;
-                    if (InCircle(t.position, _joyBase, _joyRadius * (_joyTravelMult + 0.4f))) _joyAxis = AxisFrom(t.position);
-                    if (InCircle(t.position, _fireCenter, _fireRadius)) _secondaryHeld = true; // any phase = held
-                    if (ChargeControlVisible && InCircle(t.position, _chargeCenter, _chargeRadius)) _primaryHeld = true;
+                    if (!t.press.isPressed) continue; // active contact only (skips ended/canceled)
+                    hadTouch = true;
+                    Vector2 p = t.position.ReadValue();
+                    if (InCircle(p, _joyBase, _joyRadius * (_joyTravelMult + 0.4f))) _joyAxis = AxisFrom(p);
+                    if (InCircle(p, _fireCenter, _fireRadius)) _secondaryHeld = true; // any active touch = held
+                    if (ChargeControlVisible && InCircle(p, _chargeCenter, _chargeRadius)) _primaryHeld = true;
                 }
             }
-            else if (Input.GetMouseButton(0))
+            if (!hadTouch && mouse != null && mouse.leftButton.isPressed)
             {
-                Vector2 m = Input.mousePosition;
+                Vector2 m = mouse.position.ReadValue();
                 if (InCircle(m, _joyBase, _joyRadius * (_joyTravelMult + 0.4f))) _joyAxis = AxisFrom(m);
                 else if (InCircle(m, _fireCenter, _fireRadius)) _secondaryHeld = true; // click-hold the on-screen button
                 else if (ChargeControlVisible && InCircle(m, _chargeCenter, _chargeRadius)) _primaryHeld = true;
@@ -121,8 +127,8 @@ namespace KaijuBreaker.App.Gameplay
             get
             {
                 if (_joyAxis.sqrMagnitude > 0.0001f) return _joyAxis; // joystick overrides keyboard while held
-                float x = (Key(KeyCode.D) || Key(KeyCode.RightArrow) ? 1f : 0f) - (Key(KeyCode.A) || Key(KeyCode.LeftArrow) ? 1f : 0f);
-                float y = (Key(KeyCode.W) || Key(KeyCode.UpArrow) ? 1f : 0f) - (Key(KeyCode.S) || Key(KeyCode.DownArrow) ? 1f : 0f);
+                float x = (KeyHeld(Key.D) || KeyHeld(Key.RightArrow) ? 1f : 0f) - (KeyHeld(Key.A) || KeyHeld(Key.LeftArrow) ? 1f : 0f);
+                float y = (KeyHeld(Key.W) || KeyHeld(Key.UpArrow) ? 1f : 0f) - (KeyHeld(Key.S) || KeyHeld(Key.DownArrow) ? 1f : 0f);
                 return new Vector2(x, y);
             }
         }
@@ -132,7 +138,11 @@ namespace KaijuBreaker.App.Gameplay
         public bool SecondaryPressedThisFrame => _secondaryHeld;
         public bool PrimaryHeld => _primaryHeld;
 
-        private static bool Key(KeyCode k) => Input.GetKey(k);
+        private static bool KeyHeld(Key k)
+        {
+            var kb = Keyboard.current;
+            return kb != null && kb[k].isPressed;
+        }
 
         // ── On-screen touch controls (UGUI + TMP, ADR-0006) ─────────────────────────
         private Canvas _touchCanvas;
@@ -143,7 +153,7 @@ namespace KaijuBreaker.App.Gameplay
 
         // Build the touch widgets once (mobile only). A dedicated overlay canvas with NO CanvasScaler, so 1 unit
         // == 1 screen pixel and the discs can be placed/sized directly in the same screen coordinates the input
-        // polling already uses (bottom-left origin, matching Input.mousePosition / Touch.position).
+        // polling already uses (bottom-left origin, matching Mouse.position / Touchscreen touch position).
         private void EnsureTouchUi()
         {
             if (_touchUiBuilt || !TouchUiActive) return;

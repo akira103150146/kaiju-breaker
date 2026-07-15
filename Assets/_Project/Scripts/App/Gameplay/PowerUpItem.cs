@@ -9,12 +9,12 @@ namespace KaijuBreaker.App.Gameplay
 
     /// <summary>
     /// An in-stage power-up that drifts down for the player to collect (Raiden-style in-run strengthening).
-    /// <b>P</b> raises firepower, <b>M</b> raises the missile level, <b>W</b> pods switch the current weapon
+    /// 「主」raises the primary firepower, 「副」raises the missile level, <b>W</b> pods switch the current weapon
     /// type — all of which boost KILLING POWER this run only (utility stats are the separate meta upgrades).
     /// Collection is player-owned trigger overlap.
     /// <para>
-    /// Visually the item is built to read as a PICKUP, never as a bullet (director): a chunky rounded chip with a
-    /// bright white frame, a coloured core, a glyph (強 / 飛 / 雷 / 彈), and a soft halo — and it slowly spins and
+    /// Visually the item is built to read as a PICKUP, never as a bullet (director): a compact badge with a
+    /// bright white frame, a coloured core, a glyph (主 / 副 / 雷 / 彈), and a soft halo — and it slowly spins and
     /// pulses. Enemy bullets are small, warm, and static, so there is no chance of confusing the two. The chip's
     /// visuals are generated in code (no art dependency); enemy-bullet art is untouched.
     /// </para>
@@ -42,8 +42,8 @@ namespace KaijuBreaker.App.Gameplay
         private static readonly Color LaserPodCore = new Color(0.72f, 0.45f, 1f);    // W laser — violet
         private static readonly Color MissilePodCore = new Color(1f, 0.80f, 0.30f);  // W missile — gold
 
-        private const float ChipWorld = 0.58f;   // rendered chip size (world units) — far bigger than a bullet
-        private const float HaloWorld = 1.05f;
+        private const float ChipWorld = 0.29f;   // rendered chip size (world units) — small badge, still clearly not a bullet
+        private const float HaloWorld = 0.52f;
         private const float SpinDegPerSec = 90f;
         private const float PulseHz = 2.2f;
 
@@ -103,17 +103,18 @@ namespace KaijuBreaker.App.Gameplay
             MakeSprite("Frame", _spin, DiscSprite(), Color.white, order + 1, ChipWorld);
             _chipSr = MakeSprite("Core", _spin, DiscSprite(), PowerCore, order + 2, ChipWorld * 0.64f);
 
-            // Upright glyph on the container (not the pulse pivot) so 「強」never distorts. Uses the TMP default font
-            // (Cubic 11 pixel font) so it matches the game's type. Sized to nearly fill the core = unmistakable.
+            // Upright glyph on the container (not the pulse pivot) so 「主」/「副」never distort. Uses the TMP default
+            // font (Cubic 11 pixel font) so it matches the game's type. A small label (¼ of the old size) that sits
+            // in the middle of the badge rather than filling it.
             var glyphGo = new GameObject("Glyph");
             glyphGo.transform.SetParent(transform, false);
             _glyph = glyphGo.AddComponent<TextMeshPro>();
-            _glyph.text = "強";
+            _glyph.text = "主";
             _glyph.alignment = TextAlignmentOptions.Center;
-            _glyph.fontSize = 5.4f;
+            _glyph.fontSize = 1.35f;
             _glyph.color = Color.white;
             _glyph.enableWordWrapping = false;
-            _glyph.rectTransform.sizeDelta = new Vector2(1.6f, 1.6f);
+            _glyph.rectTransform.sizeDelta = new Vector2(0.9f, 0.9f);
             var glyphMr = glyphGo.GetComponent<MeshRenderer>();
             if (glyphMr != null) glyphMr.sortingOrder = order + 3;
         }
@@ -148,10 +149,10 @@ namespace KaijuBreaker.App.Gameplay
         {
             switch (k)
             {
-                case PowerUpKind.Missile: return "飛";
+                case PowerUpKind.Missile: return "副";
                 case PowerUpKind.WeaponLaser: return "雷";
                 case PowerUpKind.WeaponMissile: return "彈";
-                default: return "強";
+                default: return "主";
             }
         }
 
@@ -193,9 +194,9 @@ namespace KaijuBreaker.App.Gameplay
             if (weapon == null) return;
             switch (_kind)
             {
-                // Power is the single generic strengthen chip — it raises the player's CURRENT loadout (both the
-                // primary firepower and the missile level), so it's never "the wrong weapon" (session 15).
-                case PowerUpKind.Power: weapon.AddArsenalPower(); break;
+                // Two strengthen chips (director): 「主」raises ONLY the primary weapon's firepower, 「副」raises ONLY
+                // the secondary (missile) level. The player chooses which to grab based on what they want to boost.
+                case PowerUpKind.Power: weapon.AddWeaponPower(); break;
                 case PowerUpKind.Missile: weapon.AddMissilePower(); break;
                 case PowerUpKind.WeaponLaser: weapon.CyclePrimary(); break;
                 case PowerUpKind.WeaponMissile: weapon.CycleSecondary(); break;

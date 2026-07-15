@@ -4,6 +4,7 @@ using KaijuBreaker.Core;
 using KaijuBreaker.Meta;
 using KaijuBreaker.Stage;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace KaijuBreaker.App.Gameplay
 {
@@ -141,8 +142,9 @@ namespace KaijuBreaker.App.Gameplay
             {
                 _ui?.TickTitleBlink();
                 // The full-screen tap-catcher button covers mouse/touch; keyboard uses Space/Enter (a broad
-                // anyKeyDown would skip the title on stray input).
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+                // anyKey would skip the title on stray input).
+                var kb = Keyboard.current;
+                if (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame))
                     StartFromTitle();
             }
             else if (_screen == GameUiView.Screen.Hud)
@@ -157,7 +159,7 @@ namespace KaijuBreaker.App.Gameplay
             }
             else if (_screen == GameUiView.Screen.Results)
             {
-                if (Input.GetKeyDown(KeyCode.R)) Restart();
+                if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame) Restart();
             }
         }
 
@@ -308,11 +310,11 @@ namespace KaijuBreaker.App.Gameplay
             _playerWeapon?.SetFiring(true);
         }
 
-        // Enemy death → in-run strengthen drop (session 15). There is ONE generic strengthen chip (PowerUpKind.Power)
-        // that raises the player's CURRENT loadout — both primary firepower and missile level — so no drop is ever
-        // "the wrong weapon". Elites drop several (a real reward); ordinary trash has a modest per-kill chance, which
-        // gives the player far more frequent strengthen chances than the old elite-only rule while staying readable.
-        // The old L1→L4 type-switching pod is gone: you keep the loadout you picked and just make it stronger.
+        // Enemy death → in-run strengthen drop. There are TWO strengthen chips (director): 「主」(PowerUpKind.Power)
+        // raises the primary weapon's firepower, 「副」(PowerUpKind.Missile) raises the secondary (missile) level.
+        // Elites give a balanced reward (alternating 主/副 so both weapons get fed); ordinary trash has a modest
+        // per-kill chance to drop a single chip that coin-flips between 主 and 副, so the player picks up whichever
+        // they want to grow. The old L1→L4 type-switching pod is gone: you keep the loadout you picked.
         private void SpawnDrop(Vector3 pos, bool isElite)
         {
             _bootstrap?.Sfx?.PlayEnemyExplode(isElite ? 0.9f : 0.6f); // every kill goes boom (trash quieter)
@@ -324,12 +326,15 @@ namespace KaijuBreaker.App.Gameplay
                 for (int i = 0; i < count; i++)
                 {
                     float x = count == 1 ? 0f : Mathf.Lerp(-0.6f, 0.6f, i / (float)(count - 1));
-                    Spawn(pos + new Vector3(x, 0f, 0f), PowerUpKind.Power);
+                    // Alternate 主 / 副 across the cluster so an elite feeds both the primary and the secondary.
+                    var kind = (i % 2 == 0) ? PowerUpKind.Power : PowerUpKind.Missile;
+                    Spawn(pos + new Vector3(x, 0f, 0f), kind);
                 }
             }
             else if (UnityEngine.Random.value < _trashStrengthenChance)
             {
-                Spawn(pos, PowerUpKind.Power);
+                // Single chip, a coin-flip between 主 (primary) and 副 (secondary).
+                Spawn(pos, UnityEngine.Random.value < 0.5f ? PowerUpKind.Power : PowerUpKind.Missile);
             }
         }
 

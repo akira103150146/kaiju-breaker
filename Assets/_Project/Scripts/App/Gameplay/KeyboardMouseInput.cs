@@ -1,12 +1,13 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace KaijuBreaker.App.Gameplay
 {
     /// <summary>
     /// PC input provider (<see cref="IPlayerInput"/>): WASD/arrow keys drive the move axis, holding the left
-    /// mouse button drags the ship toward the cursor, and Space (or right mouse) fires the secondary. Uses the
-    /// legacy Input class (project has Active Input Handling = Both); the new Input System action map is the
-    /// input epic's job. Mobile controls are a separate provider (Phase E), so this stays PC-only and simple.
+    /// mouse button drags the ship toward the cursor, and Space (or right mouse) fires the secondary. Reads the
+    /// new Input System device polling API (Active Input Handling = Input System Package); a full action map is
+    /// the input epic's job. Mobile controls are a separate provider (Phase E), so this stays PC-only and simple.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class KeyboardMouseInput : MonoBehaviour, IPlayerInput
@@ -18,33 +19,39 @@ namespace KaijuBreaker.App.Gameplay
         {
             get
             {
-                float x = (Key(KeyCode.D) || Key(KeyCode.RightArrow) ? 1f : 0f) -
-                          (Key(KeyCode.A) || Key(KeyCode.LeftArrow) ? 1f : 0f);
-                float y = (Key(KeyCode.W) || Key(KeyCode.UpArrow) ? 1f : 0f) -
-                          (Key(KeyCode.S) || Key(KeyCode.DownArrow) ? 1f : 0f);
+                float x = (KeyHeld(Key.D) || KeyHeld(Key.RightArrow) ? 1f : 0f) -
+                          (KeyHeld(Key.A) || KeyHeld(Key.LeftArrow) ? 1f : 0f);
+                float y = (KeyHeld(Key.W) || KeyHeld(Key.UpArrow) ? 1f : 0f) -
+                          (KeyHeld(Key.S) || KeyHeld(Key.DownArrow) ? 1f : 0f);
                 return new Vector2(x, y);
             }
         }
 
-        public bool HasPointerTarget => Input.GetMouseButton(0);
+        public bool HasPointerTarget => Mouse.current != null && Mouse.current.leftButton.isPressed;
 
         public Vector2 PointerWorld
         {
             get
             {
                 var cam = _camera != null ? _camera : Camera.main;
-                if (cam == null) return Vector2.zero;
-                Vector3 w = cam.ScreenToWorldPoint(Input.mousePosition);
+                if (cam == null || Mouse.current == null) return Vector2.zero;
+                Vector2 sp = Mouse.current.position.ReadValue();
+                Vector3 w = cam.ScreenToWorldPoint(new Vector3(sp.x, sp.y, 0f));
                 return new Vector2(w.x, w.y);
             }
         }
 
         public bool SecondaryPressedThisFrame =>
-            Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(1);
+            (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame) ||
+            (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame);
 
         // Left mouse is drag-to-move here, so the charge input is a key (J or Z) on this provider.
-        public bool PrimaryHeld => Key(KeyCode.J) || Key(KeyCode.Z);
+        public bool PrimaryHeld => KeyHeld(Key.J) || KeyHeld(Key.Z);
 
-        private static bool Key(KeyCode k) => Input.GetKey(k);
+        private static bool KeyHeld(Key k)
+        {
+            var kb = Keyboard.current;
+            return kb != null && kb[k].isPressed;
+        }
     }
 }
